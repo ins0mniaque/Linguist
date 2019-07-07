@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <Extern  href="stdidcmd.h" />
+  <Extern  href="vsshlids.h" />
+  <Include href="KnownImageIds.vsct" />
+
+  <Commands package="guidLocalizerPackage">
+    <Buttons>
+      <Button guid="guidLocalizerPackageCmdSet" id="PublicApplyCustomToolId" priority="0x0100" type="Button">
+        <Parent guid="guidSHLMainMenu"  id="IDG_VS_CTXT_ITEM_INCLUDEEXCLUDE" />
+        <Icon   guid="ImageCatalogGuid" id="TriggerScript" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Switch to Localizer</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidLocalizerPackageCmdSet" id="InternalApplyCustomToolId" priority="0x0101" type="Button">
+        <Parent guid="guidSHLMainMenu"  id="IDG_VS_CTXT_ITEM_INCLUDEEXCLUDE" />
+        <Icon   guid="ImageCatalogGuid" id="TriggerScript" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Switch to Localizer (Internal)</ButtonText>
+        </Strings>
+      </Button>
+    </Buttons>
+  </Commands>
+
+  <VisibilityConstraints>
+    <VisibilityItem guid="guidLocalizerPackageCmdSet" id="PublicApplyCustomToolId"   context="guidLocalizerUIContext" />
+    <VisibilityItem guid="guidLocalizerPackageCmdSet" id="InternalApplyCustomToolId" context="guidLocalizerUIContext" />
+  </VisibilityConstraints>
+
+  <Symbols>
+    <GuidSymbol name="guidLocalizerPackage"       value="{97313391-C7DF-45DB-817D-BE297DE8BD35}" />
+    <GuidSymbol name="guidLocalizerUIContext"     value="{DF9405E1-FFE4-4C7D-A491-6FECEA978857}" />
+    <GuidSymbol name="guidLocalizerPackageCmdSet" value="{79EF3C41-702D-4334-9A18-85CC8693758E}">
+      <IDSymbol name="PublicApplyCustomToolId"   value="0x0100" />
+      <IDSymbol name="InternalApplyCustomToolId" value="0x0101" />
+    </GuidSymbol>
+  </Symbols>
+</CommandTable>
