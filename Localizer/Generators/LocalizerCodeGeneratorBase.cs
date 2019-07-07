@@ -1,11 +1,14 @@
 ﻿using System;
 using System.CodeDom;
 using System.CodeDom.Compiler;
+using System.IO;
 using System.Text;
 
 using Microsoft.VisualStudio.Designer.Interfaces;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.TextTemplating.VSHost;
+
+using Localizer.Generator;
 
 namespace Localizer
 {
@@ -24,9 +27,15 @@ namespace Localizer
 
         protected override byte [ ] GenerateCode ( string inputFileName, string inputFileContent )
         {
-            var code = "// Generated code test";
- 
-            return code != null ? Encoding.UTF8.GetBytes ( code ) : null;
+            var code = LocalizerSupport.GenerateCode ( inputFileName, inputFileContent, AccessModifier );
+
+            using ( var stream = new MemoryStream ( ) )
+            {
+                using ( var writer = new StreamWriter ( stream, Encoding.UTF8 ) )
+                    CodeDomProvider.GenerateCodeFromCompileUnit ( code, writer, null );
+
+                return stream.ToArray ( );
+            }
         }
 
         private static readonly Guid CodeDomServiceGuid = new Guid ( "73E59688-C7C4-4A85-AF64-A538754784C5" );
