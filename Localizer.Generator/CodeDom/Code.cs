@@ -217,7 +217,7 @@ namespace Localizer.CodeDom
         }
 
         private static readonly char [ ] lineBreaks = new [ ] { '\n', '\r' };
-        private static readonly char [ ] wrappables = new [ ] { ' ', ',', '.', '?', '!', ':', ';', '-', '\n', '\r', '\t' };
+        private static readonly char [ ] wordBreaks = new [ ] { ' ', ',', '.', '?', '!', ':', ';', '-', '\n', '\r', '\t' };
 
         private static string Format ( string format, params object [ ] args )
         {
@@ -226,31 +226,36 @@ namespace Localizer.CodeDom
 
         private static IEnumerable < string > WordWrap ( this string text, int maxLineLength )
         {
-            var cursor   = 0;
-            var lastWrap = 0;
+            var lineBreak     = 0;
+            var lastLineBreak = 0;
 
             do
             {
-                var cut = lastWrap + maxLineLength;
+                var cut = lastLineBreak + maxLineLength;
 
-                if ( cut < text.Length )
+                lineBreak = text.IndexOfAny ( lineBreaks, lastLineBreak ) + 1;
+
+                if ( lineBreak == 0 || lineBreak > cut )
                 {
-                    cursor = text.IndexOfAny ( lineBreaks, lastWrap ) + 1;
-                    if ( cursor == 0 || cursor > cut )
+                    if ( cut < text.Length )
                     {
-                        cursor = text.LastIndexOfAny ( wrappables, cut ) + 1;
-                        if ( cursor <= lastWrap )
-                            cursor = Math.Min ( cut, text.Length );
+                        lineBreak = text.LastIndexOfAny ( wordBreaks, cut ) + 1;
+                        if ( lineBreak <= lastLineBreak )
+                        {
+                            lineBreak = text.IndexOfAny ( wordBreaks, cut ) + 1;
+                            if ( lineBreak == 0 )
+                                lineBreak = text.Length;
+                        }
                     }
+                    else
+                        lineBreak = text.Length;
                 }
-                else
-                    cursor = text.Length;
 
-                yield return text.Substring ( lastWrap, cursor - lastWrap ).Trim ( );
+                yield return text.Substring ( lastLineBreak, lineBreak - lastLineBreak ).Trim ( );
 
-                lastWrap = cursor;
+                lastLineBreak = lineBreak;
             }
-            while ( cursor < text.Length );
+            while ( lineBreak < text.Length );
         }
 
         public static CodeNamespace CreateNamespace ( string @namespace, params string [ ] imports )
