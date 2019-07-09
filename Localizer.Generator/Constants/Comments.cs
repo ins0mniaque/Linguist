@@ -13,8 +13,9 @@
         public const string CultureInfoPropertySummary      = "Overrides the current thread's CurrentUICulture property for all resource lookups using this strongly typed resource class.";
         public const string ResourceNamesClassSummary       = "Provides property name to resource name translation.";
         public const string ResourceNamesFieldSummaryFormat = "Translates to resource name '{0}'.";
-        public const int    PreviewMaximumLength            = 512;
-        public const string TruncatedPreview                = "{0} [rest of string was truncated]\";";
+        public const int    ResourcePreviewMaximumLength    = 512;
+        public const string TruncatedResourcePreview        = "{0} [rest of string was truncated]\";";
+        public const string ResourceCommentFormat           = "\n\n{0}";
         public const string StringPropertySummary           = "Looks up a localized string similar to '{0}'.";
         public const string NonStringPropertySummary        = "Looks up a resource '{0}'.";
         public const string FormatMethodSummary             = "Formats a localized string similar to '{0}'.";

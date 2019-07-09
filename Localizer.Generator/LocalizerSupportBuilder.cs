@@ -369,8 +369,8 @@ namespace Localizer.Generator
 
         protected string GeneratePreview ( string resourceValue )
         {
-            if ( resourceValue.Length > PreviewMaximumLength )
-                resourceValue = Format ( TruncatedPreview, resourceValue.Substring ( 0, PreviewMaximumLength ) );
+            if ( resourceValue.Length > ResourcePreviewMaximumLength )
+                resourceValue = Format ( TruncatedResourcePreview, resourceValue.Substring ( 0, ResourcePreviewMaximumLength ) );
 
             return SecurityElement.Escape ( resourceValue );
         }
@@ -378,7 +378,7 @@ namespace Localizer.Generator
         protected string FormatResourceComment ( string comment )
         {
             if ( ! IsNullOrWhiteSpace ( comment ) )
-                return "\n\n" + comment.Trim ( );
+                return Format ( ResourceCommentFormat, comment.Trim ( ) );
 
             return null;
         }
