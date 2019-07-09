@@ -33,16 +33,22 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="LocalizerSupport.cs" />
+    <Compile Include="CodeDom\Code.cs" />
+    <Compile Include="CodeDom\Validator.cs" />
+    <Compile Include="LocalizerSupportBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Parsers\ResXParser.cs" />
+    <Compile Include="Parsers\FormatParser.cs" />
+    <Compile Include="Constants\MemberNames.cs" />
+    <Compile Include="Constants\Comments.cs" />
+    <Compile Include="Constants\ErrorMessages.cs" />
+    <Compile Include="StringResource.cs" />
+    <Compile Include="Resource.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
