@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Localizer.Linguistics")]
+[assembly: AssemblyTitle ( "Localizer" )]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Localizer.Linguistics")]
+[assembly: AssemblyProduct ( "Localizer" )]
 [assembly: AssemblyCopyright ( "" )]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
