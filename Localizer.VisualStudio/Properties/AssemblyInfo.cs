@@ -6,10 +6,10 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle ( "Localizer" )]
-[assembly: AssemblyDescription ( "" )]
+[assembly: AssemblyDescription ( "Localizer Visual Studio Extension" )]
 [assembly: AssemblyConfiguration ( "" )]
 [assembly: AssemblyCompany ( "" )]
-[assembly: AssemblyProduct ( "Localizer" )]
+[assembly: AssemblyProduct ( "Localizer Visual Studio Extension" )]
 [assembly: AssemblyCopyright ( "" )]
 [assembly: AssemblyTrademark ( "" )]
 [assembly: AssemblyCulture ( "" )]

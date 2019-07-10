@@ -2,7 +2,7 @@
 using System.CodeDom;
 using System.Runtime.InteropServices;
 
-namespace Localizer
+namespace Localizer.VisualStudio
 {
     [ Guid ( "86CFFC91-69EF-44B7-83EE-937ED31C9054" ) ]
     public sealed class LocalizerCodeGenerator : BaseLocalizerCodeGenerator

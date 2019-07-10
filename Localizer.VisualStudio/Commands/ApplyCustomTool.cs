@@ -5,7 +5,7 @@ using EnvDTE;
 
 using Microsoft.VisualStudio.Shell;
 
-namespace Localizer
+namespace Localizer.VisualStudio
 {
     using Task = System.Threading.Tasks.Task;
 

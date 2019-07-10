@@ -13,7 +13,7 @@ using Microsoft.VisualStudio.TextTemplating.VSHost;
 
 using Localizer.Generator;
 
-namespace Localizer
+namespace Localizer.VisualStudio
 {
     public abstract class BaseLocalizerCodeGenerator : BaseCodeGeneratorWithSite
     {

@@ -5,7 +5,7 @@ using System.Threading;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.TextTemplating.VSHost;
 
-namespace Localizer
+namespace Localizer.VisualStudio
 {
     using Task = System.Threading.Tasks.Task;
 
