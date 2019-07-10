@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Localizer.VisualStudio", "L
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Localizer", "Localizer\Localizer.csproj", "{2A8E5425-5675-4A83-938A-77D60D6D8142}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Localizer.Tests", "Localizer.Tests\Localizer.Tests.csproj", "{FE3F9B85-733F-4E7C-A33D-CBD73EA79E3C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,6 +36,10 @@ Global
 		{2A8E5425-5675-4A83-938A-77D60D6D8142}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A8E5425-5675-4A83-938A-77D60D6D8142}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2A8E5425-5675-4A83-938A-77D60D6D8142}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE3F9B85-733F-4E7C-A33D-CBD73EA79E3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE3F9B85-733F-4E7C-A33D-CBD73EA79E3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE3F9B85-733F-4E7C-A33D-CBD73EA79E3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE3F9B85-733F-4E7C-A33D-CBD73EA79E3C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
