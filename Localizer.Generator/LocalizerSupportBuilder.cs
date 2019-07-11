@@ -126,7 +126,11 @@ namespace Localizer.Generator
 
                 try
                 {
-                    var numberOfArguments = FormatParser.Parse ( resource.Value );
+                    var formatString      = FormatString.Parse ( resource.Value );
+                    var numberOfArguments = formatString.ArgumentHoles
+                                                        .Select ( argumentHole => argumentHole.Index )
+                                                        .DefaultIfEmpty ( -1 )
+                                                        .Max ( ) + 1;
                     if ( numberOfArguments <= 0 )
                         continue;
 
