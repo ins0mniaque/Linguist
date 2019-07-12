@@ -88,67 +88,33 @@ namespace Localizer.Generator
 
         public virtual CodeCompileUnit Build ( )
         {
-            var validResources  = ValidateResourceNames    ( out var propertyNames );
+            var validResources  = ValidateResourceNames    ( );
             var codeCompileUnit = ConfigureCodeCompileUnit ( new CodeCompileUnit ( ) );
             var codeNamespace   = Code.CreateNamespace ( Namespace ?? ResourcesNamespace, "System" )
-                                      .AddTo ( codeCompileUnit.Namespaces );
+                                      .AddTo ( codeCompileUnit );
 
-            var support = GenerateClass ( ).AddTo ( codeNamespace.Types );
-            foreach ( var member in GenerateClassMembers ( ) )
-                support.Members.Add ( member );
+            var support = GenerateClass ( ).AddTo ( codeNamespace );
 
-            var stringResources = new SortedList < string, StringResource > ( validResources.Count, StringComparer.InvariantCultureIgnoreCase );
-            var resourceNames   = GenerateResourceNames ( out var getResourceName )?.AddTo ( support.Members );
+            GenerateClassMembers ( ).AddRangeTo ( support );
+
+            foreach ( var entry in validResources )
+                GenerateProperty ( entry.Key, entry.Name, entry.Resource ).AddTo ( support );
 
             foreach ( var entry in validResources )
             {
-                var propertyName     = entry.Key;
-                var resource         = entry.Value;
-                var resourceName     = GetResourceName  ( propertyNames, propertyName );
-                var resourceProperty = GenerateProperty ( propertyName, resourceName, resource, getResourceName );
+                if ( entry.NumberOfArguments <= 0 )
+                    continue;
 
-                if ( resourceProperty?.AddTo ( support.Members ) != null )
-                {
-                    if ( resourceNames != null )
-                        GenerateResourceNameField ( resourceNames, propertyName, resourceName );
-
-                    if ( resource is StringResource stringResource )
-                        stringResources.Add ( propertyName, stringResource );
-                }
+                var resource   = entry.Resource as StringResource;
+                var methodName = entry.Key + FormatMethodSuffix;
+                var isUnique   = ! support.Members.Contains ( methodName );
+                if ( isUnique && CodeDomProvider.IsValidIdentifier ( methodName ) )
+                    GenerateFormatMethod ( methodName, entry.Key, resource, entry.NumberOfArguments ).AddTo ( support );
                 else
-                    resource.ErrorText = Format ( CannotCreateResourceProperty, resourceName );
+                    resource.ErrorText = Format ( CannotCreateFormatMethod, methodName, entry.Name );
             }
 
-            foreach ( var entry in stringResources )
-            {
-                var propertyName = entry.Key;
-                var resource     = entry.Value;
-
-                try
-                {
-                    var formatString      = FormatString.Parse ( resource.Value );
-                    var numberOfArguments = formatString.ArgumentHoles
-                                                        .Select ( argumentHole => argumentHole.Index )
-                                                        .DefaultIfEmpty ( -1 )
-                                                        .Max ( ) + 1;
-                    if ( numberOfArguments <= 0 )
-                        continue;
-
-                    var methodName       = propertyName + FormatMethodSuffix;
-                    var uniqueMethodName = ! support.Members.Contains ( methodName );
-                    if ( uniqueMethodName && CodeDomProvider.IsValidIdentifier ( methodName ) )
-                    {
-                        support.Members.Add ( GenerateFormatMethod ( methodName, propertyName, resource, numberOfArguments ) );
-                        continue;
-                    }
-
-                    resource.ErrorText = Format ( CannotCreateFormatMethod, methodName, GetResourceName ( propertyNames, propertyName ) );
-                }
-                catch ( FormatException exception )
-                {
-                    resource.ErrorText = Format ( ErrorInStringResourceFormat, exception.Message, GetResourceName ( propertyNames, propertyName ) );
-                }
-            }
+            GenerateKeys ( validResources )?.AddRangeTo ( support );
 
             CodeGenerator.ValidateIdentifiers ( codeCompileUnit );
 
@@ -167,13 +133,15 @@ namespace Localizer.Generator
         protected virtual IEnumerable < string > GetClassMemberNames ( )
         {
             yield return ResourceManagerPropertyName;
-            yield return CultureInfoFieldName;
+            yield return ResourceManagerFieldName;
             yield return CultureInfoPropertyName;
+            yield return CultureInfoFieldName;
 
             if ( CodeDomProvider.Supports ( GeneratorSupport.NestedTypes ) )
             {
-                yield return ResourceNamesClassName;
-                yield return ResourceManagerFieldName;
+                yield return ResourceKeyEnumName;
+                yield return ResourceKeyTranslatorFieldName;
+                yield return ResourceKeyTranslatorName;
             }
         }
 
@@ -181,21 +149,18 @@ namespace Localizer.Generator
         {
             var generator = typeof ( LocalizerSupportBuilder );
             var version   = generator.Assembly.GetName ( ).Version;
-            var type      = new CodeTypeDeclaration ( ClassName )
-            {
-                TypeAttributes = TypeAttributes,
-                Attributes     = AccessModifiers,
-                IsPartial      = CodeDomProvider.Supports ( GeneratorSupport.PartialTypes )
-            };
-
-            type.AddSummary ( ClassSummary );
+            var type      = Code.CreateClass ( ClassName,
+                                               AccessModifiers,
+                                               CodeDomProvider.Supports ( GeneratorSupport.PartialTypes ) )
+                                .AddSummary ( ClassSummary );
 
             if ( CustomToolType != null ) type.AddRemarks ( ClassRemarksFormat,         generator.Name, CustomToolType.Name );
             else                          type.AddRemarks ( ClassRemarksToollessFormat, generator.Name );
 
             return type.Attributed ( Code.Attribute < GeneratedCodeAttribute       > ( generator.FullName, version.ToString ( ) ),
                                      Code.Attribute < DebuggerNonUserCodeAttribute > ( ),
-                                     Code.Attribute < ObfuscationAttribute         > ( ( "Exclude", true ), ( "ApplyToMembers", true ) ),
+                                     Code.Attribute < ObfuscationAttribute         > ( ( nameof ( ObfuscationAttribute.Exclude        ), true ),
+                                                                                       ( nameof ( ObfuscationAttribute.ApplyToMembers ), true ) ),
                                      Code.Attribute < SuppressMessageAttribute     > ( "Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces" ) );
         }
 
@@ -206,7 +171,7 @@ namespace Localizer.Generator
 
             yield return GenerateConstructor ( );
 
-            var lazy = GenerateLazyResourceManager ( out var lazyValue );
+            var lazy = GenerateResourceManagerSingleton ( out var lazyValue );
             foreach ( var member in lazy )
                 yield return member;
 
@@ -241,7 +206,7 @@ namespace Localizer.Generator
                        .AddSummary ( CultureInfoPropertySummary );
         }
 
-        protected virtual CodeTypeMember [ ] GenerateLazyResourceManager ( out CodeExpression lazyValue )
+        protected virtual IEnumerable < CodeTypeMember > GenerateResourceManagerSingleton ( out CodeExpression singleton )
         {
             var cctor = (CodeTypeMember) new CodeTypeConstructor ( ).AddComment ( SingletonBeforeFieldInitComment );
             var init  = Code.TypeRef   ( ResourceManagerType )
@@ -252,24 +217,23 @@ namespace Localizer.Generator
 
             if ( CodeDomProvider.Supports ( GeneratorSupport.NestedTypes ) )
             {
-                var lazyResourceManager = new CodeTypeDeclaration ( ResourceManagerFieldName ) { TypeAttributes = TypeAttributes.NestedPrivate,
-                                                                                                 Attributes     = MemberAttributes.Static };
+                var lazyResourceManager = Code.CreateNestedClass ( ResourceManagerFieldName, MemberAttributes.Private | MemberAttributes.Static );
 
-                cctor.AddTo ( lazyResourceManager.Members );
+                cctor.AddTo ( lazyResourceManager );
 
                 Code.CreateField ( ResourceManagerType,
-                                   LazyResourceManagerFieldName,
+                                   SingletonFieldName,
                                    MemberAttributes.Assembly | MemberAttributes.Static )
                     .Initialize  ( init )
-                    .AddTo       ( lazyResourceManager.Members );
+                    .AddTo       ( lazyResourceManager );
 
-                lazyValue = Code.Type  ( ResourceManagerFieldName, default )
-                                .Field ( LazyResourceManagerFieldName );
+                singleton = Code.Type  ( ResourceManagerFieldName, default )
+                                .Field ( SingletonFieldName );
 
                 return new [ ] { lazyResourceManager };
             }
 
-            lazyValue = Code.Static ( ).Field ( ResourceManagerFieldName );
+            singleton = Code.Static ( ).Field ( ResourceManagerFieldName );
 
             return new CodeTypeMember [ ] { cctor,
                                             Code.CreateField ( ResourceManagerType,
@@ -278,51 +242,24 @@ namespace Localizer.Generator
                                                 .Initialize  ( init ) };
         }
 
-        protected virtual CodeMemberProperty GenerateResourceManagerProperty ( CodeExpression lazyValue )
+        protected virtual CodeMemberProperty GenerateResourceManagerProperty ( CodeExpression singleton )
         {
             return Code.CreateProperty ( ResourceManagerType, ResourceManagerPropertyName, AccessModifiers, false )
-                       .Get            ( get => get.Return ( lazyValue ) )
+                       .Get            ( get => get.Return ( singleton ) )
                        .AddSummary     ( ResourceManagerPropertySummary );
         }
 
-        protected delegate CodeExpression GenerateResourceNameExpression ( string resourceName, string propertyName );
-
-        protected virtual CodeTypeDeclaration GenerateResourceNames ( out GenerateResourceNameExpression getResourceName )
+        protected virtual CodeMemberProperty GenerateProperty ( string propertyName, string resourceName, Resource resource )
         {
-            if ( ! CodeDomProvider.Supports ( GeneratorSupport.NestedTypes ) )
-            {
-                getResourceName = (resourceName, _) => new CodePrimitiveExpression ( resourceName );
-                return null;
-            }
+            var type = resource.Type;
+            if ( IsNullOrEmpty ( type ) )
+                type = typeof ( object ).FullName;
 
-            var resourceNames = new CodeTypeDeclaration ( ResourceNamesClassName ) { TypeAttributes = TypeAttributes,
-                                                                                     Attributes     = AccessModifiers };
-
-            var resourceNamesType = Code.Type ( ResourceNamesClassName, default );
-
-            getResourceName = (_, propertyName) => resourceNamesType.Field ( propertyName );
-
-            return resourceNames.AddSummary ( ResourceNamesClassSummary );
-        }
-
-        protected virtual void GenerateResourceNameField ( CodeTypeDeclaration resourceNames, string propertyName, string resourceName )
-        {
-            Code.CreateField < string > ( propertyName, MemberAttributes.Const | AccessModifiers & ~MemberAttributes.Static )
-                .Initialize ( Code.Constant ( resourceName ) )
-                .AddSummary ( ResourceNamesFieldSummaryFormat, resourceName )
-                .AddTo      ( resourceNames.Members );
-        }
-
-        protected virtual CodeMemberProperty GenerateProperty ( string propertyName, string resourceName, Resource resource, GenerateResourceNameExpression getResourceName )
-        {
-            if ( IsNullOrEmpty ( resource.Type ) )
-                return null;
-
-            var resourceType    = Code.TypeRef ( resource.Type, default );
+            var resourceType    = Code.TypeRef ( type, default );
             var resourceManager = Code.Static ( ).Property ( ResourceManagerPropertyName );
             var culture         = Code.Access ( AccessModifiers ).Field ( CultureInfoFieldName );
             var getResource     = (CodeExpression) resourceManager.Method ( resource.Method )
-                                                                  .Invoke ( getResourceName ( resourceName, propertyName ),
+                                                                  .Invoke ( Code.Constant ( resourceName ),
                                                                             culture );
 
             if ( resource.CastToType )
@@ -339,6 +276,9 @@ namespace Localizer.Generator
 
         protected virtual CodeMemberMethod GenerateFormatMethod ( string methodName, string propertyName, StringResource resource, int numberOfArguments )
         {
+            if ( resource == null )
+                throw new ArgumentNullException ( nameof ( resource ) );
+
             if ( numberOfArguments <= 0 )
                 throw new ArgumentOutOfRangeException ( nameof ( numberOfArguments ), numberOfArguments, "Number of argument must be greater than zero" );
 
@@ -357,10 +297,9 @@ namespace Localizer.Generator
 
             for ( var index = 0; index < numberOfArguments; index++ )
             {
-                var parameterName = "arg" + index.ToString ( CultureInfo.InvariantCulture );
+                var parameterName = Format ( CultureInfo.InvariantCulture, FormatMethodParameterName, index );
 
-                objectType.Parameter ( parameterName )
-                          .AddTo     ( formatMethod.Parameters );
+                formatMethod.Parameters.Add ( objectType.Parameter ( parameterName ) );
 
                 parameters [ 2 + index ] = Code.Variable ( parameterName );
 
@@ -394,96 +333,153 @@ namespace Localizer.Generator
             return null;
         }
 
-        private static string GetResourceName ( IDictionary < string, string > propertyNames, string propertyName )
+        protected virtual IEnumerable < CodeTypeMember > GenerateKeys ( IList < Entry > entries )
         {
-            if ( ! propertyNames.TryGetValue ( propertyName, out var resourceName ) )
-                resourceName = propertyName;
+            if ( ! CodeDomProvider.Supports ( GeneratorSupport.NestedTypes ) )
+                return null;
 
-            return resourceName;
+            var keyEnum           = Code.CreateNestedEnum ( ResourceKeyEnumName, AccessModifiers & ~MemberAttributes.Static )
+                                        .AddSummary       ( ResourceKeyEnumNameSummary );
+            var keyEnumTypeRef    = Code.TypeRef ( ResourceKeyEnumName, default );
+            var keyTranslator     = Code.CreateNestedClass ( ResourceKeyTranslatorFieldName, MemberAttributes.Private | MemberAttributes.Static );
+            var dictionaryTypeRef = Code.TypeRef ( "System.Collections.Generic.Dictionary",
+                                                   CodeTypeReferenceOptions.GlobalReference,
+                                                   keyEnumTypeRef, Code.TypeRef < string > ( ) );
+
+            var cctor       = new CodeTypeConstructor ( ).AddTo ( keyTranslator );
+            var translation = cctor.Statements;
+            var singleton   = Code.Static ( ).Field ( ResourceKeyTranslatorName );
+            var addKey      = singleton.Method ( nameof ( Dictionary < int, string >.Add ) );
+            var index       = 0;
+
+            translation.Add ( singleton.Assign ( dictionaryTypeRef.Construct ( ) ) );
+
+            foreach ( var entry in entries )
+            {
+                Code.CreateField ( keyEnumTypeRef, entry.Key, MemberAttributes.Const | AccessModifiers & ~MemberAttributes.Static )
+                    .Initialize  ( Code.Constant ( index++ ) )
+                    .AddSummary  ( ResourceKeyFieldSummaryFormat, entry.Name )
+                    .AddTo       ( keyEnum );
+
+                translation.Add ( addKey.Invoke ( keyEnumTypeRef.ToType ( ).Field ( entry.Key ),
+                                                  Code.Constant ( entry.Name ) ) );
+            }
+
+            Code.CreateField ( dictionaryTypeRef,
+                               ResourceKeyTranslatorName,
+                               MemberAttributes.Assembly | MemberAttributes.Static )
+                .AddTo       ( keyTranslator );
+
+            var translate = Code.CreateMethod ( typeof ( string ),
+                                                ResourceKeyTranslatorName,
+                                                AccessModifiers | MemberAttributes.Static );
+
+            translate.Parameters.Add    ( keyEnumTypeRef.Parameter ( ResourceKeyParameterName ) );
+            translate.Statements.Return ( Code.Type    ( ResourceKeyTranslatorFieldName, default )
+                                              .Field   ( ResourceKeyTranslatorName )
+                                              .Indexer ( Code.Variable ( ResourceKeyParameterName ) ) );
+
+            return new CodeTypeMember [ ] { keyEnum, keyTranslator, translate };
         }
 
-        protected virtual SortedList < string, Resource > ValidateResourceNames ( out Dictionary < string, string > propertyNames )
+        protected virtual IList < Entry > ValidateResourceNames ( )
         {
             var classProperties = new HashSet < string > ( GetClassMemberNames ( ) );
-            var validResources  = new SortedList < string, Resource > ( Resources.Count, StringComparer.InvariantCultureIgnoreCase );
-                propertyNames   = new Dictionary < string, string >   ( 0,               StringComparer.InvariantCultureIgnoreCase );
+            var entries         = new SortedList < string, Entry > ( Resources.Count, StringComparer.InvariantCultureIgnoreCase );
 
             foreach ( var entry in Resources )
             {
-                var resourceName = entry.Key;
-                var resource     = entry.Value;
+                var name     = entry.Key;
+                var key      = name;
+                var resource = entry.Value;
 
-                if ( classProperties.Contains ( resourceName ) )
+                if ( classProperties.Contains ( name ) )
                 {
-                    resource.ErrorText = Format ( PropertyAlreadyExists, resourceName );
+                    resource.ErrorText = Format ( PropertyAlreadyExists, name );
                     continue;
                 }
 
                 if ( typeof ( void ).FullName == resource.Type )
                 {
-                    resource.ErrorText = Format ( InvalidPropertyType, resource.Type, resourceName );
+                    resource.ErrorText = Format ( InvalidPropertyType, resource.Type, name );
                     continue;
                 }
 
-                var isWinFormsLocalizableResource = resourceName.Length > 0 && resourceName [ 0 ] == '$' ||
-                                                    resourceName.Length > 1 && resourceName [ 0 ] == '>' &&
-                                                                               resourceName [ 1 ] == '>';
+                var isWinFormsLocalizableResource = name.Length > 0 && name [ 0 ] == '$' ||
+                                                    name.Length > 1 && name [ 0 ] == '>' &&
+                                                                       name [ 1 ] == '>';
                 if ( isWinFormsLocalizableResource )
                 {
                     resource.IsWarning = true;
-                    resource.ErrorText = Format ( SkippingWinFormsResource, resourceName );
+                    resource.ErrorText = Format ( SkippingWinFormsResource, name );
                     continue;
                 }
 
-                if ( ! CodeDomProvider.IsValidIdentifier ( resourceName ) )
+                if ( ! CodeDomProvider.IsValidIdentifier ( key ) )
                 {
-                    var propertyName = CodeDomProvider.ValidateIdentifier ( resourceName );
-                    if ( propertyName == null )
+                    key = CodeDomProvider.ValidateIdentifier ( key );
+
+                    if ( key == null )
                     {
-                        resource.ErrorText = Format ( CannotCreateResourceProperty, resourceName );
+                        resource.ErrorText = Format ( CannotCreateResourceProperty, name );
                         continue;
                     }
-
-                    if ( propertyNames.TryGetValue ( propertyName, out var duplicateResourceName ) )
-                    {
-                        var duplicateResource = Resources [ duplicateResourceName ];
-                        if ( IsNullOrEmpty ( duplicateResource.ErrorText ) )
-                            duplicateResource.ErrorText = Format ( CannotCreateResourceProperty, duplicateResourceName );
-
-                        if ( validResources.ContainsKey ( propertyName ) )
-                            validResources.Remove ( propertyName );
-
-                        resource.ErrorText = Format ( CannotCreateResourceProperty, resourceName );
-
-                        continue;
-                    }
-
-                    propertyNames [ propertyName ] = resourceName;
-                    resourceName = propertyName;
                 }
 
-                if ( validResources.ContainsKey ( resourceName ) )
+                if ( entries.TryGetValue ( key, out var duplicate ) )
                 {
-                    if ( propertyNames.TryGetValue ( resourceName, out var duplicateResourceName ) )
-                    {
-                        var duplicateResource = Resources [ duplicateResourceName ];
-                        if ( IsNullOrEmpty ( duplicateResource.ErrorText ) )
-                            duplicateResource.ErrorText = Format ( CannotCreateResourceProperty, duplicateResourceName );
+                    if ( IsNullOrEmpty ( duplicate.Resource.ErrorText ) )
+                        duplicate.Resource.ErrorText = Format ( CannotCreateResourceProperty, duplicate.Name );
 
-                        propertyNames.Remove ( resourceName );
-                    }
+                    entries.Remove ( key );
 
-                    resource.ErrorText = Format ( CannotCreateResourceProperty, entry.Key );
-
-                    validResources.Remove ( resourceName );
+                    resource.ErrorText = Format ( CannotCreateResourceProperty, name );
 
                     continue;
                 }
 
-                validResources.Add ( resourceName, resource );
+                entries.Add ( key, new Entry ( name, key, resource ) );
             }
 
-            return validResources;
+            return entries.Values.ToList ( );
+        }
+
+        protected class Entry
+        {
+            public Entry ( string name, string key, Resource resource )
+            {
+                Name              = name;
+                Key               = key;
+                Resource          = resource;
+                NumberOfArguments = GetNumberOfArguments ( name, resource );
+            }
+
+            public string   Name              { get; }
+            public string   Key               { get; }
+            public Resource Resource          { get; }
+            public int      NumberOfArguments { get; }
+
+            private static int GetNumberOfArguments ( string resourceName, Resource resource )
+            {
+                if ( ! ( resource is StringResource stringResource ) )
+                    return 0;
+
+                try
+                {
+                    var formatString      = FormatString.Parse ( stringResource.Value );
+                    var numberOfArguments = formatString.ArgumentHoles
+                                                        .Select ( argumentHole => argumentHole.Index )
+                                                        .DefaultIfEmpty ( -1 )
+                                                        .Max ( ) + 1;
+                    return numberOfArguments;
+                }
+                catch ( FormatException exception )
+                {
+                    resource.ErrorText = Format ( ErrorInStringResourceFormat, exception.Message, resourceName );
+                }
+
+                return 0;
+            }
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.CodeDom;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Reflection;
 
 namespace Localizer.CodeDom
 {
@@ -30,6 +31,11 @@ namespace Localizer.CodeDom
             return new CodeTypeReferenceExpression ( TypeRef ( type ) );
         }
 
+        public static CodeTypeReferenceExpression ToType ( this CodeTypeReference type )
+        {
+            return new CodeTypeReferenceExpression ( type );
+        }
+
         public static CodeTypeReference TypeRef < T > ( )
         {
             return TypeRef ( typeof ( T ) );
@@ -44,14 +50,14 @@ namespace Localizer.CodeDom
             return typeReference;
         }
 
-        public static CodeTypeReference TypeRef ( string type, CodeTypeReferenceOptions options = CodeTypeReferenceOptions.GlobalReference )
+        public static CodeTypeReference TypeRef ( string type, CodeTypeReferenceOptions options = CodeTypeReferenceOptions.GlobalReference, params CodeTypeReference [ ] typeArguments )
         {
-            return new CodeTypeReference ( type, options );
+            return new CodeTypeReference ( type, typeArguments ) { Options = options };
         }
 
-        public static CodeTypeReferenceExpression Type ( string type, CodeTypeReferenceOptions options = CodeTypeReferenceOptions.GlobalReference )
+        public static CodeTypeReferenceExpression Type ( string type, CodeTypeReferenceOptions options = CodeTypeReferenceOptions.GlobalReference, params CodeTypeReference [ ] typeArguments )
         {
-            return new CodeTypeReferenceExpression ( TypeRef ( type, options ) );
+            return new CodeTypeReferenceExpression ( TypeRef ( type, options, typeArguments ) );
         }
 
         public static CodeExpression Access ( MemberAttributes accessModifiers )
@@ -84,14 +90,39 @@ namespace Localizer.CodeDom
             return new CodeMethodReferenceExpression ( expression, name );
         }
 
+        public static CodeIndexerExpression Indexer ( this CodeExpression expression, params CodeExpression [ ] parameters )
+        {
+            return new CodeIndexerExpression ( expression, parameters );
+        }
+
+        public static CodeArrayIndexerExpression ArrayIndex ( this CodeExpression expression, params CodeExpression [ ] indices )
+        {
+            return new CodeArrayIndexerExpression ( expression, indices );
+        }
+
         public static CodeAssignStatement Assign ( this CodeExpression left, CodeExpression right )
         {
             return new CodeAssignStatement ( left, right );
         }
 
+        public static CodeMethodReturnStatement Return ( CodeExpression expression )
+        {
+            return new CodeMethodReturnStatement ( expression );
+        }
+
         public static void Return ( this CodeStatementCollection statements, CodeExpression expression )
         {
-            statements.Add ( new CodeMethodReturnStatement ( expression ) );
+            statements.Add ( Return ( expression ) );
+        }
+
+        public static CodeThrowExceptionStatement Throw < T > ( params CodeExpression [ ] parameters ) where T : Exception
+        {
+            return new CodeThrowExceptionStatement ( TypeRef < T > ( ).Construct ( parameters ) );
+        }
+
+        public static void Throw < T > ( this CodeStatementCollection statements, params CodeExpression [ ] parameters ) where T : Exception
+        {
+            statements.Add ( Throw < T > ( parameters ) );
         }
 
         public static CodeExpression Cast ( this CodeExpression expression, CodeTypeReference type )
@@ -267,6 +298,56 @@ namespace Localizer.CodeDom
             return codeNamespace;
         }
 
+        public static CodeTypeDeclaration CreateClass ( string name, MemberAttributes accessModifiers, bool isPartial = false )
+        {
+            return CreateType ( name, accessModifiers, false, type => { type.IsPartial = isPartial; } );
+        }
+
+        public static CodeTypeDeclaration CreateNestedClass ( string name, MemberAttributes accessModifiers, bool isPartial = false )
+        {
+            return CreateType ( name, accessModifiers, true, type => { type.IsPartial = isPartial; } );
+        }
+
+        public static CodeTypeDeclaration CreateStruct ( string name, MemberAttributes accessModifiers, bool isPartial = false )
+        {
+            return CreateType ( name, accessModifiers, false, type => { type.IsPartial = isPartial; type.IsStruct = true; } );
+        }
+
+        public static CodeTypeDeclaration CreateNestedStruct ( string name, MemberAttributes accessModifiers, bool isPartial = false )
+        {
+            return CreateType ( name, accessModifiers, true, type => { type.IsPartial = isPartial; type.IsStruct = true; } );
+        }
+
+        public static CodeTypeDeclaration CreateInterface ( string name, MemberAttributes accessModifiers, bool isPartial = false )
+        {
+            return CreateType ( name, accessModifiers, false, type => { type.IsPartial = isPartial; type.IsInterface = true; } );
+        }
+
+        public static CodeTypeDeclaration CreateNestedInterface ( string name, MemberAttributes accessModifiers, bool isPartial = false )
+        {
+            return CreateType ( name, accessModifiers, true, type => { type.IsPartial = isPartial; type.IsInterface = true; } );
+        }
+
+        public static CodeTypeDeclaration CreateEnum ( string name, MemberAttributes accessModifiers, bool isPartial = false )
+        {
+            return CreateType ( name, accessModifiers, false, type => { type.IsPartial = isPartial; type.IsEnum = true; } );
+        }
+
+        public static CodeTypeDeclaration CreateNestedEnum ( string name, MemberAttributes accessModifiers, bool isPartial = false )
+        {
+            return CreateType ( name, accessModifiers, true, type => { type.IsPartial = isPartial; type.IsEnum = true; } );
+        }
+
+        private static CodeTypeDeclaration CreateType ( string name, MemberAttributes accessModifiers, bool nested, Action < CodeTypeDeclaration > configure = null )
+        {
+            var type = new CodeTypeDeclaration ( name ) { Attributes     = accessModifiers,
+                                                          TypeAttributes = ConvertToTypeAttributes ( accessModifiers, nested ) };
+
+            configure?.Invoke ( type );
+
+            return type;
+        }
+
         public static CodeMemberField CreateField < T > ( string name, MemberAttributes accessModifiers )
         {
             return CreateField ( typeof ( T ), name, accessModifiers );
@@ -275,6 +356,11 @@ namespace Localizer.CodeDom
         public static CodeMemberField CreateField ( Type type, string name, MemberAttributes accessModifiers )
         {
             return new CodeMemberField ( TypeRef ( type ), name ) { Attributes = accessModifiers };
+        }
+
+        public static CodeMemberField CreateField ( CodeTypeReference type, string name, MemberAttributes accessModifiers )
+        {
+            return new CodeMemberField ( type, name ) { Attributes = accessModifiers };
         }
 
         public static CodeMemberProperty CreateProperty < T > ( string name, MemberAttributes accessModifiers, bool hasSet = true )
@@ -343,6 +429,30 @@ namespace Localizer.CodeDom
             return new CodeMethodInvokeExpression ( method, parameters );
         }
 
+        public static CodeConditionStatement If ( CodeExpression expression )
+        {
+            return new CodeConditionStatement ( expression );
+        }
+
+        public static CodeConditionStatement Then ( this CodeConditionStatement condition, params CodeStatement [ ] codeStatements )
+        {
+            condition.TrueStatements.AddRange ( codeStatements );
+
+            return condition;
+        }
+
+        public static CodeConditionStatement Else ( this CodeConditionStatement condition, params CodeStatement [ ] codeStatements )
+        {
+            condition.FalseStatements.AddRange ( codeStatements );
+
+            return condition;
+        }
+
+        public static CodeBinaryOperatorExpression ValueEquals ( this CodeExpression left, CodeExpression right )
+        {
+            return new CodeBinaryOperatorExpression ( left, CodeBinaryOperatorType.ValueEquality, right );
+        }
+
         public static bool Contains ( this CodeTypeMemberCollection members, string name )
         {
             foreach ( CodeTypeMember member in members )
@@ -352,32 +462,49 @@ namespace Localizer.CodeDom
             return false;
         }
 
-        public static T AddTo < T > ( this T @namespace, CodeNamespaceCollection namespaces ) where T : CodeNamespace
+        public static CodeNamespace AddTo ( this CodeNamespace @namespace, CodeCompileUnit codeCompileUnit )
         {
-            namespaces.Add ( @namespace );
+            codeCompileUnit.Namespaces.Add ( @namespace );
 
             return @namespace;
         }
 
-        public static T AddTo < T > ( this T type, CodeTypeDeclarationCollection types ) where T : CodeTypeDeclaration
+        public static CodeTypeDeclaration AddTo ( this CodeTypeDeclaration type, CodeNamespace @namespace )
         {
-            types.Add ( type );
+            @namespace.Types.Add ( type );
 
             return type;
         }
 
-        public static T AddTo < T > ( this T member, CodeTypeMemberCollection members ) where T : CodeTypeMember
+        public static T AddTo < T > ( this T member, CodeTypeDeclaration type ) where T : CodeTypeMember
         {
-            members.Add ( member );
+            type.Members.Add ( member );
 
             return member;
         }
 
-        public static T AddTo < T > ( this T parameter, CodeParameterDeclarationExpressionCollection parameters ) where T : CodeParameterDeclarationExpression
+        public static T AddTo < T > ( this T @namespace, CodeCompileUnit codeCompileUnit ) where T : IEnumerable < CodeNamespace >
         {
-            parameters.Add ( parameter );
+            foreach ( var item in @namespace )
+                codeCompileUnit.Namespaces.Add ( item );
 
-            return parameter;
+            return @namespace;
+        }
+
+        public static T AddTo < T > ( this T type, CodeNamespace @namespace ) where T : IEnumerable < CodeTypeDeclaration >
+        {
+            foreach ( var item in type )
+                @namespace.Types.Add ( item );
+
+            return type;
+        }
+
+        public static T AddRangeTo < T > ( this T member, CodeTypeDeclaration type ) where T : IEnumerable < CodeTypeMember >
+        {
+            foreach ( var item in member )
+                type.Members.Add ( item );
+
+            return member;
         }
 
         public static IEnumerable < CodeTypeDeclaration > WithNestedTypes ( this CodeTypeDeclaration type )
@@ -396,6 +523,116 @@ namespace Localizer.CodeDom
                     if( child is CodeTypeDeclaration nestedType )
                         stack.Push ( nestedType );
             }
+        }
+
+        private static ParameterAttributes ConvertToParameterAttributes ( FieldDirection direction )
+        {
+            var paramAttributes = ParameterAttributes.None;
+
+            // Only few param attributes are supported
+            switch ( direction )
+            {
+                case FieldDirection.In:
+                    paramAttributes = ParameterAttributes.In;
+                    break;
+                case FieldDirection.Out:
+                    paramAttributes = ParameterAttributes.Out;
+                    break;
+                default:
+                    paramAttributes = default ( ParameterAttributes );
+                    break;
+            }
+
+            return paramAttributes;
+        }
+
+        private static MethodAttributes ConvertToMethodAttributes ( MemberAttributes memberAttributes )
+        {
+            var methodAttributes = MethodAttributes.ReuseSlot;
+
+            // convert access attributes
+            if ( ( memberAttributes & MemberAttributes.AccessMask ) == MemberAttributes.Assembly )
+                methodAttributes |= MethodAttributes.Assembly;
+            else if ( ( memberAttributes & MemberAttributes.AccessMask ) == MemberAttributes.Family )
+                methodAttributes |= MethodAttributes.Family;
+            else if ( ( memberAttributes & MemberAttributes.AccessMask ) == MemberAttributes.FamilyAndAssembly )
+                methodAttributes |= MethodAttributes.FamANDAssem;
+            else if ( ( memberAttributes & MemberAttributes.AccessMask ) == MemberAttributes.FamilyOrAssembly )
+                methodAttributes |= MethodAttributes.FamORAssem;
+            else if ( ( memberAttributes & MemberAttributes.AccessMask ) == MemberAttributes.Private )
+                methodAttributes |= MethodAttributes.Private;
+            else if ( ( memberAttributes & MemberAttributes.AccessMask ) == MemberAttributes.Public )
+                methodAttributes |= MethodAttributes.Public;
+
+            // covert scope attributes
+            if ( ( memberAttributes & MemberAttributes.ScopeMask ) == MemberAttributes.Abstract )
+                methodAttributes |= MethodAttributes.Abstract;
+            else if ( ( memberAttributes & MemberAttributes.ScopeMask ) == MemberAttributes.Final )
+                methodAttributes |= MethodAttributes.Final;
+            else if ( ( memberAttributes & MemberAttributes.ScopeMask ) == MemberAttributes.Static )
+                methodAttributes |= MethodAttributes.Static;
+            else if ( ( memberAttributes & MemberAttributes.ScopeMask ) == MemberAttributes.Override )
+                methodAttributes |= MethodAttributes.ReuseSlot;
+
+            // convert vtable slot
+            if ( ( memberAttributes & MemberAttributes.VTableMask ) == MemberAttributes.New )
+                methodAttributes |= MethodAttributes.NewSlot;
+            if ( ( memberAttributes & MemberAttributes.VTableMask ) == MemberAttributes.Overloaded )
+                methodAttributes |= MethodAttributes.HideBySig;
+
+            return methodAttributes;
+        }
+
+        private static FieldAttributes ConvertToFieldAttributes ( MemberAttributes memberAttributes )
+        {
+            var fieldAttributes = default(FieldAttributes);
+
+            if ( ( memberAttributes & MemberAttributes.AccessMask ) == MemberAttributes.Assembly )
+                fieldAttributes |= FieldAttributes.Assembly;
+            else if ( ( memberAttributes & MemberAttributes.AccessMask ) == MemberAttributes.Family )
+                fieldAttributes |= FieldAttributes.Family;
+            else if ( ( memberAttributes & MemberAttributes.AccessMask ) == MemberAttributes.FamilyAndAssembly )
+                fieldAttributes |= FieldAttributes.FamANDAssem;
+            else if ( ( memberAttributes & MemberAttributes.AccessMask ) == MemberAttributes.FamilyOrAssembly )
+                fieldAttributes |= FieldAttributes.FamORAssem;
+            else if ( ( memberAttributes & MemberAttributes.AccessMask ) == MemberAttributes.Private )
+                fieldAttributes |= FieldAttributes.Private;
+            else if ( ( memberAttributes & MemberAttributes.AccessMask ) == MemberAttributes.Public )
+                fieldAttributes |= FieldAttributes.Public;
+
+            if ( ( memberAttributes & MemberAttributes.ScopeMask ) == MemberAttributes.Const )
+                fieldAttributes |= ( FieldAttributes.Static | FieldAttributes.Literal );
+            else if ( ( memberAttributes & MemberAttributes.ScopeMask ) == MemberAttributes.Static )
+                fieldAttributes |= FieldAttributes.Static;
+
+            return fieldAttributes;
+        }
+
+        private static TypeAttributes ConvertToTypeAttributes ( MemberAttributes memberAttributes, bool nested = false )
+        {
+            var typeAttributes = default(TypeAttributes);
+
+            // convert access attributes
+            if ( ( memberAttributes & MemberAttributes.AccessMask ) == MemberAttributes.Assembly )
+                typeAttributes |= ( nested ? TypeAttributes.NestedAssembly : TypeAttributes.NotPublic );
+            else if ( ( memberAttributes & MemberAttributes.AccessMask ) == MemberAttributes.Family )
+                typeAttributes |= ( nested ? TypeAttributes.NestedFamily : TypeAttributes.NotPublic );
+            else if ( ( memberAttributes & MemberAttributes.AccessMask ) == MemberAttributes.FamilyAndAssembly )
+                typeAttributes |= ( nested ? TypeAttributes.NestedFamANDAssem : TypeAttributes.NotPublic );
+            else if ( ( memberAttributes & MemberAttributes.AccessMask ) == MemberAttributes.FamilyOrAssembly )
+                typeAttributes |= ( nested ? TypeAttributes.NestedFamORAssem : TypeAttributes.NotPublic );
+            else if ( ( memberAttributes & MemberAttributes.AccessMask ) == MemberAttributes.Private )
+                typeAttributes |= ( nested ? TypeAttributes.NestedPrivate : TypeAttributes.NotPublic );
+            else if ( ( memberAttributes & MemberAttributes.AccessMask ) == MemberAttributes.Public )
+                typeAttributes |= ( nested ? TypeAttributes.NestedPublic : TypeAttributes.Public );
+
+            // covert scope attributes
+            if ( ( memberAttributes & MemberAttributes.ScopeMask ) == MemberAttributes.Abstract )
+                typeAttributes |= TypeAttributes.Abstract;
+            else if ( ( memberAttributes & MemberAttributes.ScopeMask ) == MemberAttributes.Final )
+                typeAttributes |= TypeAttributes.Sealed;
+
+            return typeAttributes;
         }
     }
 }

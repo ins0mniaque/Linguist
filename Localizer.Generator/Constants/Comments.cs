@@ -11,8 +11,6 @@
         public const string ConstructorSummaryFormat        = "Initializes a {0} resource support class.";
         public const string ResourceManagerPropertySummary  = "Returns the cached ResourceManager instance used by this class.";
         public const string CultureInfoPropertySummary      = "Overrides the current thread's CurrentUICulture property for all resource lookups using this strongly typed resource class.";
-        public const string ResourceNamesClassSummary       = "Provides property name to resource name translation.";
-        public const string ResourceNamesFieldSummaryFormat = "Translates to resource name '{0}'.";
         public const int    ResourcePreviewMaximumLength    = 512;
         public const string TruncatedResourcePreview        = "{0} [rest of string was truncated]\";";
         public const string ResourceCommentFormat           = "\n\n{0}";
@@ -22,5 +20,7 @@
         public const string FormatMultiParameterComment     = "The {0} object to format.";
         public const string FormatParameterComment          = "The object to format.";
         public const string FormatReturnComment             = "A copy of format in which the format items have been replaced by the string representation of the corresponding object arguments.";
+        public const string ResourceKeyEnumNameSummary      = "Provides keys for named resources.";
+        public const string ResourceKeyFieldSummaryFormat   = "Key for resource named '{0}'.";
     }
 }
