@@ -37,7 +37,11 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CodeDom\ExtendedCodeGenerator.cs" />
     <Compile Include="CodeDom\Code.cs" />
+    <Compile Include="CodeDom\Extensions\CSharpStaticClassSupport.cs" />
+    <Compile Include="CodeDom\Language.cs" />
+    <Compile Include="CodeDom\Extensions\TextWriterProxy.cs" />
     <Compile Include="CodeDom\Validator.cs" />
     <Compile Include="LocalizerSupportBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

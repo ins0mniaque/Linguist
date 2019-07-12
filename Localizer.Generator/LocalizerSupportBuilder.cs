@@ -252,11 +252,14 @@ namespace Localizer.Generator
 
             if ( CodeDomProvider.Supports ( GeneratorSupport.NestedTypes ) )
             {
-                var lazyResourceManager = new CodeTypeDeclaration ( ResourceManagerFieldName ) { TypeAttributes = TypeAttributes.NestedPrivate };
+                var lazyResourceManager = new CodeTypeDeclaration ( ResourceManagerFieldName ) { TypeAttributes = TypeAttributes.NestedPrivate,
+                                                                                                 Attributes     = MemberAttributes.Static };
 
                 cctor.AddTo ( lazyResourceManager.Members );
 
-                Code.CreateField ( ResourceManagerType, LazyResourceManagerFieldName, MemberAttributes.Assembly | MemberAttributes.Static )
+                Code.CreateField ( ResourceManagerType,
+                                   LazyResourceManagerFieldName,
+                                   MemberAttributes.Assembly | MemberAttributes.Static )
                     .Initialize  ( init )
                     .AddTo       ( lazyResourceManager.Members );
 
@@ -269,7 +272,9 @@ namespace Localizer.Generator
             lazyValue = Code.Static ( ).Field ( ResourceManagerFieldName );
 
             return new CodeTypeMember [ ] { cctor,
-                                            Code.CreateField ( ResourceManagerType, ResourceManagerFieldName, MemberAttributes.Private | MemberAttributes.Static )
+                                            Code.CreateField ( ResourceManagerType,
+                                                               ResourceManagerFieldName,
+                                                               MemberAttributes.Private | MemberAttributes.Static )
                                                 .Initialize  ( init ) };
         }
 
@@ -290,7 +295,9 @@ namespace Localizer.Generator
                 return null;
             }
 
-            var resourceNames     = new CodeTypeDeclaration ( ResourceNamesClassName ) { TypeAttributes = TypeAttributes };
+            var resourceNames = new CodeTypeDeclaration ( ResourceNamesClassName ) { TypeAttributes = TypeAttributes,
+                                                                                     Attributes     = AccessModifiers };
+
             var resourceNamesType = Code.Type ( ResourceNamesClassName, default );
 
             getResourceName = (_, propertyName) => resourceNamesType.Field ( propertyName );

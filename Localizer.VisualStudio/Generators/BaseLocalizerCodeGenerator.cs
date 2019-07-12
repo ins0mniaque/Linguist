@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TextTemplating.VSHost;
 
+using Localizer.CodeDom;
 using Localizer.Generator;
 
 namespace Localizer.VisualStudio
@@ -38,10 +39,12 @@ namespace Localizer.VisualStudio
                 foreach ( var error in errors )
                     GeneratorErrorCallback ( error.IsWarning, default, error.ErrorText, error.Line, error.Column );
 
+            var generator = new ExtendedCodeGenerator ( CodeDomProvider );
+
             using ( var stream = new MemoryStream ( ) )
             {
                 using ( var writer = new StreamWriter ( stream, Encoding.UTF8 ) )
-                    CodeDomProvider.GenerateCodeFromCompileUnit ( code, writer, null );
+                    generator.GenerateCodeFromCompileUnit ( code, writer, null );
 
                 return stream.ToArray ( );
             }
