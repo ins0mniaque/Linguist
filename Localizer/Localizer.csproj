@@ -40,6 +40,7 @@
     <Compile Include="PluralForm.cs" />
     <Compile Include="PluralRules.cs" />
     <Compile Include="Plural\CardinalRuleSet.cs" />
+    <Compile Include="Plural\PluralRuleSet.cs" />
     <Compile Include="Plural\TestRules.cs" />
     <Compile Include="Plural\OrdinalRuleSet.cs" />
     <Compile Include="Plural\PluralFormSelector.cs" />
