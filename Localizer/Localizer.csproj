@@ -37,11 +37,21 @@
   <ItemGroup>
     <Compile Include="FormatString.cs" />
     <Compile Include="FormattedNumber.cs" />
+    <Compile Include="PluralForm.cs" />
+    <Compile Include="PluralRules.cs" />
+    <Compile Include="Plural\CardinalRuleSet.cs" />
+    <Compile Include="Plural\TestRules.cs" />
+    <Compile Include="Plural\OrdinalRuleSet.cs" />
+    <Compile Include="Plural\PluralFormSelector.cs" />
+    <Compile Include="Plural\PluralOperand.cs" />
+    <Compile Include="Plural\PluralRangeFormSelector.cs" />
+    <Compile Include="Plural\BaseRules.cs" />
+    <Compile Include="Plural\PluralRule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Data\ldmlSupplemental.dtd" />
-    <None Include="Data\plurals.xml" />
+    <None Include="CLDR\ldmlSupplemental.dtd" />
+    <None Include="CLDR\plurals.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
