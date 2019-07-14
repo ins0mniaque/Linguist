@@ -47,7 +47,7 @@
     <Compile Include="Plural\OrdinalRuleSet.cs" />
     <Compile Include="Plural\PluralFormSelector.cs" />
     <Compile Include="Plural\PluralOperand.cs" />
-    <Compile Include="Plural\PluralRangeFormSelector.cs" />
+    <Compile Include="Plural\PluralFormRangeSelector.cs" />
     <Compile Include="Plural\BaseRules.cs" />
     <Compile Include="Plural\PluralRule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

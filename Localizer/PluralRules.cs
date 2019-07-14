@@ -10,7 +10,7 @@ namespace Localizer
         public static PluralRules Invariant { get; } = new PluralRules ( CultureInfo.InvariantCulture,
                                                                          CardinalRuleSet.Default,
                                                                          OrdinalRuleSet.Default,
-                                                                         PluralRangeFormSelector.Default );
+                                                                         PluralFormRangeSelector.Default );
 
         /// <summary>Retrieves a cached, read-only instance of a plural rule set fir the current UI culture.</summary>
         /// <returns>A read-only <see cref="T:Localizer.PluralRules" /> object.</returns>
@@ -33,36 +33,36 @@ namespace Localizer
                 return new PluralRules ( culture,
                                          new CardinalRuleSet ( new EnglishOneRule ( ) ),
                                          OrdinalRuleSet.Default,
-                                         PluralRangeFormSelector.Default );
+                                         PluralFormRangeSelector.Default );
 
             if ( unicodeLanguage.StartsWith ( "fr" ) )
                 return new PluralRules ( culture,
                                          new CardinalRuleSet ( new FrenchOneRule ( ) ),
                                          OrdinalRuleSet.Default,
-                                         PluralRangeFormSelector.Default );
+                                         PluralFormRangeSelector.Default );
 
             return new PluralRules ( culture,
                                      CardinalRuleSet.Default,
                                      OrdinalRuleSet.Default,
-                                     PluralRangeFormSelector.Default );
+                                     PluralFormRangeSelector.Default );
         }
 
-        public static PluralRules CreateSpecificRules ( CultureInfo culture, PluralFormSelector cardinalFormSelector, PluralFormSelector ordinalFormSelector, PluralRangeFormSelector rangeFormSelector )
+        public static PluralRules CreateSpecificRules ( CultureInfo culture, PluralFormSelector cardinalFormSelector, PluralFormSelector ordinalFormSelector, PluralFormRangeSelector rangeFormSelector )
         {
             return new PluralRules ( culture, cardinalFormSelector, ordinalFormSelector, rangeFormSelector );
         }
 
-        private PluralRules ( CultureInfo culture, PluralFormSelector cardinalForm, PluralFormSelector ordinalForm, PluralRangeFormSelector rangeForm )
+        private PluralRules ( CultureInfo culture, PluralFormSelector cardinalForm, PluralFormSelector ordinalForm, PluralFormRangeSelector pluralFormRange )
         {
-            Culture      = culture      ?? throw new ArgumentNullException ( nameof ( culture      ) );
-            CardinalForm = cardinalForm ?? throw new ArgumentNullException ( nameof ( cardinalForm ) );
-            OrdinalForm  = ordinalForm  ?? throw new ArgumentNullException ( nameof ( ordinalForm  ) );
-            RangeForm    = rangeForm    ?? throw new ArgumentNullException ( nameof ( rangeForm    ) );
+            Culture         = culture         ?? throw new ArgumentNullException ( nameof ( culture         ) );
+            CardinalForm    = cardinalForm    ?? throw new ArgumentNullException ( nameof ( cardinalForm    ) );
+            OrdinalForm     = ordinalForm     ?? throw new ArgumentNullException ( nameof ( ordinalForm     ) );
+            PluralFormRange = pluralFormRange ?? throw new ArgumentNullException ( nameof ( pluralFormRange ) );
         }
 
-        public CultureInfo             Culture      { get; }
-        public PluralFormSelector      CardinalForm { get; }
-        public PluralFormSelector      OrdinalForm  { get; }
-        public PluralRangeFormSelector RangeForm    { get; }
+        public CultureInfo             Culture         { get; }
+        public PluralFormSelector      CardinalForm    { get; }
+        public PluralFormSelector      OrdinalForm     { get; }
+        public PluralFormRangeSelector PluralFormRange { get; }
     }
 }
