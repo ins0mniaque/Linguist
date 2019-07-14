@@ -1,8 +1,10 @@
-﻿namespace Localizer.Generator
+﻿using System.CodeDom;
+
+namespace Localizer.Generator
 {
     public class StringResource : Resource
     {
-        public StringResource ( string type, string value, string method, bool castToType, string comment = null ) : base ( type, method, castToType, comment )
+        public StringResource ( CodeTypeReference type, string value, ResourceGetter getter, string comment = null ) : base ( type, getter, comment )
         {
             Value = value;
         }

@@ -2,7 +2,6 @@
 using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -29,35 +28,33 @@ namespace Localizer.Generator
             var extension = Path.GetExtension     ( inputFileName )
                                 .ToLowerInvariant ( );
 
-            var resources           = (IDictionary < string, Resource >) null;
-            var resourceManagerType = (Type) null;
+            var resourceSet = (ResourceSet) null;
 
             switch ( extension )
             {
                 case ".resx" :
                 case ".resw" :
-                    resourceManagerType = ResXParser.ResourceManagerType;
-                    resources           = ResXParser.ExtractResources ( inputFileName, inputFileContent );
+                    resourceSet = ResXParser.ExtractResourceSet ( inputFileName, inputFileContent );
                     break;
                 default :
                     throw new ArgumentException ( Format ( UnknownResourceFileFormat, Path.GetFileName ( inputFileName ) ), nameof ( inputFileName ) );
             }
 
-            var builder = new LocalizerSupportBuilder ( codeDomProvider, baseName, resourceManagerType, resources, fileNamespace, resourcesNamespace, accessModifiers, customToolType );
+            var builder = new LocalizerSupportBuilder ( codeDomProvider, baseName, resourceSet, fileNamespace, resourcesNamespace, accessModifiers, customToolType );
             var code    = builder.Build ( );
 
-            errors = resources.Values.Where ( resource => ! IsNullOrEmpty ( resource.ErrorText ) ).ToArray ( );
+            errors = resourceSet.Resources.Values.Where ( resource => ! IsNullOrEmpty ( resource.ErrorText ) ).ToArray ( );
             if ( errors.Length == 0 )
                 errors = null;
 
             return code;
         }
 
-        protected LocalizerSupportBuilder ( CodeDomProvider codeDomProvider, string baseName, Type resourceManagerType, IDictionary < string, Resource > resources, string @namespace, string resourcesNamespace, MemberAttributes accessModifiers, Type customToolType )
+        protected LocalizerSupportBuilder ( CodeDomProvider codeDomProvider, string baseName, ResourceSet resourceSet, string @namespace, string resourcesNamespace, MemberAttributes accessModifiers, Type customToolType )
         {
-            CodeDomProvider     = codeDomProvider     ?? throw new ArgumentNullException ( nameof ( codeDomProvider     ) );
-            BaseName            = baseName            ?? throw new ArgumentNullException ( nameof ( baseName            ) );
-            ResourceManagerType = resourceManagerType ?? throw new ArgumentNullException ( nameof ( resourceManagerType ) );
+            CodeDomProvider     = codeDomProvider ?? throw new ArgumentNullException ( nameof ( codeDomProvider ) );
+            BaseName            = baseName        ?? throw new ArgumentNullException ( nameof ( baseName        ) );
+            ResourceSet         = resourceSet     ?? throw new ArgumentNullException ( nameof ( resourceSet     ) );
             Namespace           = IsNullOrEmpty ( @namespace         ) ? null : codeDomProvider.ValidateIdentifier ( @namespace, true );
             ResourcesNamespace  = IsNullOrEmpty ( resourcesNamespace ) ? null : resourcesNamespace;
             ResourcesBaseName   = ResourcesNamespace != null ? ResourcesNamespace + '.' + baseName :
@@ -68,13 +65,11 @@ namespace Localizer.Generator
             TypeAttributes      = AccessModifiers.HasFlag ( MemberAttributes.Public ) ? TypeAttributes.Public :
                                                                                         TypeAttributes.AutoLayout;
             CustomToolType      = customToolType;
-
-            Resources = new ReadOnlyDictionary < string, Resource > ( resources ?? throw new ArgumentNullException ( nameof ( resources ) ) );
         }
 
         protected CodeDomProvider   CodeDomProvider     { get; }
         protected string            BaseName            { get; }
-        protected Type              ResourceManagerType { get; }
+        protected ResourceSet       ResourceSet         { get; }
         protected string            Namespace           { get; }
         protected string            ResourcesNamespace  { get; }
         protected string            ResourcesBaseName   { get; }
@@ -83,8 +78,6 @@ namespace Localizer.Generator
         protected MemberAttributes  AccessModifiers     { get; }
         protected TypeAttributes    TypeAttributes      { get; }
         protected Type              CustomToolType      { get; }
-
-        protected IReadOnlyDictionary < string, Resource > Resources { get; }
 
         public virtual CodeCompileUnit Build ( )
         {
@@ -209,11 +202,7 @@ namespace Localizer.Generator
         protected virtual IEnumerable < CodeTypeMember > GenerateResourceManagerSingleton ( out CodeExpression singleton )
         {
             var cctor = (CodeTypeMember) new CodeTypeConstructor ( ).AddComment ( SingletonBeforeFieldInitComment );
-            var init  = Code.TypeRef   ( ResourceManagerType )
-                            .Construct ( Code.Constant ( ResourcesBaseName ),
-                                         Code.TypeRef  ( ClassName, default )
-                                             .TypeOf   ( )
-                                             .Property ( nameof ( Type.Assembly ) ) );
+            var init  = ResourceSet.ResourceManagerInitializer ( ResourcesBaseName, ClassName );
 
             if ( CodeDomProvider.Supports ( GeneratorSupport.NestedTypes ) )
             {
@@ -221,7 +210,7 @@ namespace Localizer.Generator
 
                 cctor.AddTo ( lazyResourceManager );
 
-                Code.CreateField ( ResourceManagerType,
+                Code.CreateField ( ResourceSet.ResourceManagerType,
                                    SingletonFieldName,
                                    MemberAttributes.Assembly | MemberAttributes.Static )
                     .Initialize  ( init )
@@ -236,7 +225,7 @@ namespace Localizer.Generator
             singleton = Code.Static ( ).Field ( ResourceManagerFieldName );
 
             return new CodeTypeMember [ ] { cctor,
-                                            Code.CreateField ( ResourceManagerType,
+                                            Code.CreateField ( ResourceSet.ResourceManagerType,
                                                                ResourceManagerFieldName,
                                                                MemberAttributes.Private | MemberAttributes.Static )
                                                 .Initialize  ( init ) };
@@ -244,33 +233,22 @@ namespace Localizer.Generator
 
         protected virtual CodeMemberProperty GenerateResourceManagerProperty ( CodeExpression singleton )
         {
-            return Code.CreateProperty ( ResourceManagerType, ResourceManagerPropertyName, AccessModifiers, false )
+            return Code.CreateProperty ( ResourceSet.ResourceManagerType, ResourceManagerPropertyName, AccessModifiers, false )
                        .Get            ( get => get.Return ( singleton ) )
                        .AddSummary     ( ResourceManagerPropertySummary );
         }
 
         protected virtual CodeMemberProperty GenerateProperty ( string propertyName, string resourceName, Resource resource )
         {
-            var type = resource.Type;
-            if ( IsNullOrEmpty ( type ) )
-                type = typeof ( object ).FullName;
-
-            var resourceType    = Code.TypeRef ( type, default );
+            var resourceType    = resource.Type ?? Code.TypeRef < object > ( );
             var resourceManager = Code.Static ( ).Property ( ResourceManagerPropertyName );
             var culture         = Code.Access ( AccessModifiers ).Field ( CultureInfoFieldName );
-            var getResource     = (CodeExpression) resourceManager.Method ( resource.Method )
-                                                                  .Invoke ( Code.Constant ( resourceName ),
-                                                                            culture );
+            var summary         = resource is StringResource stringResource ?
+                                  Format ( StringPropertySummary,    GeneratePreview ( stringResource.Value ) ) :
+                                  Format ( NonStringPropertySummary, resourceName );
 
-            if ( resource.CastToType )
-                getResource = getResource.Cast ( resourceType );
-
-            var summary = resource is StringResource stringResource ?
-                          Format ( StringPropertySummary,    GeneratePreview ( stringResource.Value ) ) :
-                          Format ( NonStringPropertySummary, resourceName );
-
-            return Code.CreateProperty ( Code.TypeRef ( resource.Type, default ), propertyName, AccessModifiers, false )
-                       .Get            ( get => get.Return ( getResource ) )
+            return Code.CreateProperty ( resourceType, propertyName, AccessModifiers, false )
+                       .Get            ( get => get.Return ( resource.Getter ( resourceManager, resourceName, culture ) ) )
                        .AddSummary     ( summary + FormatResourceComment ( resource.Comment ) );
         }
 
@@ -385,9 +363,9 @@ namespace Localizer.Generator
         protected virtual IList < Entry > ValidateResourceNames ( )
         {
             var classProperties = new HashSet < string > ( GetClassMemberNames ( ) );
-            var entries         = new SortedList < string, Entry > ( Resources.Count, StringComparer.InvariantCultureIgnoreCase );
+            var entries         = new SortedList < string, Entry > ( ResourceSet.Resources.Count, StringComparer.InvariantCultureIgnoreCase );
 
-            foreach ( var entry in Resources )
+            foreach ( var entry in ResourceSet.Resources )
             {
                 var name     = entry.Key;
                 var key      = name;
@@ -399,7 +377,7 @@ namespace Localizer.Generator
                     continue;
                 }
 
-                if ( typeof ( void ).FullName == resource.Type )
+                if ( typeof ( void ).FullName == resource.Type?.BaseType )
                 {
                     resource.ErrorText = Format ( InvalidPropertyType, resource.Type, name );
                     continue;

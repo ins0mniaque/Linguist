@@ -1,20 +1,21 @@
-﻿using System.CodeDom.Compiler;
+﻿using System.CodeDom;
+using System.CodeDom.Compiler;
 
 namespace Localizer.Generator
 {
+    public delegate CodeExpression ResourceGetter ( CodeExpression resourceManager, string name, CodeExpression culture );
+
     public class Resource : CompilerError
     {
-        public Resource ( string type, string method, bool castToType, string comment = null )
+        public Resource ( CodeTypeReference type, ResourceGetter getter, string comment = null )
         {
-            Type       = type;
-            Method     = method;
-            CastToType = castToType;
-            Comment    = comment;
+            Type    = type;
+            Getter  = getter;
+            Comment = comment;
         }
 
-        public string Type       { get; }
-        public string Method     { get; }
-        public bool   CastToType { get; }
-        public string Comment    { get; }
+        public CodeTypeReference Type    { get; }
+        public ResourceGetter    Getter  { get; }
+        public string            Comment { get; }
     }
 }

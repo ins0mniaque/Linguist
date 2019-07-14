@@ -44,6 +44,7 @@
     <Compile Include="CodeDom\Extensions\TextWriterProxy.cs" />
     <Compile Include="CodeDom\Validator.cs" />
     <Compile Include="LocalizerSupportBuilder.cs" />
+    <Compile Include="Parsers\ResourceSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Parsers\ResXParser.cs" />
     <Compile Include="Constants\MemberNames.cs" />
