@@ -129,6 +129,12 @@ namespace Localizer.Generator
             yield return ResourceManagerFieldName;
             yield return CultureInfoPropertyName;
             yield return CultureInfoFieldName;
+            yield return NotifyCultureChangedMethodName;
+
+            if ( AccessModifiers.HasFlag ( MemberAttributes.Static ) )
+                yield return "Static" + nameof ( INotifyPropertyChanged.PropertyChanged );
+            else
+                yield return nameof ( INotifyPropertyChanged.PropertyChanged );
 
             if ( CodeDomProvider.Supports ( GeneratorSupport.NestedTypes ) )
             {
@@ -147,6 +153,9 @@ namespace Localizer.Generator
                                                CodeDomProvider.Supports ( GeneratorSupport.PartialTypes ) )
                                 .AddSummary ( ClassSummary );
 
+            if ( ! AccessModifiers.HasFlag ( MemberAttributes.Static ) )
+                type.BaseTypes.Add ( Code.TypeRef < INotifyPropertyChanged > ( ) );
+
             if ( CustomToolType != null ) type.AddRemarks ( ClassRemarksFormat,         generator.Name, CustomToolType.Name );
             else                          type.AddRemarks ( ClassRemarksToollessFormat, generator.Name );
 
@@ -164,13 +173,17 @@ namespace Localizer.Generator
 
             yield return GenerateConstructor ( );
 
+            var @event = GenerateCultureChangedEvent ( out var notifyCultureChanged );
+            foreach ( var member in @event )
+                yield return member;
+
             var lazy = GenerateResourceManagerSingleton ( out var lazyValue );
             foreach ( var member in lazy )
                 yield return member;
 
             yield return GenerateResourceManagerProperty ( lazyValue ).Attributed ( editorBrowsable );
 
-            yield return GenerateCultureProperty ( out var cultureField ).Attributed ( editorBrowsable );
+            yield return GenerateCultureProperty ( notifyCultureChanged, out var cultureField ).Attributed ( editorBrowsable );
             if ( cultureField != null )
                 yield return cultureField;
         }
@@ -187,7 +200,40 @@ namespace Localizer.Generator
                        .Attributed ( Code.Attribute < SuppressMessageAttribute > ( "Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode" ) );
         }
 
-        protected virtual CodeMemberProperty GenerateCultureProperty ( out CodeMemberField cultureField )
+        protected virtual IEnumerable < CodeTypeMember > GenerateCultureChangedEvent ( out CodeExpression notifyCultureChanged )
+        {
+            var propertyChangedEvent = new CodeMemberEvent ( )
+            {
+                Name       = nameof ( INotifyPropertyChanged.PropertyChanged ),
+                Type       = Code.TypeRef < PropertyChangedEventHandler > ( ),
+                Attributes = AccessModifiers
+            };
+
+            if ( AccessModifiers.HasFlag ( MemberAttributes.Static ) )
+                propertyChangedEvent.Name = "Static" + propertyChangedEvent.Name;
+            else
+                propertyChangedEvent.ImplementationTypes.Add ( Code.TypeRef < INotifyPropertyChanged > ( ) );
+
+            var propertyChanged = new CodeEventReferenceExpression ( Code.Access ( AccessModifiers ), propertyChangedEvent.Name );
+            var notify          = Code.CreateMethod ( typeof ( void ), NotifyCultureChangedMethodName, AccessModifiers );
+
+            notify.Statements.Add ( Code.Declare < PropertyChangedEventHandler > ( NotifyCultureChangedVariableName )
+                                        .Initialize ( propertyChanged ) );
+            notify.Statements.Add ( Code.If   ( Code.Variable ( NotifyCultureChangedVariableName ).ValueEquals ( Code.Null ) )
+                                        .Then ( Code.Return   ( ) ) );
+            notify.Statements.Add ( Code.Variable ( NotifyCultureChangedVariableName )
+                                        .InvokeDelegate ( Code.Access ( AccessModifiers ) ?? Code.Null,
+                                                          Code.TypeRef < PropertyChangedEventArgs > ( )
+                                                              .Construct ( Code.Null ) ) );
+
+            notifyCultureChanged = Code.Access ( AccessModifiers )
+                                       .Method ( NotifyCultureChangedMethodName )
+                                       .Invoke ( );
+
+            return new CodeTypeMember [ ] { propertyChangedEvent, notify };
+        }
+
+        protected virtual CodeMemberProperty GenerateCultureProperty ( CodeExpression notifyCultureChanged, out CodeMemberField cultureField )
         {
             cultureField = Code.CreateField < CultureInfo > ( CultureInfoFieldName, MemberAttributes.Private | AccessModifiers & MemberAttributes.Static );
 
@@ -195,7 +241,13 @@ namespace Localizer.Generator
 
             return Code.CreateProperty < CultureInfo > ( CultureInfoPropertyName, AccessModifiers )
                        .Get ( get          => get.Return ( field ) )
-                       .Set ( (set, value) => set.Add    ( field.Assign ( value ) ) )
+                       .Set ( (set, value) =>
+                              {
+                                  set.Add ( Code.If   ( field.ValueEquals ( value ) )
+                                                .Then ( Code.Return   ( ) ) );
+                                  set.Add ( field.Assign ( value ) );
+                                  set.Add ( notifyCultureChanged );
+                              } )
                        .AddSummary ( CultureInfoPropertySummary );
         }
 

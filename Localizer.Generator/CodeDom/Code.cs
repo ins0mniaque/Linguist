@@ -65,6 +65,16 @@ namespace Localizer.CodeDom
             return accessModifiers.HasFlag ( MemberAttributes.Static ) ? Static ( ) : This ( );
         }
 
+        public static CodeVariableDeclarationStatement Declare ( CodeTypeReference type, string name )
+        {
+            return new CodeVariableDeclarationStatement ( type, name );
+        }
+
+        public static CodeVariableDeclarationStatement Declare < T > ( string name )
+        {
+            return new CodeVariableDeclarationStatement ( TypeRef < T > ( ), name );
+        }
+
         public static CodeVariableReferenceExpression Variable ( string name )
         {
             return new CodeVariableReferenceExpression ( name );
@@ -103,6 +113,11 @@ namespace Localizer.CodeDom
         public static CodeAssignStatement Assign ( this CodeExpression left, CodeExpression right )
         {
             return new CodeAssignStatement ( left, right );
+        }
+
+        public static CodeMethodReturnStatement Return ( )
+        {
+            return new CodeMethodReturnStatement ( );
         }
 
         public static CodeMethodReturnStatement Return ( CodeExpression expression )
@@ -404,6 +419,15 @@ namespace Localizer.CodeDom
             return field;
         }
 
+        public static CodeVariableDeclarationStatement Initialize ( this CodeVariableDeclarationStatement variable, CodeExpression initialValue )
+        {
+            variable.InitExpression = initialValue;
+
+            return variable;
+        }
+
+        public static CodePrimitiveExpression Null => Constant ( null );
+
         public static CodePrimitiveExpression Constant ( object value )
         {
             return new CodePrimitiveExpression ( value );
@@ -427,6 +451,11 @@ namespace Localizer.CodeDom
         public static CodeMethodInvokeExpression Invoke ( this CodeMethodReferenceExpression method, params CodeExpression [ ] parameters )
         {
             return new CodeMethodInvokeExpression ( method, parameters );
+        }
+
+        public static CodeDelegateInvokeExpression InvokeDelegate ( this CodeExpression @delegate, params CodeExpression [ ] parameters )
+        {
+            return new CodeDelegateInvokeExpression ( @delegate, parameters );
         }
 
         public static CodeConditionStatement If ( CodeExpression expression )
