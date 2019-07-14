@@ -35,6 +35,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PluralizerTests.cs" />
     <Compile Include="PluralRulesTests.cs" />
     <Compile Include="Plural\PluralOperandTests.cs" />
     <Compile Include="FormattedNumberTests.cs" />

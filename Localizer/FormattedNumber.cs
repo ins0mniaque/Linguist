@@ -15,11 +15,11 @@ namespace Localizer
             throw new ArgumentOutOfRangeException ( nameof ( argumentIndex ), argumentIndex, "Argument index not found in format." );
         }
 
-        public static decimal? Parse ( IFormatProvider provider, FormatString.ArgumentHole argumentHole, object value )
+        public static decimal? Parse ( IFormatProvider provider, FormatString.ArgumentHole argumentHole, object argument )
         {
             argumentHole = new FormatString.ArgumentHole ( 0, argumentHole.Alignment, argumentHole.Format, 0, 0 );
 
-            var formatted = string.Format ( provider, argumentHole.ToFormatString ( ), value );
+            var formatted = string.Format ( provider, argumentHole.ToFormatString ( ), argument );
             var number    = ExtractFormattedNumber ( formatted, argumentHole.Format, out var isHexNumber );
 
             if ( isHexNumber )
