@@ -3,22 +3,43 @@ using System.Collections.Generic;
 
 namespace Localizer
 {
-    /// <summary>Represents a parsed format string.</summary>
+    /// <summary>Represents a parsed format string with parameters.</summary>
     public sealed class FormatString
     {
-        /// <summary>Initializes a new preparsed instance of the <see cref="T:Localizer.FormatString" /> class with the argument holes specified as a <see cref="T:Localizer.FormatString.ArgumentHole" /> array.</summary>
+        private Argument [ ] arguments;
+
+        /// <summary>
+        /// Initializes a new preparsed instance of the <see cref="T:Localizer.FormatString" /> class
+        /// with the argument holes specified as a <see cref="T:Localizer.FormatString.ArgumentHole" /> array.
+        /// </summary>
         /// <param name="format">The preparsed format string.</param>
-        /// <param name="address">The argument holes array value of the preparsed format string.</param>
+        /// <param name="argumentHoles">The argument holes array value of the preparsed format string.</param>
         /// <exception cref="T:System.ArgumentNullException"><paramref name="format" /> or <paramref name="argumentHoles" /> is <see langword="null" />.</exception>
-        public FormatString ( string format, ArgumentHole [ ] argumentHoles )
+        public FormatString ( string format, ArgumentHole [ ] argumentHoles ) : this ( format, argumentHoles, null ) { }
+
+        /// <summary>
+        /// Initializes a new preparsed parameterized instance of the <see cref="T:Localizer.FormatString" /> class
+        /// with the argument holes specified as a <see cref="T:Localizer.FormatString.ArgumentHole" /> array and
+        /// argument parameters as a <see cref="T:Localizer.FormatString.Argument" /> array.
+        /// </summary>
+        /// <param name="format">The preparsed format string.</param>
+        /// <param name="argumentHoles">The argument holes array value of the preparsed format string.</param>
+        /// <param name="argumentsParameters">The argument parameters array value of the preparsed format string, or null to use default values.</param>
+        /// <exception cref="T:System.ArgumentNullException"><paramref name="format" /> or <paramref name="argumentHoles" /> is <see langword="null" />.</exception>
+        public FormatString ( string format, ArgumentHole [ ] argumentHoles, Argument [ ] argumentsParameters )
         {
             Format        = format        ?? throw new ArgumentNullException ( nameof ( format        ) );
             ArgumentHoles = argumentHoles ?? throw new ArgumentNullException ( nameof ( argumentHoles ) );
+            arguments     = argumentsParameters;
         }
 
         /// <summary>Gets the format string.</summary>
         /// <returns>The format string.</returns>
         public string Format { get; }
+
+        /// <summary>Gets the arguments parameters for the current <see cref="T:Localizer.FormatString" /> object.</summary>
+        /// <returns>The arguments parameters.</returns>
+        public Argument [ ] Arguments => arguments ?? InitializeArguments ( );
 
         /// <summary>Gets the parsed argument holes for the current <see cref="T:Localizer.FormatString" /> object.</summary>
         /// <returns>The parsed argument holes.</returns>
@@ -27,6 +48,59 @@ namespace Localizer
         /// <summary>Returns the format string.</summary>
         /// <returns>The format string.</returns>
         public override string ToString ( ) => Format;
+
+        private Argument [ ] InitializeArguments ( )
+        {
+            var numberOfArguments = 0;
+            foreach ( var argumentHole in ArgumentHoles )
+                if ( argumentHole.Index >= numberOfArguments )
+                    numberOfArguments = argumentHole.Index + 1;
+
+            arguments = new Argument [ numberOfArguments ];
+
+            foreach ( var argumentHole in ArgumentHoles )
+            {
+                var index = argumentHole.Index;
+                if ( arguments [ index ] == null )
+                    arguments [ index ] = new Argument ( argumentHole, default, default );
+            }
+
+            return arguments;
+        }
+
+        /// <summary>Represents a parameterized format string argument.</summary>
+        public sealed class Argument
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="T:Localizer.FormatString.Argument" /> class
+            /// with the specified number form, argument hole used for number formatting and available plural forms.
+            /// </summary>
+            /// <param name="numberArgumentHole">The argument hole used for number formatting.</param>
+            /// <param name="numberForm">The number form.</param>
+            /// <param name="availablePluralForms">The available plural forms.</param>
+            public Argument ( ArgumentHole numberArgumentHole, NumberForm numberForm, PluralForm availablePluralForms )
+            {
+                NumberArgumentHole   = numberArgumentHole;
+                NumberForm           = numberForm;
+                AvailablePluralForms = availablePluralForms;
+            }
+
+            /// <summary>Gets or sets the argument hole used for number formatting for the current <see cref="T:Localizer.FormatString.Argument" /> object.</summary>
+            /// <returns>The argument hole used for number formatting.</returns>
+            public ArgumentHole NumberArgumentHole { get; set; }
+
+            /// <summary>Gets or sets the number form for the current <see cref="T:Localizer.FormatString.Argument" /> object.</summary>
+            /// <returns>The number form.</returns>
+            public NumberForm NumberForm { get; set; }
+
+            /// <summary>Gets or sets the available plural forms for the current <see cref="T:Localizer.FormatString.Argument" /> object.</summary>
+            /// <returns>The available plural forms.</returns>
+            public PluralForm AvailablePluralForms { get; set; }
+
+            /// <summary>Converts the value of the current <see cref="T:Localizer.FormatString.Argument" /> object to its equivalent string representation.</summary>
+            /// <returns>A string that represents the format string argument parameters.</returns>
+            public override string ToString ( ) => $"{ NumberArgumentHole?.ToFormatString ( ) }, { NumberForm }, { AvailablePluralForms }";
+        }
 
         /// <summary>Represents a parsed format string argument hole.</summary>
         public sealed class ArgumentHole

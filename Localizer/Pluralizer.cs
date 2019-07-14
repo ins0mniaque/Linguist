@@ -4,59 +4,30 @@ namespace Localizer
 {
     public static class Pluralizer
     {
-        public static PluralForm [ ] SelectPluralForms ( this PluralRules pluralRules, string format, PluralForm [ ] argumentsAvailablePluralForms, object [ ] arguments )
+        public static PluralForm [ ] SelectPluralForms ( this PluralRules pluralRules, FormatString formatString, object [ ] arguments )
         {
-            return pluralRules.SelectPluralForms ( null, FormatString.Parse ( format ), argumentsAvailablePluralForms, null, arguments );
+            return pluralRules.SelectPluralForms ( null, formatString, arguments );
         }
 
-        public static PluralForm [ ] SelectPluralForms ( this PluralRules pluralRules, string format, PluralForm [ ] argumentsAvailablePluralForms, NumberForm [ ] argumentsNumberForm, object [ ] arguments )
-        {
-            return pluralRules.SelectPluralForms ( null, FormatString.Parse ( format ), argumentsAvailablePluralForms, argumentsNumberForm, arguments );
-        }
-
-        public static PluralForm [ ] SelectPluralForms ( this PluralRules pluralRules, FormatString formatString, PluralForm [ ] argumentsAvailablePluralForms, object [ ] arguments )
-        {
-            return pluralRules.SelectPluralForms ( null, formatString, argumentsAvailablePluralForms, null, arguments );
-        }
-
-        public static PluralForm [ ] SelectPluralForms ( this PluralRules pluralRules, FormatString formatString, PluralForm [ ] argumentsAvailablePluralForms, NumberForm [ ] argumentsNumberForm, object [ ] arguments )
-        {
-            return pluralRules.SelectPluralForms ( null, formatString, argumentsAvailablePluralForms, argumentsNumberForm, arguments );
-        }
-
-        public static PluralForm [ ] SelectPluralForms ( this PluralRules pluralRules, IFormatProvider provider, string format, PluralForm [ ] argumentsAvailablePluralForms, object [ ] arguments )
-        {
-            return pluralRules.SelectPluralForms ( provider, FormatString.Parse ( format ), argumentsAvailablePluralForms, null, arguments );
-        }
-
-        public static PluralForm [ ] SelectPluralForms ( this PluralRules pluralRules, IFormatProvider provider, string format, PluralForm [ ] argumentsAvailablePluralForms, NumberForm [ ] argumentsNumberForm, object [ ] arguments )
-        {
-            return pluralRules.SelectPluralForms ( provider, FormatString.Parse ( format ), argumentsAvailablePluralForms, argumentsNumberForm, arguments );
-        }
-
-        public static PluralForm [ ] SelectPluralForms ( this PluralRules pluralRules, IFormatProvider provider, FormatString formatString, PluralForm [ ] argumentsAvailablePluralForms, object [ ] arguments )
-        {
-            return pluralRules.SelectPluralForms ( provider, formatString, argumentsAvailablePluralForms, null, arguments );
-        }
-
-        public static PluralForm [ ] SelectPluralForms ( this PluralRules pluralRules, IFormatProvider provider, FormatString formatString, PluralForm [ ] argumentsAvailablePluralForms, NumberForm [ ] argumentsNumberForm, object [ ] arguments )
+        public static PluralForm [ ] SelectPluralForms ( this PluralRules pluralRules, IFormatProvider provider, FormatString formatString, object [ ] arguments )
         {
             var selection = new PluralForm [ arguments.Length ];
 
-            foreach ( var argumentHole in formatString.ArgumentHoles )
+            for ( var index = 0; index < arguments.Length; index++ )
             {
-                var index  = argumentHole.Index;
-                var number = FormattedNumber.Parse ( provider ?? pluralRules.Culture, argumentHole, arguments [ index ] );
-                if ( number != null )
-                {
-                    var numberForm = pluralRules.CardinalForm;
-                    if ( argumentsNumberForm? [ index ] == NumberForm.Ordinal )
-                        numberForm = pluralRules.OrdinalForm;
+                var argument = formatString.Arguments [ index ];
+                if ( argument.NumberArgumentHole == null )
+                    continue;
 
-                    var available = argumentsAvailablePluralForms? [ index ] ?? numberForm.PluralForms;
+                var number = FormattedNumber.Parse ( provider ?? pluralRules.Culture, argument.NumberArgumentHole, arguments [ index ] );
+                if ( number == null )
+                    continue;
 
-                    selection [ index ] = numberForm.SelectPluralForm ( number.Value, available );
-                }
+                var numberForm = pluralRules.CardinalForm;
+                if ( argument.NumberForm == NumberForm.Ordinal )
+                    numberForm = pluralRules.OrdinalForm;
+
+                selection [ index ] = numberForm.SelectPluralForm ( number.Value, argument.AvailablePluralForms );
             }
 
             return selection;

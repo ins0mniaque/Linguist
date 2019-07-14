@@ -2,7 +2,7 @@
 {
     public enum NumberForm
     {
-        Ordinal,
-        Cardinal
+        Cardinal,
+        Ordinal
     }
 }
