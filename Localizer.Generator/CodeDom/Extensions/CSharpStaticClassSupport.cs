@@ -24,7 +24,7 @@ namespace Localizer.CodeDom.Extensions
                                                .OfType < CodeNamespace > ( )
                                                .SelectMany ( ns   => ns.Types.OfType < CodeTypeDeclaration > ( ) )
                                                .SelectMany ( type => type.WithNestedTypes ( ) )
-                                               .Select     ( type => GetStaticClassDefinitionPath ( codeDomProvider, type ) )
+                                               .SelectMany ( type => GetStaticDefinitionsPaths ( codeDomProvider, type ) )
                                                .Where      ( path => path != null )
                                                .ToArray    ( );
 
@@ -37,24 +37,25 @@ namespace Localizer.CodeDom.Extensions
         /// </summary>
         public static void AddCSharpStaticClassSupport ( this CodeDomProvider codeDomProvider, CodeTypeDeclaration codeType, ref TextWriter textWriter )
         {
-            var staticClasses = codeType.WithNestedTypes ( )
-                                        .Select  ( type => GetStaticClassDefinitionPath ( codeDomProvider, type ) )
-                                        .Where   ( path => path != null )
-                                        .ToArray ( );
+            var staticDefinitions = codeType.WithNestedTypes ( )
+                                            .SelectMany ( type => GetStaticDefinitionsPaths ( codeDomProvider, type ) )
+                                            .ToArray    ( );
 
-            if ( staticClasses.Length > 0 )
-                textWriter = new Proxy ( staticClasses, textWriter );
+            if ( staticDefinitions.Length > 0 )
+                textWriter = new Proxy ( staticDefinitions, textWriter );
         }
 
         private class Proxy : TextWriterProxy
         {
+            public const string Wildcard = "🃏";
+
             private readonly List < string > buffer = new List < string > ( );
             private readonly string [ ] [ ]  paths;
             private readonly int    [ ]      indices;
 
-            public Proxy ( string [ ] [ ] staticClasses, TextWriter textWriter ) : base ( textWriter )
+            public Proxy ( string [ ] [ ] staticDefinitions, TextWriter textWriter ) : base ( textWriter )
             {
-                paths   = staticClasses;
+                paths   = staticDefinitions;
                 indices = new int [ paths.Length ];
 
                 WriteBufferAndReset ( );
@@ -81,17 +82,19 @@ namespace Localizer.CodeDom.Extensions
             {
                 var buffered = false;
 
-                for ( var staticClass = 0; staticClass < paths.Length; staticClass++ )
+                for ( var definition = 0; definition < paths.Length; definition++ )
                 {
-                    var path  = paths   [ staticClass ];
-                    var index = indices [ staticClass ];
+                    var path  = paths   [ definition ];
+                    var index = indices [ definition ];
 
                     if ( index == int.MaxValue )
                         continue;
 
-                    if ( value == path [ index + 1 ] )
+                    var next = path [ index + 1 ];
+
+                    if ( next == Wildcard || next == value )
                     {
-                        indices [ staticClass ] = ++index;
+                        indices [ definition ] = ++index;
 
                         if ( index < path.Length - 1 )
                         {
@@ -99,7 +102,7 @@ namespace Localizer.CodeDom.Extensions
                             continue;
                         }
 
-                        indices [ staticClass ] = int.MaxValue;
+                        indices [ definition ] = int.MaxValue;
                         buffer.Insert ( 1, "static " );
 
                         buffered = false;
@@ -117,6 +120,24 @@ namespace Localizer.CodeDom.Extensions
 
                 writer.Write ( value );
             }
+        }
+
+        private static string [ ] [ ] GetStaticDefinitionsPaths ( CodeDomProvider codeDomProvider, CodeTypeDeclaration type )
+        {
+            var paths = new List < string [ ] > ( );
+
+            var staticClass = GetStaticClassDefinitionPath ( codeDomProvider, type );
+            if ( staticClass != null )
+                paths.Add ( staticClass );
+
+            foreach ( var @event in type.Members.OfType < CodeMemberEvent > ( ) )
+            {
+                var staticEvent = GetStaticEventDefinitionPath ( codeDomProvider, @event );
+                if ( staticEvent != null )
+                    paths.Add ( staticEvent );
+            }
+
+            return paths.ToArray ( );
         }
 
         private static string [ ] GetStaticClassDefinitionPath ( CodeDomProvider codeDomProvider, CodeTypeDeclaration type )
@@ -163,6 +184,46 @@ namespace Localizer.CodeDom.Extensions
             path.Add ( "class " );
 
             path.Add ( codeDomProvider.CreateEscapedIdentifier ( type.Name ) );
+
+            return path.ToArray ( );
+        }
+
+        private static string [ ] GetStaticEventDefinitionPath ( CodeDomProvider codeDomProvider, CodeMemberEvent @event )
+        {
+            var isStatic = @event.Attributes.HasFlag ( MemberAttributes.Static ) &&
+                           @event.PrivateImplementationType == null;
+
+            if ( ! isStatic )
+                return null;
+
+            var path = new List < string > ( );
+
+            switch ( @event.Attributes & MemberAttributes.AccessMask )
+            {
+                case MemberAttributes.Assembly :
+                    path.Add ( "internal " );
+                    break;
+                case MemberAttributes.FamilyAndAssembly :
+                    path.Add ( "internal " );
+                    break;
+                case MemberAttributes.Family :
+                    path.Add ( "protected " );
+                    break;
+                case MemberAttributes.FamilyOrAssembly :
+                    path.Add ( "protected internal " );
+                    break;
+                case MemberAttributes.Private :
+                    path.Add ( "private " );
+                    break;
+                case MemberAttributes.Public :
+                    path.Add ( "public " );
+                    break;
+            }
+
+            path.Add ( "event " );
+            path.Add ( codeDomProvider.GetTypeOutput ( @event.Type ) );
+            path.Add ( " " );
+            path.Add ( codeDomProvider.CreateEscapedIdentifier ( @event.Name ) );
 
             return path.ToArray ( );
         }
