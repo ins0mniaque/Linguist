@@ -78,7 +78,7 @@
     <VSCTCompile Include="LocalizerPackage.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
     </VSCTCompile>
-    <Content Include="..\LICENSE">
+    <Content Include="..\..\LICENSE">
       <Link>LICENSE</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
