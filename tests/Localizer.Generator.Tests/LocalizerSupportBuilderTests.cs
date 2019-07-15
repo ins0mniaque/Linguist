@@ -24,7 +24,7 @@ namespace Localizer.Generator.Tests
         public void GeneratesCSharpCodeThatCompilesWithoutErrors ( string file, string fileNamespace, string resourceNamespace, MemberAttributes accessModifiers, Type customToolType )
         {
             var provider    = new Microsoft.CSharp.CSharpCodeProvider ( );
-            var compiler    = new CSharpCodeProvider ( new XunitCompilerSettings ( ) );
+            var compiler    = new CSharpCodeProvider ( new XunitCompilerSettings ( Language.CSharp ) );
             var compilation = GenerateCodeThenCompile ( provider,
                                                         compiler,
                                                         file,
@@ -36,7 +36,7 @@ namespace Localizer.Generator.Tests
             Assert.Empty ( compilation.Errors );
         }
 
-        [ Theory ( Skip = "VBCodeProvider is not configured correctly for compilation" ) ]
+        [ Theory ]
         [ InlineData ( "Data/Resources.resx", "Namespace", "ResourceNamespace", Public   | Static, null ) ]
         [ InlineData ( "Data/Resources.resx", "Namespace", "ResourceNamespace", Assembly | Static, null ) ]
         [ InlineData ( "Data/Resources.resx", "Namespace", "ResourceNamespace", Public,            null ) ]
@@ -44,7 +44,7 @@ namespace Localizer.Generator.Tests
         public void GeneratesVBCodeThatCompilesWithoutErrors ( string file, string fileNamespace, string resourceNamespace, MemberAttributes accessModifiers, Type customToolType )
         {
             var provider    = new Microsoft.VisualBasic.VBCodeProvider ( );
-            var compiler    = new VBCodeProvider ( new XunitCompilerSettings ( ) );
+            var compiler    = new VBCodeProvider ( new XunitCompilerSettings ( Language.VisualBasic ) );
             var compilation = GenerateCodeThenCompile ( provider,
                                                         compiler,
                                                         file,

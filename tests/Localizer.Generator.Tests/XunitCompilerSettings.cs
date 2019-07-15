@@ -10,7 +10,7 @@ namespace Localizer.Generator.Tests
 {
     public sealed class XunitCompilerSettings : ICompilerSettings
     {
-        public XunitCompilerSettings ( Language language = Language.CSharp )
+        public XunitCompilerSettings ( Language language )
         {
             var localPath = new Uri ( Assembly.GetCallingAssembly ( ).CodeBase ).LocalPath;
             var compiler  = language == Language.CSharp      ? @"..\roslyn\csc.exe" :
