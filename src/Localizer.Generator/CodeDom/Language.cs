@@ -2,7 +2,7 @@
 
 namespace Localizer.CodeDom
 {
-    public enum Language { CSharp, Unknown }
+    public enum Language { CSharp, VisualBasic, Unknown }
 
     public static class LanguageExtensions
     {
@@ -14,6 +14,9 @@ namespace Localizer.CodeDom
                 case "cs":
                 case "csharp":
                     return Language.CSharp;
+                case "vb":
+                case "visualbasic":
+                    return Language.VisualBasic;
                 default:
                     return Language.Unknown;
             }
