@@ -58,7 +58,7 @@ namespace Localizer.Generator
                 }
             }
 
-            return new ResourceSet ( Code.TypeRef < ResourceManager > ( ), Initializer, resources );
+            return new ResourceSet ( Code.TypeRef < ResourceManager > ( ), Initializer, ResourceSetGetter, resources );
         }
 
         private static CodeExpression Initializer ( string resourcesBaseName, string className )
@@ -68,6 +68,12 @@ namespace Localizer.Generator
                                     Code.TypeRef  ( className, default )
                                         .TypeOf   ( )
                                         .Property ( nameof ( Type.Assembly ) ) );
+        }
+
+        private static CodeExpression ResourceSetGetter ( CodeExpression resourceManager, CodeExpression culture )
+        {
+            return resourceManager.Method ( nameof ( ResourceManager.GetResourceSet ) )
+                                  .Invoke ( culture, Code.Constant ( true ), Code.Constant ( true ) );
         }
 
         private static CodeExpression GetString ( CodeExpression resourceManager, string name, CodeExpression culture )
