@@ -206,7 +206,7 @@ namespace Localizer.Generator
             {
                 Name       = nameof ( INotifyPropertyChanged.PropertyChanged ),
                 Type       = Code.TypeRef < PropertyChangedEventHandler > ( ),
-                Attributes = AccessModifiers
+                Attributes = MemberAttributes.Public | AccessModifiers & MemberAttributes.Static
             };
 
             if ( AccessModifiers.HasFlag ( MemberAttributes.Static ) )
