@@ -243,7 +243,7 @@ namespace Localizer.Generator
                        .Get ( get          => get.Return ( field ) )
                        .Set ( (set, value) =>
                               {
-                                  set.Add ( Code.If   ( field.ValueEquals ( value ) )
+                                  set.Add ( Code.If   ( field.ObjectEquals ( value ) )
                                                 .Then ( Code.Return   ( ) ) );
                                   set.Add ( field.Assign ( value ) );
                                   set.Add ( notifyCultureChanged );

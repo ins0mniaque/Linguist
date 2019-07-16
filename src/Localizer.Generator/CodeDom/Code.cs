@@ -482,6 +482,21 @@ namespace Localizer.CodeDom
             return new CodeBinaryOperatorExpression ( left, CodeBinaryOperatorType.ValueEquality, right );
         }
 
+        public static CodeBinaryOperatorExpression ReferenceEquals ( this CodeExpression left, CodeExpression right )
+        {
+            return new CodeBinaryOperatorExpression ( left, CodeBinaryOperatorType.IdentityEquality, right );
+        }
+
+        public static CodeBinaryOperatorExpression ReferenceNotEquals ( this CodeExpression left, CodeExpression right )
+        {
+            return new CodeBinaryOperatorExpression ( left, CodeBinaryOperatorType.IdentityInequality, right );
+        }
+
+        public static CodeMethodInvokeExpression ObjectEquals ( this CodeExpression left, CodeExpression right )
+        {
+            return Type < object > ( ).Method ( nameof ( object.Equals ) ).Invoke ( left, right );
+        }
+
         public static bool Contains ( this CodeTypeMemberCollection members, string name )
         {
             foreach ( CodeTypeMember member in members )
