@@ -25,13 +25,15 @@ namespace Localizer.Generator.Tests
         {
             var provider    = new Microsoft.CSharp.CSharpCodeProvider ( );
             var compiler    = new CSharpCodeProvider ( new XunitCompilerSettings ( Language.CSharp ) );
-            var compilation = GenerateCodeThenCompile ( provider,
-                                                        compiler,
-                                                        file,
-                                                        fileNamespace,
-                                                        resourceNamespace,
-                                                        accessModifiers,
-                                                        customToolType );
+            var parameters  = GenerateCompilerParameters ( "System.dll", "System.Drawing.dll" );
+            var compilation = GenerateCodeThenCompile    ( provider,
+                                                           compiler,
+                                                           parameters,
+                                                           file,
+                                                           fileNamespace,
+                                                           resourceNamespace,
+                                                           accessModifiers,
+                                                           customToolType );
 
             Assert.Empty ( compilation.Errors );
         }
@@ -45,18 +47,20 @@ namespace Localizer.Generator.Tests
         {
             var provider    = new Microsoft.VisualBasic.VBCodeProvider ( );
             var compiler    = new VBCodeProvider ( new XunitCompilerSettings ( Language.VisualBasic ) );
-            var compilation = GenerateCodeThenCompile ( provider,
-                                                        compiler,
-                                                        file,
-                                                        fileNamespace,
-                                                        resourceNamespace,
-                                                        accessModifiers,
-                                                        customToolType );
+            var parameters  = GenerateCompilerParameters ( "System.dll", "System.Drawing.dll", "System.Web.dll" );
+            var compilation = GenerateCodeThenCompile    ( provider,
+                                                           compiler,
+                                                           parameters,
+                                                           file,
+                                                           fileNamespace,
+                                                           resourceNamespace,
+                                                           accessModifiers,
+                                                           customToolType );
 
             Assert.Empty ( compilation.Errors );
         }
 
-        private static CompilerResults GenerateCodeThenCompile ( CodeDomProvider provider, CodeDomProvider compiler, string file, string fileNamespace, string resourceNamespace, MemberAttributes accessModifiers, Type customToolType )
+        private static CompilerResults GenerateCodeThenCompile ( CodeDomProvider provider, CodeDomProvider compiler, CompilerParameters compilerParameters, string file, string fileNamespace, string resourceNamespace, MemberAttributes accessModifiers, Type customToolType )
         {
             var code = LocalizerSupportBuilder.GenerateCode ( provider,
                                                               GetFullPath ( file ),
@@ -72,12 +76,16 @@ namespace Localizer.Generator.Tests
             using ( var writer = new StringWriter ( source ) )
                 generator.GenerateCodeFromCompileUnit ( code, writer, null );
 
+            return compiler.CompileAssemblyFromSource ( compilerParameters, source.ToString ( ) );
+        }
+
+        private static CompilerParameters GenerateCompilerParameters ( params string [ ] referencedAssemblies )
+        {
             var parameters = new CompilerParameters ( ) { GenerateInMemory = true };
 
-            parameters.ReferencedAssemblies.Add ( "System.dll" );
-            parameters.ReferencedAssemblies.Add ( "System.Drawing.dll" );
+            parameters.ReferencedAssemblies.AddRange ( referencedAssemblies );
 
-            return compiler.CompileAssemblyFromSource ( parameters, source.ToString ( ) );
+            return parameters;
         }
 
         private static string GetFullPath ( string filename ) => Path.GetFullPath ( FindFile ( filename ) );
