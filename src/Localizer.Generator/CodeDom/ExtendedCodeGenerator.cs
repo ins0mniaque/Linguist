@@ -7,7 +7,7 @@ using Localizer.CodeDom.Extensions;
 namespace Localizer.CodeDom
 {
     /// <summary>
-    /// Extends the CodeDomProvider code generator with support for C# static classes
+    /// Extends the CodeDomProvider code generator with support for C# static classes and Visual Basic modules
     /// </summary>
     public class ExtendedCodeGenerator : ICodeGenerator
     {
@@ -35,6 +35,8 @@ namespace Localizer.CodeDom
         {
             if ( Language == Language.CSharp )
                 provider.AddCSharpStaticClassSupport ( e, ref w );
+            else if ( Language == Language.VisualBasic )
+                provider.AddVBModuleSupport ( e );
 
             provider.GenerateCodeFromCompileUnit ( e, w, o );
         }
@@ -58,6 +60,8 @@ namespace Localizer.CodeDom
         {
             if ( Language == Language.CSharp )
                 provider.AddCSharpStaticClassSupport ( e, ref w );
+            else if ( Language == Language.VisualBasic )
+                provider.AddVBModuleSupport ( e );
 
             provider.GenerateCodeFromType ( e, w, o );
         }
