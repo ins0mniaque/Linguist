@@ -6,21 +6,37 @@
   <Include href="KnownImageIds.vsct" />
 
   <Commands package="guidLocalizerPackage">
+    <Groups>
+      <Group guid="guidLocalizerPackageCmdSet" id="ProjectItemMenuGroup" priority="0x0100">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_ITEMNODE" />
+      </Group>
+      <Group guid="guidLocalizerPackageCmdSet" id="SubMenuGroup" priority="0x1000">
+          <Parent guid="guidLocalizerPackageCmdSet" id="SubMenu" />
+      </Group>
+    </Groups>
+    <Menus>
+      <Menu guid="guidLocalizerPackageCmdSet" id="SubMenu" type="Menu" priority="0x1000">
+        <Parent guid="guidLocalizerPackageCmdSet" id="ProjectItemMenuGroup" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Localizer</ButtonText>
+        </Strings>
+      </Menu>
+    </Menus>
     <Buttons>
       <Button guid="guidLocalizerPackageCmdSet" id="PublicApplyCustomToolId" priority="0x0100" type="Button">
-        <Parent guid="guidSHLMainMenu"  id="IDG_VS_CTXT_ITEM_INCLUDEEXCLUDE" />
-        <Icon   guid="ImageCatalogGuid" id="TriggerScript" />
+        <Parent guid="guidLocalizerPackageCmdSet" id="SubMenuGroup"  />
+        <Icon   guid="ImageCatalogGuid"           id="TriggerScript" />
         <CommandFlag>IconIsMoniker</CommandFlag>
-        <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <ButtonText>Switch to Localizer</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidLocalizerPackageCmdSet" id="InternalApplyCustomToolId" priority="0x0101" type="Button">
-        <Parent guid="guidSHLMainMenu"  id="IDG_VS_CTXT_ITEM_INCLUDEEXCLUDE" />
-        <Icon   guid="ImageCatalogGuid" id="TriggerScript" />
+        <Parent guid="guidLocalizerPackageCmdSet" id="SubMenuGroup"  />
+        <Icon   guid="ImageCatalogGuid"           id="TriggerScript" />
         <CommandFlag>IconIsMoniker</CommandFlag>
-        <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <ButtonText>Switch to Localizer (Internal)</ButtonText>
         </Strings>
@@ -29,14 +45,16 @@
   </Commands>
 
   <VisibilityConstraints>
-    <VisibilityItem guid="guidLocalizerPackageCmdSet" id="PublicApplyCustomToolId"   context="guidLocalizerUIContext" />
-    <VisibilityItem guid="guidLocalizerPackageCmdSet" id="InternalApplyCustomToolId" context="guidLocalizerUIContext" />
+    <VisibilityItem guid="guidLocalizerPackageCmdSet" id="SubMenu" context="guidLocalizerUIContext" />
   </VisibilityConstraints>
 
   <Symbols>
     <GuidSymbol name="guidLocalizerPackage"       value="{97313391-C7DF-45DB-817D-BE297DE8BD35}" />
     <GuidSymbol name="guidLocalizerUIContext"     value="{DF9405E1-FFE4-4C7D-A491-6FECEA978857}" />
     <GuidSymbol name="guidLocalizerPackageCmdSet" value="{79EF3C41-702D-4334-9A18-85CC8693758E}">
+      <IDSymbol name="ProjectItemMenuGroup"      value="0x1100" />
+      <IDSymbol name="SubMenu"                   value="0x1101" />
+      <IDSymbol name="SubMenuGroup"              value="0x1102" />
       <IDSymbol name="PublicApplyCustomToolId"   value="0x0100" />
       <IDSymbol name="InternalApplyCustomToolId" value="0x0101" />
     </GuidSymbol>
