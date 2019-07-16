@@ -39,6 +39,7 @@
   <ItemGroup>
     <Compile Include="CodeDom\ExtendedCodeGenerator.cs" />
     <Compile Include="CodeDom\Code.cs" />
+    <Compile Include="CodeDom\Extensions\TextRewriterProxy.cs" />
     <Compile Include="CodeDom\Extensions\CSharpStaticClassSupport.cs" />
     <Compile Include="CodeDom\Language.cs" />
     <Compile Include="CodeDom\Extensions\TextWriterProxy.cs" />

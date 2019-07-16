@@ -8,15 +8,15 @@ using System.Reflection;
 namespace Localizer.CodeDom.Extensions
 {
     /// <summary>
-    /// Adds support for C# static classes by proxying the code generator text writer
-    /// and inserting the static access modifier as the code is being written.
+    /// Adds support for C# static classes and events by proxying the code generator
+    /// text writer and inserting the static access modifier as the code is being written.
     /// Also automatically removes all class constructors from static types that
     /// have been added to support languages without static classes.
     /// </summary>
     public static class CSharpStaticClassSupport
     {
         /// <summary>
-        /// Adds support for C# static classes and removes constructors from static classes.
+        /// Adds support for C# static classes and events and removes constructors from static classes.
         /// </summary>
         public static void AddCSharpStaticClassSupport ( this CodeDomProvider codeDomProvider, CodeCompileUnit codeCompileUnit, ref TextWriter textWriter )
         {
@@ -33,7 +33,7 @@ namespace Localizer.CodeDom.Extensions
         }
 
         /// <summary>
-        /// Adds support for C# static classes and removes constructors from static classes.
+        /// Adds support for C# static classes and events and removes constructors from static classes.
         /// </summary>
         public static void AddCSharpStaticClassSupport ( this CodeDomProvider codeDomProvider, CodeTypeDeclaration codeType, ref TextWriter textWriter )
         {
@@ -45,80 +45,13 @@ namespace Localizer.CodeDom.Extensions
                 textWriter = new Proxy ( staticDefinitions, textWriter );
         }
 
-        private class Proxy : TextWriterProxy
+        private class Proxy : TextRewriterProxy
         {
-            public const string Wildcard = "🃏";
+            public Proxy ( string [ ] [ ] staticDefinitions, TextWriter textWriter ) : base ( staticDefinitions, textWriter ) { }
 
-            private readonly List < string > buffer = new List < string > ( );
-            private readonly string [ ] [ ]  paths;
-            private readonly int    [ ]      indices;
-
-            public Proxy ( string [ ] [ ] staticDefinitions, TextWriter textWriter ) : base ( textWriter )
+            protected override void OnPathFound ( string [ ] path, IList < string > buffer )
             {
-                paths   = staticDefinitions;
-                indices = new int [ paths.Length ];
-
-                WriteBufferAndReset ( );
-            }
-
-            private void WriteBufferAndReset ( )
-            {
-                foreach ( var entry in buffer )
-                    writer.Write ( entry );
-
-                buffer.Clear ( );
-
-                for ( var index = 0; index < paths.Length; index++ )
-                    if ( indices [ index ] != int.MaxValue )
-                        indices [ index ] = -1;
-            }
-
-            protected override void BeforeWrite ( )
-            {
-                WriteBufferAndReset ( );
-            }
-
-            public override void Write ( string value )
-            {
-                var buffered = false;
-
-                for ( var definition = 0; definition < paths.Length; definition++ )
-                {
-                    var path  = paths   [ definition ];
-                    var index = indices [ definition ];
-
-                    if ( index == int.MaxValue )
-                        continue;
-
-                    var next = path [ index + 1 ];
-
-                    if ( next == Wildcard || next == value )
-                    {
-                        indices [ definition ] = ++index;
-
-                        if ( index < path.Length - 1 )
-                        {
-                            buffered = true;
-                            continue;
-                        }
-
-                        indices [ definition ] = int.MaxValue;
-                        buffer.Insert ( 1, "static " );
-
-                        buffered = false;
-                        break;
-                    }
-                }
-
-                if ( buffered )
-                {
-                    buffer.Add ( value );
-                    return;
-                }
-
-                WriteBufferAndReset ( );
-
-                writer.Write ( value );
+                buffer.Insert ( 1, "static " );
             }
         }
 
