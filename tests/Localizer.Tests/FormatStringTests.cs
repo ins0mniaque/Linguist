@@ -5,6 +5,9 @@ using Xunit;
 
 namespace Localizer.Tests
 {
+    using static NumberForm;
+    using static PluralForm;
+
     public class FormatStringTests
     {
         [ Fact ]
@@ -20,6 +23,27 @@ namespace Localizer.Tests
         }
 
         [ Theory ]
+        [ InlineData ( null,  0, null, 0, 0, Cardinal, Other,               null,  "{}: Cardinal, Other"            ) ]
+        [ InlineData ( null,  0, null, 0, 0, Ordinal,  Zero,                One,   "{}: Ordinal, Range, One"        ) ]
+        [ InlineData ( 0,  0, null, 0, 2,    Cardinal, Other,               null,  "{0}: Cardinal, Other"           ) ]
+        [ InlineData ( 0,  0, "X", 0, 2,     Ordinal,  Other,               null,  "{0:X}: Ordinal, Other"          ) ]
+        [ InlineData ( 0,  0, "X", 0, 2,     Cardinal, Zero | One,          null,  "{0:X}: Cardinal, Zero, One"     ) ]
+        [ InlineData ( 0,  0, "X", 0, 2,     Cardinal, One  | Two,          null,  "{0:X}: Cardinal, One, Two"      ) ]
+        [ InlineData ( 1,  0, "X", 0, 2,     Ordinal,  Zero | One  | Two,   null,  "{1:X}: Ordinal, Zero, One, Two" ) ]
+        [ InlineData ( 1,  0, "X", 0, 2,     Cardinal, Few  | Many | Other, null,  "{1:X}: Cardinal, Few, Many"     ) ]
+        [ InlineData ( 0,  0, null, 0, 2,    Cardinal, Other,               Zero,  "{0}: Cardinal, Range, Zero"     ) ]
+        [ InlineData ( 0,  0, null, 0, 2,    Cardinal, Zero,                One,   "{0}: Cardinal, Range, One"      ) ]
+        [ InlineData ( 0,  0, null, 0, 2,    Cardinal, One,                 Two,   "{0}: Cardinal, Range, Two"      ) ]
+        [ InlineData ( 0,  0, null, 0, 2,    Cardinal, Zero | One,          Other, "{0}: Cardinal, Range, Other"    ) ]
+        public static void ArgumentHasCorrectStringRepresentation ( int? index, int alignment, string format, int startOffset, int endOffset, NumberForm numberForm, PluralForm availablePluralForms, PluralForm? pluralRangeForm, string expectedString )
+        {
+            var argumentHole = index.HasValue ? new FormatString.ArgumentHole ( index.Value, alignment, format, startOffset, endOffset ) : null;
+            var argument     = new FormatString.Argument ( argumentHole, numberForm, availablePluralForms, pluralRangeForm );
+
+            Assert.Equal ( expectedString, argument.ToString ( ) );
+        }
+
+        [ Theory ]
         [ InlineData ( 0,  0, null, 0, 2, "{0}",      "{0}@[0..2]"      ) ]
         [ InlineData ( 42, 0, null, 0, 3, "{42}",     "{42}@[0..3]"     ) ]
         [ InlineData ( 0,  0, "",   0, 2, "{0}",      "{0}@[0..2]"      ) ]
@@ -27,7 +51,7 @@ namespace Localizer.Tests
         [ InlineData ( 0,  1, null, 0, 4, "{0,1}",    "{0,1}@[0..4]"    ) ]
         [ InlineData ( 0,  0, "N6", 0, 5, "{0:N6}",   "{0:N6}@[0..5]"   ) ]
         [ InlineData ( 0,  1, "N6", 0, 7, "{0,1:N6}", "{0,1:N6}@[0..7]" ) ]
-        public static void ArgumentHoleHasCorrectStringRepresention ( int index, int alignment, string format, int startOffset, int endOffset, string expectedFormatString, string expectedString )
+        public static void ArgumentHoleHasCorrectStringRepresentation ( int index, int alignment, string format, int startOffset, int endOffset, string expectedFormatString, string expectedString )
         {
             var argumentHole = new FormatString.ArgumentHole ( index, alignment, format, startOffset, endOffset );
 

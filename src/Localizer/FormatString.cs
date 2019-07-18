@@ -62,7 +62,7 @@ namespace Localizer
             {
                 var index = argumentHole.Index;
                 if ( arguments [ index ] == null )
-                    arguments [ index ] = new Argument ( argumentHole, default, default );
+                    arguments [ index ] = new Argument ( argumentHole, default, default, default );
             }
 
             return arguments;
@@ -73,16 +73,19 @@ namespace Localizer
         {
             /// <summary>
             /// Initializes a new instance of the <see cref="T:Localizer.FormatString.Argument" /> class
-            /// with the specified number form, argument hole used for number formatting and available plural forms.
+            /// with the specified number form, argument hole used for number formatting,
+            /// available plural forms and plural range form.
             /// </summary>
             /// <param name="numberArgumentHole">The argument hole used for number formatting.</param>
             /// <param name="numberForm">The number form.</param>
             /// <param name="availablePluralForms">The available plural forms.</param>
-            public Argument ( ArgumentHole numberArgumentHole, NumberForm numberForm, PluralForm availablePluralForms )
+            /// <param name="availablePluralForms">The plural range form.</param>
+            public Argument ( ArgumentHole numberArgumentHole, NumberForm numberForm, PluralForm availablePluralForms, PluralForm? pluralRangeForm )
             {
                 NumberArgumentHole   = numberArgumentHole;
                 NumberForm           = numberForm;
                 AvailablePluralForms = availablePluralForms;
+                PluralRangeForm      = pluralRangeForm;
             }
 
             /// <summary>Gets or sets the argument hole used for number formatting for the current <see cref="T:Localizer.FormatString.Argument" /> object.</summary>
@@ -97,9 +100,15 @@ namespace Localizer
             /// <returns>The available plural forms.</returns>
             public PluralForm AvailablePluralForms { get; set; }
 
+            /// <summary>Gets or sets the plural range form for the current <see cref="T:Localizer.FormatString.Argument" /> object, or null if not a range argument.</summary>
+            /// <returns>The plural range form, or null if not a range argument.</returns>
+            public PluralForm? PluralRangeForm { get; set; }
+
             /// <summary>Converts the value of the current <see cref="T:Localizer.FormatString.Argument" /> object to its equivalent string representation.</summary>
             /// <returns>A string that represents the format string argument parameters.</returns>
-            public override string ToString ( ) => $"{ NumberArgumentHole?.ToFormatString ( ) }, { NumberForm }, { AvailablePluralForms }";
+            public override string ToString ( ) => $"{ NumberArgumentHole?.ToFormatString ( ) ?? "{}" }: { NumberForm }, { ToPluralFormString ( ) }";
+
+            private string ToPluralFormString ( ) => $"{ ( PluralRangeForm != null ? "Range, " : "" ) }{ PluralRangeForm ?? AvailablePluralForms }";
         }
 
         /// <summary>Represents a parsed format string argument hole.</summary>

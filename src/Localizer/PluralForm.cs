@@ -1,5 +1,8 @@
-﻿namespace Localizer
+﻿using System;
+
+namespace Localizer
 {
+    [ Flags ]
     public enum PluralForm
     {
         /// <summary>
