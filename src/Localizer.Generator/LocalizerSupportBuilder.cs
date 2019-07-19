@@ -104,7 +104,7 @@ namespace Localizer.Generator
 
             var support = GenerateClass ( ).AddTo ( codeNamespace );
 
-            GenerateClassMembers ( ).AddRangeTo ( support );
+            GenerateClassMembers ( out var format, out var getFormat ).AddRangeTo ( support );
 
             foreach ( var entry in validResources )
                 GenerateProperty ( entry.Key, entry.Name, entry.Resource ).AddTo ( support );
@@ -118,7 +118,7 @@ namespace Localizer.Generator
                 var methodName = entry.Key + FormatMethodSuffix;
                 var isUnique   = ! support.Members.Contains ( methodName );
                 if ( isUnique && CodeDomProvider.IsValidIdentifier ( methodName ) )
-                    GenerateFormatMethod ( methodName, entry.Key, resource, entry.NumberOfArguments ).AddTo ( support );
+                    GenerateFormatMethod ( format, methodName, getFormat ( entry.Key, entry.Name ), resource, entry.NumberOfArguments ).AddTo ( support );
                 else
                     resource.ErrorText = Format ( CannotCreateFormatMethod, methodName, entry.Name );
             }
@@ -182,26 +182,36 @@ namespace Localizer.Generator
                                      Code.Attribute < SuppressMessageAttribute     > ( "Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces" ) );
         }
 
-        protected virtual IEnumerable < CodeTypeMember > GenerateClassMembers ( )
+        protected virtual IEnumerable < CodeTypeMember > GenerateClassMembers ( out CodeMethodReferenceExpression formatMethod, out Func < string, string, CodeExpression > getFormat )
         {
             var editorBrowsable = Code.Attribute < EditorBrowsableAttribute > ( Code.Type < EditorBrowsableState > ( )
                                                                                     .Field ( nameof ( EditorBrowsableState.Advanced ) ) );
 
-            yield return GenerateConstructor ( );
+            var members =
+            Enumerable.Empty < CodeTypeMember > ( )
+                      .Append ( GenerateConstructor ( ) )
+                      .Concat ( GenerateCultureChangedEvent ( out var notifyCultureChanged ) )
+                      .Concat ( GenerateResourceManagerSingleton ( out var resourceManager ) )
+                      .Append ( GenerateResourceManagerProperty ( resourceManager ).Attributed ( editorBrowsable ) )
+                      .Append ( GenerateCultureProperty ( notifyCultureChanged, out var cultureField ).Attributed ( editorBrowsable ) )
+                      .Append ( cultureField );
 
-            var @event = GenerateCultureChangedEvent ( out var notifyCultureChanged );
-            foreach ( var member in @event )
-                yield return member;
+            if ( ResourceNamingStrategy != null )
+            {
+                members = members.Concat ( GeneratePluralResourceManagerSingleton ( resourceManager, out var pluralResourceManager ) );
 
-            var lazy = GenerateResourceManagerSingleton ( out var lazyValue );
-            foreach ( var member in lazy )
-                yield return member;
+                formatMethod = pluralResourceManager.Method ( nameof ( PluralResourceManager.GetResourceSet ) )
+                                                    .Invoke ( Code.Access ( AccessModifiers ).Field ( CultureInfoFieldName ) )
+                                                    .Method ( nameof ( string.Format ) );
+                getFormat    = (propertyName, resourceName) => Code.Constant ( resourceName );
+            }
+            else
+            {
+                formatMethod = Code.Type < string > ( ).Method ( nameof ( string.Format ) );
+                getFormat    = (propertyName, resourceName) => Code.Access ( AccessModifiers ).Property ( propertyName );
+            }
 
-            yield return GenerateResourceManagerProperty ( lazyValue ).Attributed ( editorBrowsable );
-
-            yield return GenerateCultureProperty ( notifyCultureChanged, out var cultureField ).Attributed ( editorBrowsable );
-            if ( cultureField != null )
-                yield return cultureField;
+            return members;
         }
 
         protected virtual CodeConstructor GenerateConstructor ( )
@@ -260,7 +270,7 @@ namespace Localizer.Generator
                        .Set ( (set, value) =>
                               {
                                   set.Add ( Code.If   ( field.ObjectEquals ( value ) )
-                                                .Then ( Code.Return   ( ) ) );
+                                                .Then ( Code.Return ( ) ) );
                                   set.Add ( field.Assign ( value ) );
                                   set.Add ( notifyCultureChanged );
                               } )
@@ -269,40 +279,77 @@ namespace Localizer.Generator
 
         protected virtual IEnumerable < CodeTypeMember > GenerateResourceManagerSingleton ( out CodeExpression singleton )
         {
+            return GenerateSingleton ( ResourceSet.ResourceManagerType,
+                                       ResourceManagerFieldName,
+                                       ResourceSet.ResourceManagerInitializer ( ResourcesBaseName, ClassName ),
+                                       true,
+                                       out singleton );
+        }
+
+        protected virtual IEnumerable < CodeTypeMember > GeneratePluralResourceManagerSingleton ( CodeExpression resourceManager, out CodeExpression pluralResourceManager )
+        {
+            var getResourceSet = Code.CreateMethod ( typeof ( System.Collections.IEnumerable ),
+                                                     GetResourceSetMethodName,
+                                                     MemberAttributes.Private | MemberAttributes.Static );
+
+            getResourceSet.Parameters.Add    ( Code.Parameter < CultureInfo > ( CultureInfoParameterName ) );
+            getResourceSet.Statements.Return ( ResourceSet.ResourceSetGetter ( resourceManager, Code.Variable ( CultureInfoParameterName ) ) );
+
+            var type        = Code.TypeRef < PluralResourceManager > ( );
+            var initializer = type.Construct ( new CodeDelegateCreateExpression ( Code.TypeRef < PluralResourceManager.GetResources > ( ),
+                                                                                  Code.Type ( ClassName, default ),
+                                                                                  GetResourceSetMethodName ) );
+
+            if ( ResourceNamingStrategyInitializer != null )
+                initializer.Parameters.Add ( ResourceNamingStrategyInitializer );
+
+            return GenerateSingleton ( type,
+                                       PluralResourceManagerFieldName,
+                                       initializer,
+                                       false,
+                                       out pluralResourceManager )
+                  .Append ( getResourceSet );
+        }
+
+        protected virtual IEnumerable < CodeTypeMember > GenerateSingleton ( CodeTypeReference type, string fieldName, CodeExpression initializer, bool isFirst, out CodeExpression singleton )
+        {
             var cctor = (CodeTypeMember) new CodeTypeConstructor ( ).AddComment ( SingletonBeforeFieldInitComment );
-            var init  = ResourceSet.ResourceManagerInitializer ( ResourcesBaseName, ClassName );
 
             if ( CodeDomProvider.Supports ( GeneratorSupport.NestedTypes ) )
             {
-                var lazyResourceManager = Code.CreateNestedClass ( ResourceManagerFieldName, MemberAttributes.Private | MemberAttributes.Static );
+                var lazyType = Code.CreateNestedClass ( fieldName, MemberAttributes.Private | MemberAttributes.Static );
 
-                cctor.AddTo ( lazyResourceManager );
+                cctor.AddTo ( lazyType );
 
-                Code.CreateField ( ResourceSet.ResourceManagerType,
+                Code.CreateField ( type,
                                    SingletonFieldName,
                                    MemberAttributes.Assembly | MemberAttributes.Static )
-                    .Initialize  ( init )
-                    .AddTo       ( lazyResourceManager );
+                    .Initialize  ( initializer )
+                    .AddTo       ( lazyType );
 
-                singleton = Code.Type  ( ResourceManagerFieldName, default )
+                singleton = Code.Type  ( fieldName, default )
                                 .Field ( SingletonFieldName );
 
-                return new [ ] { lazyResourceManager };
+                return new [ ] { lazyType };
             }
 
-            singleton = Code.Static ( ).Field ( ResourceManagerFieldName );
+            singleton = Code.Static ( ).Field ( fieldName );
 
-            return new CodeTypeMember [ ] { cctor,
-                                            Code.CreateField ( ResourceSet.ResourceManagerType,
-                                                               ResourceManagerFieldName,
-                                                               MemberAttributes.Private | MemberAttributes.Static )
-                                                .Initialize  ( init ) };
+            var field = Code.CreateField ( type,
+                                           fieldName,
+                                           MemberAttributes.Private | MemberAttributes.Static )
+                            .Initialize  ( initializer );
+
+            if ( isFirst )
+                return new [ ] { cctor, field };
+
+            return new [ ] { field };
         }
 
-        protected virtual CodeMemberProperty GenerateResourceManagerProperty ( CodeExpression singleton )
+        protected virtual CodeMemberProperty GenerateResourceManagerProperty ( CodeExpression resourceManager )
         {
             return Code.CreateProperty ( ResourceSet.ResourceManagerType, ResourceManagerPropertyName, AccessModifiers, false )
-                       .Get            ( get => get.Return ( singleton ) )
+                       .Get            ( get => get.Return ( resourceManager ) )
                        .AddSummary     ( ResourceManagerPropertySummary );
         }
 
@@ -320,7 +367,7 @@ namespace Localizer.Generator
                        .AddSummary     ( summary + FormatResourceComment ( resource.Comment ) );
         }
 
-        protected virtual CodeMemberMethod GenerateFormatMethod ( string methodName, string propertyName, StringResource resource, int numberOfArguments )
+        protected virtual CodeMemberMethod GenerateFormatMethod ( CodeMethodReferenceExpression format, string methodName, CodeExpression formatExpression, StringResource resource, int numberOfArguments )
         {
             if ( resource == null )
                 throw new ArgumentNullException ( nameof ( resource ) );
@@ -338,8 +385,8 @@ namespace Localizer.Generator
 
             var parameters = new CodeExpression [ 2 + numberOfArguments ];
 
-            parameters [ 0 ] = Code.Access ( AccessModifiers ).Field    ( CultureInfoFieldName );
-            parameters [ 1 ] = Code.Access ( AccessModifiers ).Property ( propertyName );
+            parameters [ 0 ] = Code.Access ( AccessModifiers ).Field ( CultureInfoFieldName );
+            parameters [ 1 ] = formatExpression;
 
             for ( var index = 0; index < numberOfArguments; index++ )
             {
@@ -356,9 +403,7 @@ namespace Localizer.Generator
             }
 
             formatMethod.AddReturnComment  ( FormatReturnComment )
-                        .Statements.Return ( Code.Type < string > ( )
-                                                 .Method ( nameof ( string.Format ) )
-                                                 .Invoke ( parameters ) );
+                        .Statements.Return ( format.Invoke ( parameters ) );
 
             return formatMethod;
         }

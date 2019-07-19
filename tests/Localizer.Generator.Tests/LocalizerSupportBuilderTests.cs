@@ -24,7 +24,7 @@ namespace Localizer.Generator.Tests
         {
             var provider    = new Microsoft.CSharp.CSharpCodeProvider ( );
             var compiler    = new CSharpCodeProvider ( new XunitCompilerSettings ( Language.CSharp ) );
-            var parameters  = GenerateCompilerParameters ( "System.dll", "System.Drawing.dll" );
+            var parameters  = GenerateCompilerParameters ( "System.dll", "System.Drawing.dll", "Localizer.dll" );
             var compilation = GenerateCodeThenCompile    ( provider,
                                                            compiler,
                                                            parameters,
@@ -46,7 +46,7 @@ namespace Localizer.Generator.Tests
         {
             var provider    = new Microsoft.VisualBasic.VBCodeProvider ( );
             var compiler    = new VBCodeProvider ( new XunitCompilerSettings ( Language.VisualBasic ) );
-            var parameters  = GenerateCompilerParameters ( "System.dll", "System.Drawing.dll", "System.Web.dll" );
+            var parameters  = GenerateCompilerParameters ( "System.dll", "System.Drawing.dll", "System.Web.dll", "Localizer.dll" );
             var compilation = GenerateCodeThenCompile    ( provider,
                                                            compiler,
                                                            parameters,
