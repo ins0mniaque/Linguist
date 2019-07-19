@@ -2,7 +2,6 @@
 using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.IO;
-using System.Text;
 
 using Microsoft.CodeDom.Providers.DotNetCompilerPlatform;
 
@@ -62,21 +61,16 @@ namespace Localizer.Generator.Tests
 
         private static CompilerResults GenerateCodeThenCompile ( CodeDomProvider provider, CodeDomProvider compiler, CompilerParameters compilerParameters, string file, string fileNamespace, string resourceNamespace, MemberAttributes accessModifiers, Type customToolType )
         {
-            var code = LocalizerSupportBuilder.GenerateCode ( provider,
-                                                              GetFullPath ( file ),
-                                                              ReadFile    ( file ),
-                                                              fileNamespace,
-                                                              resourceNamespace,
-                                                              accessModifiers,
-                                                              customToolType,
-                                                              out var _ );
+            var code = LocalizerSupportBuilder.GenerateSource ( provider,
+                                                                GetFullPath ( file ),
+                                                                ReadFile    ( file ),
+                                                                fileNamespace,
+                                                                resourceNamespace,
+                                                                accessModifiers,
+                                                                customToolType,
+                                                                out var _ );
 
-            var source    = new StringBuilder ( );
-            var generator = new ExtendedCodeGenerator ( provider );
-            using ( var writer = new StringWriter ( source ) )
-                generator.GenerateCodeFromCompileUnit ( code, writer, null );
-
-            return compiler.CompileAssemblyFromSource ( compilerParameters, source.ToString ( ) );
+            return compiler.CompileAssemblyFromSource ( compilerParameters, code );
         }
 
         private static CompilerParameters GenerateCompilerParameters ( params string [ ] referencedAssemblies )

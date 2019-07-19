@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security;
+using System.Text;
 
 using Localizer.CodeDom;
 
@@ -48,6 +49,17 @@ namespace Localizer.Generator
                 errors = null;
 
             return code;
+        }
+
+        public static string GenerateSource ( CodeDomProvider codeDomProvider, string inputFileName, string inputFileContent, string fileNamespace, string resourcesNamespace, MemberAttributes accessModifiers, Type customToolType, out CompilerError [ ] errors )
+        {
+            var code      = GenerateCode ( codeDomProvider, inputFileName, inputFileContent, fileNamespace, resourcesNamespace, accessModifiers, customToolType, out errors );
+            var source    = new StringBuilder ( );
+            var generator = new ExtendedCodeGenerator ( codeDomProvider );
+            using ( var writer = new StringWriter ( source ) )
+                generator.GenerateCodeFromCompileUnit ( code, writer, null );
+
+            return source.ToString ( );
         }
 
         protected LocalizerSupportBuilder ( CodeDomProvider codeDomProvider, string baseName, ResourceSet resourceSet, string @namespace, string resourcesNamespace, MemberAttributes accessModifiers, Type customToolType )
