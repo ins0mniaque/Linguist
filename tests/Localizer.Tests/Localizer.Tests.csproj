@@ -41,6 +41,7 @@
     <Compile Include="FormattedNumberTests.cs" />
     <Compile Include="FormatStringTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources\PluralResourceManagerTests.cs" />
     <Compile Include="Resources\DefaultResourceNamingStrategyTests.cs" />
   </ItemGroup>
   <ItemGroup>

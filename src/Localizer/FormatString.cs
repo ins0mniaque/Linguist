@@ -37,9 +37,13 @@ namespace Localizer
         /// <returns>The format string.</returns>
         public string Format { get; }
 
-        /// <summary>Gets the arguments parameters for the current <see cref="T:Localizer.FormatString" /> object.</summary>
+        /// <summary>Gets or sets the arguments parameters for the current <see cref="T:Localizer.FormatString" /> object.</summary>
         /// <returns>The arguments parameters.</returns>
-        public Argument [ ] Arguments => arguments ?? InitializeArguments ( );
+        public Argument [ ] Arguments
+        {
+            get => arguments ?? ( arguments = InitializeArguments ( ) );
+            set => arguments = InitializeArguments ( value );
+        }
 
         /// <summary>Gets the parsed argument holes for the current <see cref="T:Localizer.FormatString" /> object.</summary>
         /// <returns>The parsed argument holes.</returns>
@@ -49,20 +53,27 @@ namespace Localizer
         /// <returns>The format string.</returns>
         public override string ToString ( ) => Format;
 
-        private Argument [ ] InitializeArguments ( )
+        private Argument [ ] InitializeArguments ( Argument [ ] arguments = null )
         {
             var numberOfArguments = 0;
             foreach ( var argumentHole in ArgumentHoles )
                 if ( argumentHole.Index >= numberOfArguments )
                     numberOfArguments = argumentHole.Index + 1;
 
-            arguments = new Argument [ numberOfArguments ];
+            if ( arguments != null && arguments.Length < numberOfArguments )
+                Array.Resize ( ref arguments, numberOfArguments );
+
+            arguments = arguments ?? new Argument [ numberOfArguments ];
 
             foreach ( var argumentHole in ArgumentHoles )
             {
-                var index = argumentHole.Index;
-                if ( arguments [ index ] == null )
+                var index    = argumentHole.Index;
+                var argument = arguments [ index ];
+
+                if ( argument == null )
                     arguments [ index ] = new Argument ( argumentHole, default, default, default );
+                else if ( argument.NumberArgumentHole == null )
+                    argument.NumberArgumentHole = argumentHole;
             }
 
             return arguments;

@@ -51,8 +51,10 @@
     <Compile Include="Plural\BaseRules.cs" />
     <Compile Include="Plural\PluralRule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources\PluralResourceSet.cs" />
     <Compile Include="Resources\IResourceNamingStrategy.cs" />
     <Compile Include="Resources\Keywords.cs" />
+    <Compile Include="Resources\PluralResourceManager.cs" />
     <Compile Include="Resources\ResourceNamingStrategy.cs" />
     <Compile Include="Resources\SuffixedResourceNamingStrategy.cs" />
   </ItemGroup>
