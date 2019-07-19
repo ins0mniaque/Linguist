@@ -12,7 +12,7 @@ namespace Localizer
                                                                          OrdinalRuleSet.Default,
                                                                          PluralFormRangeSelector.Default );
 
-        /// <summary>Retrieves a cached, read-only instance of a plural rule set fir the current UI culture.</summary>
+        /// <summary>Retrieves a cached, read-only instance of a plural rule set for the current UI culture.</summary>
         /// <returns>A read-only <see cref="T:Localizer.PluralRules" /> object.</returns>
         public static PluralRules GetPluralRules ( )
         {
