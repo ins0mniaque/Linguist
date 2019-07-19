@@ -13,6 +13,7 @@ using System.Security;
 using System.Text;
 
 using Localizer.CodeDom;
+using Localizer.Resources;
 
 namespace Localizer.Generator
 {
@@ -64,32 +65,35 @@ namespace Localizer.Generator
 
         protected LocalizerSupportBuilder ( CodeDomProvider codeDomProvider, string baseName, ResourceSet resourceSet, string @namespace, string resourcesNamespace, MemberAttributes accessModifiers, Type customToolType )
         {
-            CodeDomProvider     = codeDomProvider ?? throw new ArgumentNullException ( nameof ( codeDomProvider ) );
-            BaseName            = baseName        ?? throw new ArgumentNullException ( nameof ( baseName        ) );
-            ResourceSet         = resourceSet     ?? throw new ArgumentNullException ( nameof ( resourceSet     ) );
-            Namespace           = IsNullOrEmpty ( @namespace         ) ? null : codeDomProvider.ValidateIdentifier ( @namespace, true );
-            ResourcesNamespace  = IsNullOrEmpty ( resourcesNamespace ) ? null : resourcesNamespace;
-            ResourcesBaseName   = ResourcesNamespace != null ? ResourcesNamespace + '.' + baseName :
-                                  Namespace          != null ? Namespace          + '.' + baseName :
-                                                               baseName;
-            ClassName           = codeDomProvider.ValidateBaseName        ( baseName );
-            AccessModifiers     = codeDomProvider.ValidateAccessModifiers ( accessModifiers );
-            TypeAttributes      = AccessModifiers.HasFlag ( MemberAttributes.Public ) ? TypeAttributes.Public :
-                                                                                        TypeAttributes.AutoLayout;
-            CustomToolType      = customToolType;
+            CodeDomProvider    = codeDomProvider ?? throw new ArgumentNullException ( nameof ( codeDomProvider ) );
+            BaseName           = baseName        ?? throw new ArgumentNullException ( nameof ( baseName        ) );
+            ResourceSet        = resourceSet     ?? throw new ArgumentNullException ( nameof ( resourceSet     ) );
+            Namespace          = IsNullOrEmpty ( @namespace         ) ? null : codeDomProvider.ValidateIdentifier ( @namespace, true );
+            ResourcesNamespace = IsNullOrEmpty ( resourcesNamespace ) ? null : resourcesNamespace;
+            ResourcesBaseName  = ResourcesNamespace != null ? ResourcesNamespace + '.' + baseName :
+                                 Namespace          != null ? Namespace          + '.' + baseName :
+                                                              baseName;
+            ClassName          = codeDomProvider.ValidateBaseName        ( baseName );
+            AccessModifiers    = codeDomProvider.ValidateAccessModifiers ( accessModifiers );
+            TypeAttributes     = AccessModifiers.HasFlag ( MemberAttributes.Public ) ? TypeAttributes.Public :
+                                                                                       TypeAttributes.AutoLayout;
+            CustomToolType     = customToolType;
         }
 
-        protected CodeDomProvider   CodeDomProvider     { get; }
-        protected string            BaseName            { get; }
-        protected ResourceSet       ResourceSet         { get; }
-        protected string            Namespace           { get; }
-        protected string            ResourcesNamespace  { get; }
-        protected string            ResourcesBaseName   { get; }
-        protected string            ClassName           { get; }
-        protected string            ClassFullName       { get; }
-        protected MemberAttributes  AccessModifiers     { get; }
-        protected TypeAttributes    TypeAttributes      { get; }
-        protected Type              CustomToolType      { get; }
+        protected CodeDomProvider  CodeDomProvider    { get; }
+        protected string           BaseName           { get; }
+        protected ResourceSet      ResourceSet        { get; }
+        protected string           Namespace          { get; }
+        protected string           ResourcesNamespace { get; }
+        protected string           ResourcesBaseName  { get; }
+        protected string           ClassName          { get; }
+        protected string           ClassFullName      { get; }
+        protected MemberAttributes AccessModifiers    { get; }
+        protected TypeAttributes   TypeAttributes     { get; }
+        protected Type             CustomToolType     { get; }
+
+        public IResourceNamingStrategy ResourceNamingStrategy            { get; } = Resources.ResourceNamingStrategy.Default;
+        public CodeExpression          ResourceNamingStrategyInitializer { get; }
 
         public virtual CodeCompileUnit Build ( )
         {
@@ -456,6 +460,11 @@ namespace Localizer.Generator
                     resource.ErrorText = Format ( SkippingWinFormsResource, name );
                     continue;
                 }
+
+                var isBaseName = ResourceNamingStrategy == null ||
+                                 ResourceNamingStrategy.ParseArguments ( PluralRules.Invariant, name, out var _ ) == name;
+                if ( ! isBaseName )
+                    continue;
 
                 if ( ! CodeDomProvider.IsValidIdentifier ( key ) )
                 {
