@@ -20,7 +20,24 @@ namespace Localizer.Resources
             this.resourceSets   = new Dictionary < string, PluralResourceSet > ( );
         }
 
+        private KeyValuePair < string, PluralResourceSet > lastUsedResourceSet;
+
         public PluralResourceSet GetResourceSet ( PluralRules pluralRules )
+        {
+            var language = pluralRules.Culture.Name;
+            var lastUsed = lastUsedResourceSet;
+
+            if ( lastUsed.Key == language )
+                return lastUsed.Value;
+
+            var resourceSet = GetCachedResourceSet ( pluralRules );
+            if ( resourceSet != null )
+                lastUsedResourceSet = new KeyValuePair < string, PluralResourceSet > ( language, resourceSet );
+
+            return resourceSet;
+        }
+
+        private PluralResourceSet GetCachedResourceSet ( PluralRules pluralRules )
         {
             var language = pluralRules.Culture.Name;
 
