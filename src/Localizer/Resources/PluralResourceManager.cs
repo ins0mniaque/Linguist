@@ -22,6 +22,25 @@ namespace Localizer.Resources
 
         private KeyValuePair < string, PluralResourceSet > lastUsedResourceSet;
 
+        public PluralResourceSet GetResourceSet ( CultureInfo culture )
+        {
+            if ( culture == null )
+                culture = CultureInfo.CurrentUICulture;
+
+            var language = culture.Name;
+            var lastUsed = lastUsedResourceSet;
+
+            if ( lastUsed.Key == language )
+                return lastUsed.Value;
+
+            var resourceSet = GetCachedResourceSet    ( language ) ??
+                              LoadAndCacheResourceSet ( PluralRules.GetPluralRules ( culture ) );
+            if ( resourceSet != null )
+                lastUsedResourceSet = new KeyValuePair < string, PluralResourceSet > ( language, resourceSet );
+
+            return resourceSet;
+        }
+
         public PluralResourceSet GetResourceSet ( PluralRules pluralRules )
         {
             var language = pluralRules.Culture.Name;
@@ -30,21 +49,26 @@ namespace Localizer.Resources
             if ( lastUsed.Key == language )
                 return lastUsed.Value;
 
-            var resourceSet = GetCachedResourceSet ( pluralRules );
+            var resourceSet = GetCachedResourceSet    ( language ) ??
+                              LoadAndCacheResourceSet ( pluralRules );
             if ( resourceSet != null )
                 lastUsedResourceSet = new KeyValuePair < string, PluralResourceSet > ( language, resourceSet );
 
             return resourceSet;
         }
 
-        private PluralResourceSet GetCachedResourceSet ( PluralRules pluralRules )
+        private PluralResourceSet GetCachedResourceSet ( string language )
         {
-            var language = pluralRules.Culture.Name;
-
             lock ( resourceSets )
                 if ( resourceSets.TryGetValue ( language, out var resourceSet ) )
                     return resourceSet;
 
+            return null;
+        }
+
+        private PluralResourceSet LoadAndCacheResourceSet ( PluralRules pluralRules )
+        {
+            var language          = pluralRules.Culture.Name;
             var loadedResourceSet = LoadResourceSet ( pluralRules );
 
             lock ( resourceSets )
