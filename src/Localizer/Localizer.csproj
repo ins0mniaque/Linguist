@@ -37,6 +37,7 @@
   <ItemGroup>
     <Compile Include="FormatString.cs" />
     <Compile Include="FormattedNumber.cs" />
+    <Compile Include="ILocalizationProvider.cs" />
     <Compile Include="NumberForm.cs" />
     <Compile Include="PluralForm.cs" />
     <Compile Include="Pluralizer.cs" />
@@ -51,6 +52,7 @@
     <Compile Include="Plural\BaseRules.cs" />
     <Compile Include="Plural\PluralRule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResourceManagerLocalizationProvider.cs" />
     <Compile Include="Resources\PluralResourceSet.cs" />
     <Compile Include="Resources\IResourceNamingStrategy.cs" />
     <Compile Include="Resources\Keywords.cs" />

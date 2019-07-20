@@ -4,8 +4,8 @@
     {
         public const string ResourceManagerPropertyName       = "ResourceManager";
         public const string ResourceManagerFieldName          = "_resourceManager";
-        public const string PluralResourceManagerPropertyName = "PluralResourceManager";
-        public const string PluralResourceManagerFieldName    = "_pluralResourceManager";
+        public const string LocalizationProviderPropertyName  = "LocalizationProvider";
+        public const string LocalizationProviderFieldName     = "_localizationProvider";
         public const string SingletonFieldName                = "Value";
         public const string CultureInfoPropertyName           = "Culture";
         public const string CultureInfoFieldName              = "_culture";

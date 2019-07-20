@@ -104,7 +104,7 @@ namespace Localizer.Generator
 
             var support = GenerateClass ( ).AddTo ( codeNamespace );
 
-            GenerateClassMembers ( out var format, out var getFormat ).AddRangeTo ( support );
+            GenerateClassMembers ( out var localizationProvider ).AddRangeTo ( support );
 
             foreach ( var entry in validResources )
                 GenerateProperty ( entry.Key, entry.Name, entry.Resource ).AddTo ( support );
@@ -118,7 +118,7 @@ namespace Localizer.Generator
                 var methodName = entry.Key + FormatMethodSuffix;
                 var isUnique   = ! support.Members.Contains ( methodName );
                 if ( isUnique && CodeDomProvider.IsValidIdentifier ( methodName ) )
-                    GenerateFormatMethod ( format, methodName, getFormat ( entry.Key, entry.Name ), resource, entry.NumberOfArguments ).AddTo ( support );
+                    GenerateFormatMethod ( localizationProvider, methodName, entry.Key, entry.Name, resource, entry.NumberOfArguments ).AddTo ( support );
                 else
                     resource.ErrorText = Format ( CannotCreateFormatMethod, methodName, entry.Name );
             }
@@ -182,7 +182,7 @@ namespace Localizer.Generator
                                      Code.Attribute < SuppressMessageAttribute     > ( "Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces" ) );
         }
 
-        protected virtual IEnumerable < CodeTypeMember > GenerateClassMembers ( out CodeMethodReferenceExpression formatMethod, out Func < string, string, CodeExpression > getFormat )
+        protected virtual IEnumerable < CodeTypeMember > GenerateClassMembers ( out CodeExpression localizationProvider )
         {
             var editorBrowsable = Code.Attribute < EditorBrowsableAttribute > ( Code.Type < EditorBrowsableState > ( )
                                                                                     .Field ( nameof ( EditorBrowsableState.Advanced ) ) );
@@ -197,19 +197,10 @@ namespace Localizer.Generator
                       .Append ( cultureField );
 
             if ( ResourceNamingStrategy != null )
-            {
-                members = members.Concat ( GeneratePluralResourceManagerSingleton ( resourceManager, out var pluralResourceManager ) );
-
-                formatMethod = pluralResourceManager.Method ( nameof ( PluralResourceManager.GetResourceSet ) )
-                                                    .Invoke ( Code.Access ( AccessModifiers ).Field ( CultureInfoFieldName ) )
-                                                    .Method ( nameof ( string.Format ) );
-                getFormat    = (propertyName, resourceName) => Code.Constant ( resourceName );
-            }
+                members = members.Concat ( GenerateLocalizationProviderSingleton ( resourceManager, out localizationProvider ) )
+                                 .Append ( GenerateLocalizationProviderProperty  ( localizationProvider ) );
             else
-            {
-                formatMethod = Code.Type < string > ( ).Method ( nameof ( string.Format ) );
-                getFormat    = (propertyName, resourceName) => Code.Access ( AccessModifiers ).Property ( propertyName );
-            }
+                localizationProvider = null;
 
             return members;
         }
@@ -286,29 +277,30 @@ namespace Localizer.Generator
                                        out singleton );
         }
 
-        protected virtual IEnumerable < CodeTypeMember > GeneratePluralResourceManagerSingleton ( CodeExpression resourceManager, out CodeExpression pluralResourceManager )
+        protected virtual CodeMemberProperty GenerateResourceManagerProperty ( CodeExpression resourceManager )
         {
-            var getResourceSet = Code.CreateMethod ( typeof ( System.Collections.IEnumerable ),
-                                                     GetResourceSetMethodName,
-                                                     MemberAttributes.Private | MemberAttributes.Static );
+            return Code.CreateProperty ( ResourceSet.ResourceManagerType, ResourceManagerPropertyName, AccessModifiers, false )
+                       .Get            ( get => get.Return ( resourceManager ) )
+                       .AddSummary     ( ResourceManagerPropertySummary );
+        }
 
-            getResourceSet.Parameters.Add    ( Code.Parameter < CultureInfo > ( CultureInfoParameterName ) );
-            getResourceSet.Statements.Return ( ResourceSet.ResourceSetGetter ( resourceManager, Code.Variable ( CultureInfoParameterName ) ) );
-
-            var type        = Code.TypeRef < PluralResourceManager > ( );
-            var initializer = type.Construct ( new CodeDelegateCreateExpression ( Code.TypeRef < PluralResourceManager.GetResources > ( ),
-                                                                                  Code.Type ( ClassName, default ),
-                                                                                  GetResourceSetMethodName ) );
-
-            if ( ResourceNamingStrategyInitializer != null )
-                initializer.Parameters.Add ( ResourceNamingStrategyInitializer );
+        protected virtual IEnumerable < CodeTypeMember > GenerateLocalizationProviderSingleton ( CodeExpression resourceManager, out CodeExpression localizationProvider )
+        {
+            var type        = ResourceSet.LocalizationProviderType;
+            var initializer = ResourceSet.LocalizationProviderInitializer ( resourceManager, ResourceNamingStrategyInitializer );
 
             return GenerateSingleton ( type,
-                                       PluralResourceManagerFieldName,
+                                       LocalizationProviderFieldName,
                                        initializer,
                                        false,
-                                       out pluralResourceManager )
-                  .Append ( getResourceSet );
+                                       out localizationProvider );
+        }
+
+        protected virtual CodeMemberProperty GenerateLocalizationProviderProperty ( CodeExpression localizationProvider )
+        {
+            return Code.CreateProperty ( ResourceSet.LocalizationProviderType, LocalizationProviderPropertyName, AccessModifiers, false )
+                       .Get            ( get => get.Return ( localizationProvider ) )
+                       .AddSummary     ( LocalizationProviderPropertySummary );
         }
 
         protected virtual IEnumerable < CodeTypeMember > GenerateSingleton ( CodeTypeReference type, string fieldName, CodeExpression initializer, bool isFirst, out CodeExpression singleton )
@@ -346,13 +338,6 @@ namespace Localizer.Generator
             return new [ ] { field };
         }
 
-        protected virtual CodeMemberProperty GenerateResourceManagerProperty ( CodeExpression resourceManager )
-        {
-            return Code.CreateProperty ( ResourceSet.ResourceManagerType, ResourceManagerPropertyName, AccessModifiers, false )
-                       .Get            ( get => get.Return ( resourceManager ) )
-                       .AddSummary     ( ResourceManagerPropertySummary );
-        }
-
         protected virtual CodeMemberProperty GenerateProperty ( string propertyName, string resourceName, Resource resource )
         {
             var resourceType    = resource.Type ?? Code.TypeRef < object > ( );
@@ -367,7 +352,7 @@ namespace Localizer.Generator
                        .AddSummary     ( summary + FormatResourceComment ( resource.Comment ) );
         }
 
-        protected virtual CodeMemberMethod GenerateFormatMethod ( CodeMethodReferenceExpression format, string methodName, CodeExpression formatExpression, StringResource resource, int numberOfArguments )
+        protected virtual CodeMemberMethod GenerateFormatMethod ( CodeExpression localizationProvider, string methodName, string propertyName, string resourceName, StringResource resource, int numberOfArguments )
         {
             if ( resource == null )
                 throw new ArgumentNullException ( nameof ( resource ) );
@@ -380,13 +365,31 @@ namespace Localizer.Generator
             var formatMethod = Code.CreateMethod ( typeof ( string ), methodName, AccessModifiers )
                                    .AddSummary   ( summary + FormatResourceComment ( resource.Comment ) );
 
+            var format           = Code.Type < string > ( ).Method ( nameof ( string.Format ) );
+            var formatExpression = (CodeExpression) Code.Access ( AccessModifiers ).Property ( propertyName );
+
+            if ( localizationProvider != null )
+            {
+                format           = localizationProvider.Method ( nameof ( ILocalizationProvider.Format ) );
+                formatExpression = Code.Constant ( resourceName );
+            }
+
             if ( numberOfArguments > 3 )
                 formatMethod.Attributed ( Code.Attribute < SuppressMessageAttribute > ( "Microsoft.Design", "CA1025:ReplaceRepetitiveArgumentsWithParamsArray" ) );
 
-            var parameters = new CodeExpression [ 2 + numberOfArguments ];
+            var initialArguments = localizationProvider != null ? 3 : 2;
+
+            var parameters = new CodeExpression [ initialArguments + numberOfArguments ];
 
             parameters [ 0 ] = Code.Access ( AccessModifiers ).Field ( CultureInfoFieldName );
-            parameters [ 1 ] = formatExpression;
+
+            if ( localizationProvider != null )
+            {
+                parameters [ 1 ] = Code.Access ( AccessModifiers ).Field ( CultureInfoFieldName );
+                parameters [ 2 ] = formatExpression;
+            }
+            else
+                parameters [ 1 ] = formatExpression;
 
             for ( var index = 0; index < numberOfArguments; index++ )
             {
@@ -394,7 +397,7 @@ namespace Localizer.Generator
 
                 formatMethod.Parameters.Add ( objectType.Parameter ( parameterName ) );
 
-                parameters [ 2 + index ] = Code.Variable ( parameterName );
+                parameters [ initialArguments + index ] = Code.Variable ( parameterName );
 
                 if ( numberOfArguments > 1 )
                     formatMethod.AddParameterComment ( parameterName, FormatMultiParameterComment, Ordinals [ Math.Min ( index, Ordinals.Length - 1 ) ] );

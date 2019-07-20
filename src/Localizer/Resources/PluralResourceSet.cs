@@ -22,8 +22,10 @@ namespace Localizer.Resources
 
         public FormatString SelectPluralResource ( string name, params object [ ] args )
         {
-            var pluralResource      = pluralResources [ name ];
-            var defaultFormatString = pluralResource  [ 0 ];
+            if ( ! pluralResources.TryGetValue ( name, out var pluralResource ) )
+                return null;
+
+            var defaultFormatString = pluralResource [ 0 ];
 
             var pluralForms = pluralRules.SelectPluralForms ( defaultFormatString, args );
 
@@ -37,20 +39,6 @@ namespace Localizer.Resources
             }
 
             return defaultFormatString;
-        }
-
-        public string Format ( string name, params object [ ] args )
-        {
-            var formatString = SelectPluralResource ( name, args );
-
-            return string.Format ( pluralRules.Culture, formatString.Format, args );
-        }
-
-        public string Format ( IFormatProvider provider, string name, params object [ ] args )
-        {
-            var formatString = SelectPluralResource ( name, args );
-
-            return string.Format ( provider ?? pluralRules.Culture, formatString.Format, args );
         }
 
         private void ApplyPluralRangeRules ( FormatString.Argument [ ] arguments, PluralForm [ ] pluralForms )
