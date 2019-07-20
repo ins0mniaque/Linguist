@@ -12,8 +12,10 @@ namespace Localizer
         public static PluralForm [ ] SelectPluralForms ( this PluralRules pluralRules, IFormatProvider provider, FormatString formatString, object [ ] arguments )
         {
             var selection = new PluralForm [ arguments.Length ];
+            var length    = Math.Min ( formatString.Arguments.Length,
+                                       arguments.Length );
 
-            for ( var index = 0; index < arguments.Length; index++ )
+            for ( var index = 0; index < length; index++ )
             {
                 var argument = formatString.Arguments [ index ];
                 if ( argument.NumberArgumentHole == null )
