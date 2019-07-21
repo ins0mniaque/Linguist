@@ -35,12 +35,14 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cache.DebugView.cs" />
     <Compile Include="FormatString.cs" />
     <Compile Include="FormattedNumber.cs" />
     <Compile Include="ILocalizationProvider.cs" />
     <Compile Include="NumberForm.cs" />
     <Compile Include="PluralForm.cs" />
     <Compile Include="Pluralizer.cs" />
+    <Compile Include="Cache.cs" />
     <Compile Include="PluralRules.cs" />
     <Compile Include="Plural\CardinalRuleSet.cs" />
     <Compile Include="Plural\PluralRuleSet.cs" />

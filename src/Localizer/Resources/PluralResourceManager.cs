@@ -9,77 +9,38 @@ namespace Localizer.Resources
     {
         public delegate IEnumerable GetResources ( CultureInfo culture );
 
-        private readonly GetResources                             getResources;
-        private readonly IResourceNamingStrategy                  namingStrategy;
-        private readonly Dictionary < string, PluralResourceSet > resourceSets;
+        private readonly GetResources                        getResources;
+        private readonly IResourceNamingStrategy             namingStrategy;
+        private readonly Cache < string, PluralResourceSet > resourceSets;
 
         public PluralResourceManager ( GetResources getResourceSet, IResourceNamingStrategy namingStrategy = null )
         {
             this.getResources   = getResourceSet;
             this.namingStrategy = namingStrategy ?? ResourceNamingStrategy.Default;
-            this.resourceSets   = new Dictionary < string, PluralResourceSet > ( );
+            this.resourceSets   = new Cache < string, PluralResourceSet > ( );
         }
-
-        private KeyValuePair < string, PluralResourceSet > lastUsedResourceSet;
 
         public PluralResourceSet GetResourceSet ( CultureInfo culture )
         {
             if ( culture == null )
                 culture = CultureInfo.CurrentUICulture;
 
-            var language = culture.Name;
-            var lastUsed = lastUsedResourceSet;
+            if ( resourceSets.TryGet ( culture.Name, out var resourceSet ) )
+                return resourceSet;
 
-            if ( lastUsed.Key == language )
-                return lastUsed.Value;
-
-            var resourceSet = GetCachedResourceSet    ( language ) ??
-                              LoadAndCacheResourceSet ( PluralRules.GetPluralRules ( culture ) );
-            if ( resourceSet != null )
-                lastUsedResourceSet = new KeyValuePair < string, PluralResourceSet > ( language, resourceSet );
+            resourceSets.Add ( culture.Name, resourceSet = LoadResourceSet ( PluralRules.GetPluralRules ( culture ) ) );
 
             return resourceSet;
         }
 
         public PluralResourceSet GetResourceSet ( PluralRules pluralRules )
         {
-            var language = pluralRules.Culture.Name;
-            var lastUsed = lastUsedResourceSet;
+            if ( resourceSets.TryGet ( pluralRules.Culture.Name, out var resourceSet ) )
+                return resourceSet;
 
-            if ( lastUsed.Key == language )
-                return lastUsed.Value;
-
-            var resourceSet = GetCachedResourceSet    ( language ) ??
-                              LoadAndCacheResourceSet ( pluralRules );
-            if ( resourceSet != null )
-                lastUsedResourceSet = new KeyValuePair < string, PluralResourceSet > ( language, resourceSet );
+            resourceSets.Add ( pluralRules.Culture.Name, resourceSet = LoadResourceSet ( pluralRules ) );
 
             return resourceSet;
-        }
-
-        private PluralResourceSet GetCachedResourceSet ( string language )
-        {
-            lock ( resourceSets )
-                if ( resourceSets.TryGetValue ( language, out var resourceSet ) )
-                    return resourceSet;
-
-            return null;
-        }
-
-        private PluralResourceSet LoadAndCacheResourceSet ( PluralRules pluralRules )
-        {
-            var language          = pluralRules.Culture.Name;
-            var loadedResourceSet = LoadResourceSet ( pluralRules );
-
-            lock ( resourceSets )
-            {
-                if ( resourceSets.TryGetValue ( language, out var resourceSet ) )
-                    return resourceSet;
-
-                resourceSets.Add ( language, loadedResourceSet );
-            }
-
-            return loadedResourceSet;
         }
 
         private PluralResourceSet LoadResourceSet ( PluralRules pluralRules )
