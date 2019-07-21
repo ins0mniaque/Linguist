@@ -35,6 +35,9 @@ namespace Localizer.WPF
 
         protected LocalizeExtension ( params object [ ] parameters ) : base ( parameters ) { }
 
+        [ TypeConverter ( typeof ( LocalizationProviderTypeConverter ) ) ]
+        public ILocalizationProvider Provider { get; set; }
+
         public object Key { get; set; }
 
         [ TypeConverter ( typeof ( BindingBaseTypeConverter ) ) ]
@@ -47,7 +50,9 @@ namespace Localizer.WPF
             binding.Converter          = this;
             binding.ConverterParameter = Key;
 
-            binding.Bindings.Add ( ProvideInheritanceBinding ( Localize        .ProviderProperty ) );
+            if ( Provider == null )
+                binding.Bindings.Add ( ProvideInheritanceBinding ( Localize.ProviderProperty ) );
+
             binding.Bindings.Add ( ProvideInheritanceBinding ( FrameworkElement.LanguageProperty ) );
 
             if ( KeyPath != null )
@@ -73,7 +78,7 @@ namespace Localizer.WPF
 
         protected override object ProvideResource ( object [ ] values, Type targetType, object parameter, CultureInfo culture )
         {
-            return Localize.ProvideResource ( null, culture, parameter, values, Type ?? targetType );
+            return Localize.ProvideResource ( Provider, culture, parameter, values, Type ?? targetType );
         }
 
         private sealed class ProvideValueTarget : IProvideValueTarget
