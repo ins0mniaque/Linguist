@@ -39,6 +39,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BindingBaseTypeConverter.cs" />
     <Compile Include="ResourceMarkupExtension.cs" />
     <Compile Include="IResourceMarkupExtension.cs" />
     <Compile Include="LocalizationProviderTypeConverter.cs" />

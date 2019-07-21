@@ -9,9 +9,9 @@ namespace Localizer.WPF
     {
         protected TypedLocalizeExtension ( params object [ ] parameters ) : base ( parameters ) { }
 
-        public abstract TKey   Key     { get; set; }
-        public abstract object KeyPath { get; set; }
-        public abstract Type   Type    { get; set; }
+        public abstract TKey        Key     { get; set; }
+        public abstract BindingBase KeyPath { get; set; }
+        public abstract Type        Type    { get; set; }
 
         protected abstract ILocalizationProvider Provider  { get; }
         protected abstract string                KeyToName ( TKey key );

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
@@ -34,9 +35,12 @@ namespace Localizer.WPF
 
         protected LocalizeExtension ( params object [ ] parameters ) : base ( parameters ) { }
 
-        public object Key     { get; set; }
-        public object KeyPath { get; set; }
-        public Type   Type    { get; set; }
+        public object Key { get; set; }
+
+        [ TypeConverter ( typeof ( BindingBaseTypeConverter ) ) ]
+        public BindingBase KeyPath { get; set; }
+
+        public Type Type { get; set; }
 
         public override void SetupBinding ( MultiBinding binding, IServiceProvider serviceProvider )
         {
