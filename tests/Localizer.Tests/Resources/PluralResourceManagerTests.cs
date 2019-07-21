@@ -66,10 +66,12 @@ namespace Localizer.Resources.Tests
         [ InlineData ( "2.0 pixels", "Pixels", "2.0" ) ]
         public void EnglishFormatReturnsTheCorrectString ( string expectedString, string name, params object [ ] args )
         {
-            var manager     = fixture.PluralResourceManager;
-            var resourceSet = manager.GetResourceSet ( PluralRules.GetPluralRules ( CultureInfo.GetCultureInfo ( "en-US" ) ) );
+            var culture      = CultureInfo.GetCultureInfo ( "en-US" );
+            var manager      = fixture.PluralResourceManager;
+            var resourceSet  = manager.GetResourceSet ( PluralRules.GetPluralRules ( culture ) );
+            var formatString = resourceSet.SelectPluralResource ( name, args );
 
-            Assert.Equal ( expectedString, resourceSet.Format ( null, name, args ) );
+            Assert.Equal ( expectedString, string.Format ( culture, formatString.Format, args ) );
         }
 
         [ Theory ]
@@ -87,10 +89,12 @@ namespace Localizer.Resources.Tests
         [ InlineData ( "2,0 pixels", "Pixels", "2,0" ) ]
         public void FrenchFormatReturnsTheCorrectString ( string expectedString, string name, params object [ ] args )
         {
-            var manager     = fixture.PluralResourceManager;
-            var resourceSet = manager.GetResourceSet ( PluralRules.GetPluralRules ( CultureInfo.GetCultureInfo ( "fr-FR" ) ) );
+            var culture      = CultureInfo.GetCultureInfo ( "fr-FR" );
+            var manager      = fixture.PluralResourceManager;
+            var resourceSet  = manager.GetResourceSet ( PluralRules.GetPluralRules ( culture ) );
+            var formatString = resourceSet.SelectPluralResource ( name, args );
 
-            Assert.Equal ( expectedString, resourceSet.Format ( null, name, args ) );
+            Assert.Equal ( expectedString, string.Format ( culture, formatString.Format, args ) );
         }
     }
 }
