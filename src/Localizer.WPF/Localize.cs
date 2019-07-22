@@ -133,15 +133,20 @@ namespace Localizer.WPF
                 return null;
             }
 
-            var name = GetName ( target ) ?? ( target as FrameworkElement )?.Name;
-            if ( string.IsNullOrEmpty ( name ) )
-                name = target.GetType ( ).Name;
+            var isComponent = target.ReadLocalValue ( ComponentProperty ) != DependencyProperty.UnsetValue;
+            if ( isComponent )
+                return GenerateKey ( component, property.Name );
 
-            name = name + "." + property.Name;
-            if ( ! string.IsNullOrEmpty ( component ) )
-                name = component + "." + name;
+            var name = GetName ( target );
+            if ( string.IsNullOrEmpty ( name ) ) name = ( target as FrameworkElement )?.Name;
+            if ( string.IsNullOrEmpty ( name ) ) name = target.GetType ( ).Name;
 
-            return name;
+            return GenerateKey ( component, name, property.Name );
+        }
+
+        private static string GenerateKey ( params string [ ] parts )
+        {
+            return string.Join ( ".", Array.FindAll ( parts, part => ! string.IsNullOrEmpty ( part ) ) );
         }
 
         private static object ConvertTo ( object resource, Type targetType )
