@@ -63,8 +63,14 @@
     <Compile Include="Resources\SuffixedResourceNamingStrategy.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="CLDR\ldmlSupplemental.dtd" />
-    <None Include="CLDR\plurals.xml" />
+    <None Include="CLDR\common\supplemental\ordinals.xml" />
+    <None Include="CLDR\common\supplemental\pluralRanges.xml" />
+    <None Include="CLDR\common\supplemental\plurals.xml" />
+    <None Include="CLDR\readme.html" />
+    <None Include="CLDR\unicode-license.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CLDR\common\dtd\ldmlSupplemental.dtd" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
