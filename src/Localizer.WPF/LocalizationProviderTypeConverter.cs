@@ -31,7 +31,10 @@ namespace Localizer.WPF
 
         private static ILocalizationProvider LoadNamedProvider ( string name )
         {
-            var assembly = Assembly.Load ( name.Split ( '.' ).First ( ) );
+            var assembly = Assembly.Load ( name.Split ( '/', '\\' ).First ( ) );
+
+            name = name.Replace ( "/",  "." )
+                       .Replace ( "\\", "." );
 
             return new ResourceManagerLocalizationProvider ( new ResourceManager ( name, assembly ) );
         }
