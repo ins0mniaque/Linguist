@@ -15,9 +15,9 @@
         public const string NotifyCultureChangedVariableName  = "notify";
         public const string FormatMethodSuffix                = "Format";
         public const string FormatMethodParameterName         = "arg{0}";
-        public const string ResourceKeyEnumName               = "ResourceKey";
-        public const string ResourceKeyTranslatorFieldName    = "_resourceKey";
-        public const string ResourceKeyTranslatorName         = "ResourceKeyToName";
+        public const string ResourceKeyEnumName               = "Keys";
+        public const string ResourceKeyTranslatorFieldName    = "_keys";
+        public const string ResourceKeyTranslatorName         = "KeyToName";
         public const string ResourceKeyParameterName          = "key";
     }
 }

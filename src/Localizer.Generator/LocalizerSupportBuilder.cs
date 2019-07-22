@@ -24,7 +24,7 @@ namespace Localizer.Generator
 
     public class LocalizerSupportBuilder
     {
-        public static CodeCompileUnit GenerateCode ( CodeDomProvider codeDomProvider, string inputFileName, string inputFileContent, string fileNamespace, string resourcesNamespace, MemberAttributes accessModifiers, Type customToolType, out CompilerError [ ] errors )
+        public static LocalizerSupportBuilder GenerateBuilder ( CodeDomProvider codeDomProvider, string inputFileName, string inputFileContent, string fileNamespace, string resourcesNamespace, MemberAttributes accessModifiers, Type customToolType )
         {
             var baseName  = Path.GetFileNameWithoutExtension ( inputFileName );
             var extension = Path.GetExtension     ( inputFileName )
@@ -42,10 +42,15 @@ namespace Localizer.Generator
                     throw new ArgumentException ( Format ( UnknownResourceFileFormat, Path.GetFileName ( inputFileName ) ), nameof ( inputFileName ) );
             }
 
-            var builder = new LocalizerSupportBuilder ( codeDomProvider, baseName, resourceSet, fileNamespace, resourcesNamespace, accessModifiers, customToolType );
+            return new LocalizerSupportBuilder ( codeDomProvider, baseName, resourceSet, fileNamespace, resourcesNamespace, accessModifiers, customToolType );
+        }
+
+        public static CodeCompileUnit GenerateCode ( CodeDomProvider codeDomProvider, string inputFileName, string inputFileContent, string fileNamespace, string resourcesNamespace, MemberAttributes accessModifiers, Type customToolType, out CompilerError [ ] errors )
+        {
+            var builder = GenerateBuilder ( codeDomProvider, inputFileName, inputFileContent, fileNamespace, resourcesNamespace, accessModifiers, customToolType );
             var code    = builder.Build ( );
 
-            errors = resourceSet.Resources.Values.Where ( resource => ! IsNullOrEmpty ( resource.ErrorText ) ).ToArray ( );
+            errors = builder.ResourceSet.Resources.Values.Where ( resource => ! IsNullOrEmpty ( resource.ErrorText ) ).ToArray ( );
             if ( errors.Length == 0 )
                 errors = null;
 
@@ -95,6 +100,8 @@ namespace Localizer.Generator
         public IResourceNamingStrategy ResourceNamingStrategy            { get; } = Resources.ResourceNamingStrategy.Default;
         public CodeExpression          ResourceNamingStrategyInitializer { get; }
 
+        public bool GenerateWPFSupport { get; set; }
+
         public virtual CodeCompileUnit Build ( )
         {
             var validResources  = ValidateResourceNames    ( );
@@ -123,7 +130,8 @@ namespace Localizer.Generator
                     resource.ErrorText = Format ( CannotCreateFormatMethod, methodName, entry.Name );
             }
 
-            GenerateKeys ( validResources )?.AddRangeTo ( support );
+            if ( GenerateWPFSupport )
+                GenerateWPFTypedLocalizeExtension ( validResources )?.AddTo ( codeNamespace );
 
             CodeGenerator.ValidateIdentifiers ( codeCompileUnit );
 
@@ -143,6 +151,8 @@ namespace Localizer.Generator
         {
             yield return ResourceManagerPropertyName;
             yield return ResourceManagerFieldName;
+            yield return LocalizationProviderPropertyName;
+            yield return LocalizationProviderFieldName;
             yield return CultureInfoPropertyName;
             yield return CultureInfoFieldName;
             yield return NotifyCultureChangedMethodName;
@@ -151,13 +161,6 @@ namespace Localizer.Generator
                 yield return "Static" + nameof ( INotifyPropertyChanged.PropertyChanged );
             else
                 yield return nameof ( INotifyPropertyChanged.PropertyChanged );
-
-            if ( CodeDomProvider.Supports ( GeneratorSupport.NestedTypes ) )
-            {
-                yield return ResourceKeyEnumName;
-                yield return ResourceKeyTranslatorFieldName;
-                yield return ResourceKeyTranslatorName;
-            }
         }
 
         protected virtual CodeTypeDeclaration GenerateClass ( )
@@ -279,7 +282,7 @@ namespace Localizer.Generator
 
         protected virtual CodeMemberProperty GenerateResourceManagerProperty ( CodeExpression resourceManager )
         {
-            return Code.CreateProperty ( ResourceSet.ResourceManagerType, ResourceManagerPropertyName, AccessModifiers, false )
+            return Code.CreateProperty ( ResourceSet.ResourceManagerType, ResourceManagerPropertyName, AccessModifiers | MemberAttributes.Static, false )
                        .Get            ( get => get.Return ( resourceManager ) )
                        .AddSummary     ( ResourceManagerPropertySummary );
         }
@@ -298,7 +301,7 @@ namespace Localizer.Generator
 
         protected virtual CodeMemberProperty GenerateLocalizationProviderProperty ( CodeExpression localizationProvider )
         {
-            return Code.CreateProperty ( ResourceSet.LocalizationProviderType, LocalizationProviderPropertyName, AccessModifiers, false )
+            return Code.CreateProperty ( ResourceSet.LocalizationProviderType, LocalizationProviderPropertyName, AccessModifiers | MemberAttributes.Static, false )
                        .Get            ( get => get.Return ( localizationProvider ) )
                        .AddSummary     ( LocalizationProviderPropertySummary );
         }
@@ -427,18 +430,67 @@ namespace Localizer.Generator
             return null;
         }
 
-        protected virtual IEnumerable < CodeTypeMember > GenerateKeys ( IList < Entry > entries )
+        protected virtual CodeTypeDeclaration GenerateWPFTypedLocalizeExtension ( IList < Entry > entries )
         {
             if ( ! CodeDomProvider.Supports ( GeneratorSupport.NestedTypes ) )
                 return null;
 
-            var keyEnum           = Code.CreateNestedEnum ( ResourceKeyEnumName, AccessModifiers & ~MemberAttributes.Static )
-                                        .AddSummary       ( ResourceKeyEnumNameSummary );
+            var type              = Code.CreateClass      ( ClassName + "Extension", MemberAttributes.Public );
+            var keyEnum           = Code.CreateNestedEnum ( ResourceKeyEnumName, MemberAttributes.Public )
+                                        .AddSummary       ( ResourceKeyEnumNameSummary )
+                                        .AddTo            ( type );
             var keyEnumTypeRef    = Code.TypeRef ( ResourceKeyEnumName, default );
-            var keyTranslator     = Code.CreateNestedClass ( ResourceKeyTranslatorFieldName, MemberAttributes.Private | MemberAttributes.Static );
+            var keyTranslator     = Code.CreateNestedClass ( ResourceKeyTranslatorFieldName, MemberAttributes.Private | MemberAttributes.Static )
+                                        .AddTo             ( type );
             var dictionaryTypeRef = Code.TypeRef ( "System.Collections.Generic.Dictionary",
                                                    CodeTypeReferenceOptions.GlobalReference,
                                                    keyEnumTypeRef, Code.TypeRef < string > ( ) );
+
+            type.BaseTypes.Add ( Code.TypeRef ( "Localizer.WPF.TypedLocalizeExtension",
+                                                CodeTypeReferenceOptions.GlobalReference,
+                                                Code.TypeRef ( type.Name + "+" + ResourceKeyEnumName, default ) ) );
+
+            var objectType = Code.TypeRef < object > ( );
+            var distinctNumberOfArguments = entries.Select ( entry => entry.NumberOfArguments )
+                                                   .DefaultIfEmpty ( 0 )
+                                                   .Distinct ( )
+                                                   .OrderBy  ( numberOfArguments => numberOfArguments );
+
+            foreach ( var numberOfArguments in distinctNumberOfArguments )
+            {
+                var ctor = new CodeConstructor ( ) { Attributes = MemberAttributes.Public }.AddTo ( type );
+
+                for ( var argument = 0; argument < numberOfArguments; argument++ )
+                {
+                    var parameterName = Format ( CultureInfo.InvariantCulture, FormatMethodParameterName, argument );
+
+                    ctor.Parameters         .Add ( objectType.Parameter ( parameterName ) );
+                    ctor.BaseConstructorArgs.Add ( Code.Variable        ( parameterName ) );
+                }
+            }
+
+            Code.CreateField    ( keyEnumTypeRef, "_key", MemberAttributes.Private ).AddTo ( type );
+            Code.CreateProperty ( keyEnumTypeRef, "Key", MemberAttributes.Public | MemberAttributes.Override )
+                .Get   ( get          => get.Return ( Code.This ( ).Field ( "_key" ) ) )
+                .Set   ( (set, value) => set.Add    ( Code.Assign ( Code.This ( ).Field ( "_key" ), value ) ) )
+                .AddTo ( type );
+
+            Code.CreateField    ( Code.TypeRef ( "System.Windows.Data.BindingBase" ), "_keyPath", MemberAttributes.Private ).AddTo ( type );
+            Code.CreateProperty ( Code.TypeRef ( "System.Windows.Data.BindingBase" ), "KeyPath", MemberAttributes.Public | MemberAttributes.Override )
+                .Get        ( get          => get.Return ( Code.This ( ).Field ( "_keyPath" ) ) )
+                .Set        ( (set, value) => set.Add    ( Code.Assign ( Code.This ( ).Field ( "_keyPath" ), value ) ) )
+                .Attributed ( Code.Attribute < TypeConverterAttribute > ( Code.TypeOf ( Code.TypeRef ( "Localizer.WPF.BindingBaseTypeConverter" ) ) ) )
+                .AddTo      ( type );
+
+            Code.CreateField    < Type > ( "_type", MemberAttributes.Private ).AddTo ( type );
+            Code.CreateProperty < Type > ( "Type", MemberAttributes.Public | MemberAttributes.Override )
+                .Get   ( get          => get.Return ( Code.This ( ).Field ( "_type" ) ) )
+                .Set   ( (set, value) => set.Add    ( Code.Assign ( Code.This ( ).Field ( "_type" ), value ) ) )
+                .AddTo ( type );
+
+            Code.CreateProperty ( Code.TypeRef < ILocalizationProvider > ( ), "Provider", MemberAttributes.Family | MemberAttributes.Override, false )
+                .Get   ( get => get.Return ( Code.Type ( ClassName, default ).Property ( LocalizationProviderPropertyName ) ) )
+                .AddTo ( type );
 
             var cctor       = new CodeTypeConstructor ( ).AddTo ( keyTranslator );
             var translation = cctor.Statements;
@@ -465,15 +517,16 @@ namespace Localizer.Generator
                 .AddTo       ( keyTranslator );
 
             var translate = Code.CreateMethod ( typeof ( string ),
-                                                ResourceKeyTranslatorName,
-                                                AccessModifiers | MemberAttributes.Static );
+                                                "KeyToName",
+                                                MemberAttributes.Family | MemberAttributes.Override )
+                                .AddTo ( type );
 
             translate.Parameters.Add    ( keyEnumTypeRef.Parameter ( ResourceKeyParameterName ) );
             translate.Statements.Return ( Code.Type    ( ResourceKeyTranslatorFieldName, default )
                                               .Field   ( ResourceKeyTranslatorName )
                                               .Indexer ( Code.Variable ( ResourceKeyParameterName ) ) );
 
-            return new CodeTypeMember [ ] { keyEnum, keyTranslator, translate };
+            return type;
         }
 
         protected virtual IList < Entry > ValidateResourceNames ( )
