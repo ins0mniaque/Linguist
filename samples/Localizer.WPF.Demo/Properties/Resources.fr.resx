@@ -118,45 +118,45 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AutomaticKeyDemo.FormattedTextBlock.Text" xml:space="preserve">
-    <value>{0} items</value>
+    <value>{0} éléments</value>
   </data>
   <data name="AutomaticKeyDemo.FormattedTextBlock.Text.One" xml:space="preserve">
-    <value>{0} item</value>
+    <value>{0} élément</value>
   </data>
   <data name="AutomaticKeyDemo.FormattedTextBlock.Text.Zero" xml:space="preserve">
-    <value>No items</value>
+    <value>Aucun élément</value>
   </data>
   <data name="AutomaticKeyDemo.LayoutRoot.Background" xml:space="preserve">
-    <value>PaleGreen</value>
+    <value>Pink</value>
   </data>
   <data name="AutomaticKeyDemo.NamedTextBlock.Text" xml:space="preserve">
-    <value>Text value for NamedTextBlock</value>
+    <value>Valeur Text pour NamedTextBlock</value>
   </data>
   <data name="AutomaticKeyDemo.PluralHint.Text" xml:space="preserve">
-    <value>Pluralization support: Try to enter numerical values such as 0, 1, 3.14...</value>
+    <value>Support pour la pluralisation: Essayez de saisir des valeurs numériques telles que 0, 1, 3.14...</value>
   </data>
   <data name="AutomaticKeyDemo.TextBlock.Text" xml:space="preserve">
-    <value>Text value for control type TextBlock</value>
+    <value>Valeur Text pour le contrôle de type TextBlock</value>
   </data>
   <data name="MainWindow.AutomaticKeyDemo.Header" xml:space="preserve">
-    <value>Automatic keys</value>
+    <value>Clés automatiques</value>
   </data>
   <data name="MainWindow.KeyDemo.Header" xml:space="preserve">
-    <value>Keys</value>
+    <value>Clés</value>
   </data>
   <data name="MainWindow.KeyPathDemo.Header" xml:space="preserve">
-    <value>Bound keys</value>
+    <value>Clés liées</value>
   </data>
   <data name="MainWindow.Language.Label.Text" xml:space="preserve">
-    <value>Window language</value>
+    <value>Langage de la fenêtre</value>
   </data>
   <data name="MainWindow.NoCustomToolDemo.Header" xml:space="preserve">
-    <value>Without custom tool</value>
+    <value>Sans outil</value>
   </data>
   <data name="MainWindow.ProviderDemo.Header" xml:space="preserve">
-    <value>Providers</value>
+    <value>Fournisseurs</value>
   </data>
   <data name="MainWindow.Title" xml:space="preserve">
-    <value>Localizer WPF Demo</value>
+    <value>Démo de Localizer WPF</value>
   </data>
 </root>
