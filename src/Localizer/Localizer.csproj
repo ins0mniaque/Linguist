@@ -35,6 +35,9 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Localizer.CLDR\CLDR.cs">
+      <Link>CLDR\CLDR.cs</Link>
+    </Compile>
     <Compile Include="Cache.DebugView.cs" />
     <Compile Include="FormatString.cs" />
     <Compile Include="FormattedNumber.cs" />
@@ -63,14 +66,7 @@
     <Compile Include="Resources\SuffixedResourceNamingStrategy.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="CLDR\common\supplemental\ordinals.xml" />
-    <None Include="CLDR\common\supplemental\pluralRanges.xml" />
-    <None Include="CLDR\common\supplemental\plurals.xml" />
-    <None Include="CLDR\readme.html" />
-    <None Include="CLDR\unicode-license.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="CLDR\common\dtd\ldmlSupplemental.dtd" />
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
