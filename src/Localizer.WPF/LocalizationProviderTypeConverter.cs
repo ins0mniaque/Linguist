@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using System.Resources;
 
@@ -15,7 +14,7 @@ namespace Localizer.WPF
         {
             return sourceType == typeof ( string );
         }
- 
+
         public override object ConvertFrom ( ITypeDescriptorContext context, CultureInfo culture, object value )
         {
             if ( value is string namedProvider )
@@ -31,7 +30,7 @@ namespace Localizer.WPF
 
         private static ILocalizationProvider LoadNamedProvider ( string name )
         {
-            var assembly = Assembly.Load ( name.Split ( '/', '\\' ).First ( ) );
+            var assembly = Assembly.Load ( name.Split ( '/', '\\' ) [ 0 ] );
 
             name = name.Replace ( "/",  "." )
                        .Replace ( "\\", "." );
