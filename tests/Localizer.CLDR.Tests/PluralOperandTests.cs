@@ -2,10 +2,8 @@
 
 using Xunit;
 
-namespace Localizer.Plural.Tests
+namespace Localizer.CLDR.Tests
 {
-    using static PluralOperand;
-
     public class PluralOperandTests
     {
         [ Theory ]
@@ -26,7 +24,7 @@ namespace Localizer.Plural.Tests
         [ InlineData ( "-1.999", "1.999" ) ]
         public static void OperandNReturnsTheCorrectResult ( string number, string expected )
         {
-            var result = n ( decimal.Parse ( number, CultureInfo.InvariantCulture ) );
+            var result = decimal.Parse ( number, CultureInfo.InvariantCulture ).n ( );
 
             Assert.Equal ( expected, result.ToString ( CultureInfo.InvariantCulture ) );
         }
@@ -49,7 +47,7 @@ namespace Localizer.Plural.Tests
         [ InlineData ( "-1.999", "1" ) ]
         public static void OperandIReturnsTheCorrectResult ( string number, string expected )
         {
-            var result = i ( decimal.Parse ( number, CultureInfo.InvariantCulture ) );
+            var result = decimal.Parse ( number, CultureInfo.InvariantCulture ).i ( );
 
             Assert.Equal ( expected, result.ToString ( CultureInfo.InvariantCulture ) );
         }
@@ -72,7 +70,7 @@ namespace Localizer.Plural.Tests
         [ InlineData ( "-1.999", "3" ) ]
         public static void OperandVReturnsTheCorrectResult ( string number, string expected )
         {
-            var result = v ( decimal.Parse ( number, CultureInfo.InvariantCulture ) );
+            var result = decimal.Parse ( number, CultureInfo.InvariantCulture ).v ( );
 
             Assert.Equal ( expected, result.ToString ( CultureInfo.InvariantCulture ) );
         }
@@ -95,7 +93,7 @@ namespace Localizer.Plural.Tests
         [ InlineData ( "-1.999", "3" ) ]
         public static void OperandWReturnsTheCorrectResult ( string number, string expected )
         {
-            var result = w ( decimal.Parse ( number, CultureInfo.InvariantCulture ) );
+            var result = decimal.Parse ( number, CultureInfo.InvariantCulture ).w ( );
 
             Assert.Equal ( expected, result.ToString ( CultureInfo.InvariantCulture ) );
         }
@@ -118,7 +116,7 @@ namespace Localizer.Plural.Tests
         [ InlineData ( "-1.999", "0.999" ) ]
         public static void OperandFReturnsTheCorrectResult ( string number, string expected )
         {
-            var result = f ( decimal.Parse ( number, CultureInfo.InvariantCulture ) );
+            var result = decimal.Parse ( number, CultureInfo.InvariantCulture ).f ( );
 
             Assert.Equal ( expected, result.ToString ( CultureInfo.InvariantCulture ) );
         }
@@ -141,7 +139,7 @@ namespace Localizer.Plural.Tests
         [ InlineData ( "-1.999", "0.999" ) ]
         public static void OperandTReturnsTheCorrectResult ( string number, string expected )
         {
-            var result = t ( decimal.Parse ( number, CultureInfo.InvariantCulture ) );
+            var result = decimal.Parse ( number, CultureInfo.InvariantCulture ).t ( );
 
             Assert.Equal ( expected, result.ToString ( CultureInfo.InvariantCulture ) );
         }

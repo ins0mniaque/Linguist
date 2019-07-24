@@ -1,7 +1,6 @@
 ﻿namespace Localizer.Plural
 {
-    using static System.Decimal;
-    using static PluralOperand;
+    using Localizer.CLDR;
 
     public abstract class ZeroRule : PluralRule
     {
@@ -37,19 +36,19 @@
     {
         public override bool AppliesTo ( decimal number )
         {
-            return Rule ( i ( number ), v ( number ) );
+            return Rule ( number.i ( ), number.v ( ) );
         }
 
-        private static bool Rule ( decimal i, decimal v ) => i == Zero && v == Zero;
+        private static bool Rule ( decimal i, decimal v ) => i == 0m && v == 0m;
     }
 
     public sealed class ImplicitOneRule : OneRule
     {
         public override bool AppliesTo ( decimal number )
         {
-            return Rule ( i ( number ), v ( number ) );
+            return Rule ( number.i ( ), number.v ( ) );
         }
 
-        private static bool Rule ( decimal i, decimal v ) => i == One && v == Zero;
+        private static bool Rule ( decimal i, decimal v ) => i == 1m && v == 0m;
     }
 }

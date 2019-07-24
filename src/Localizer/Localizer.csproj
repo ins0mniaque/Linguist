@@ -38,6 +38,9 @@
     <Compile Include="..\Localizer.CLDR\CLDR.cs">
       <Link>CLDR\CLDR.cs</Link>
     </Compile>
+    <Compile Include="..\Localizer.CLDR\CLDR.Data.cs">
+      <Link>CLDR\CLDR.Data.cs</Link>
+    </Compile>
     <Compile Include="Cache.DebugView.cs" />
     <Compile Include="FormatString.cs" />
     <Compile Include="FormattedNumber.cs" />
@@ -52,7 +55,6 @@
     <Compile Include="Plural\TestRules.cs" />
     <Compile Include="Plural\OrdinalRuleSet.cs" />
     <Compile Include="Plural\PluralFormSelector.cs" />
-    <Compile Include="Plural\PluralOperand.cs" />
     <Compile Include="Plural\PluralFormRangeSelector.cs" />
     <Compile Include="Plural\BaseRules.cs" />
     <Compile Include="Plural\PluralRule.cs" />

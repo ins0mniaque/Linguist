@@ -1,0 +1,122 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ output extension=".cs" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ assembly name="$(TargetDir)Localizer.dll" #>
+<#@ assembly name="$(TargetDir)Localizer.CLDR.dll" #>
+<#@ import namespace="Localizer.CLDR" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Xml.Linq" #>
+using System.Globalization;
+
+using Localizer.Plural;
+
+namespace Localizer.CLDR
+{
+    // TODO: Implement explicit rules for cardinal rule sets
+    internal static class Explicit
+    {
+        public static bool ZeroRule ( decimal i, decimal v ) => i == 0m && v == 0m;
+        public static bool OneRule  ( decimal i, decimal v ) => i == 1m && v == 0m;
+    }
+
+    internal static class PluralRuleSets
+    {
+        public static PluralFormSelector GetCardinalRuleSet ( CultureInfo culture )
+        {
+            return null;
+        }
+
+        public static PluralFormSelector GetOrdinalRuleSet ( CultureInfo culture )
+        {
+            return null;
+        }
+
+        public static PluralFormRangeSelector GetRangeRuleSet ( CultureInfo culture )
+        {
+            return null;
+        }
+    }
+<#
+    var plurals = XDocument.Load ( Host.ResolvePath ( "CLDR/common/supplemental/plurals.xml" ) );
+
+    var names = new Dictionary < string, int > ( );
+
+    foreach ( var pluralRuleSet in PluralRules.Parse ( plurals ) )
+    {
+        if ( pluralRuleSet.Rules.Length == 0 && pluralRuleSet.PluralForm == Localizer.PluralForm.Other )
+        {
+#>
+
+    // Locales: <#= string.Join ( ", ", pluralRuleSet.Locales ) #>
+    public class DefaultCardinalRuleSet : PluralFormSelector
+    {
+        public DefaultCardinalRuleSet ( ) : base ( PluralForm.Other ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            return PluralForm.Other;
+        }
+    }
+<#
+            continue;
+        }
+
+        var name = "CardinalRuleSet" + pluralRuleSet.PluralForm.ToString ( ).Replace ( ", ", string.Empty );
+        int index;
+        if ( ! names.TryGetValue ( name, out index ) )
+            index = -1;
+
+        names [ name ] = ++index;
+
+        name += (char) ( 'A' + index );
+#>
+
+    // Locales: <#= string.Join ( ", ", pluralRuleSet.Locales ) #>
+    public class <#= name #> : PluralFormSelector
+    {
+        public <#= name #> ( ) : base ( PluralForm.<#= pluralRuleSet.PluralForm.ToString ( ).Replace ( ", ", " | PluralForm." ) #> ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+<#
+        foreach ( var operand in pluralRuleSet.Operands )
+        {
+#>
+            var <#= operand #> = number.<#= operand #> ( );
+<#
+        }
+
+        foreach ( var pluralRule in pluralRuleSet.Rules )
+        {
+#>
+
+            // <#= pluralRule.RuleCode #>
+<#
+            WriteSamples ( "integer", pluralRule.IntegerSamples );
+            WriteSamples ( "decimal", pluralRule.DecimalSamples );
+#>
+            if ( <#= pluralRule.Rule #> )
+                return PluralForm.<#= pluralRule.PluralForm #>;
+<#
+        }
+#>
+
+            return PluralForm.Other;
+        }
+    }
+<#
+    }
+#>
+}<#+
+    private void WriteSamples ( string name, string [ ] samples )
+    {
+        if ( samples != null && samples.Length > 0 )
+        {
+#>
+            //   @<#= name #>: <#= string.Join ( ", ", samples ) #>
+<#+
+        }
+    }
+#>

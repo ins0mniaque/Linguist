@@ -37,6 +37,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PluralOperandTests.cs" />
     <Compile Include="PluralRuleTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -54,6 +55,10 @@
     <ProjectReference Include="..\..\src\Localizer.CLDR\Localizer.CLDR.csproj">
       <Project>{bea3eade-e57a-4e1d-9ea7-85063e8c18f0}</Project>
       <Name>Localizer.CLDR</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Localizer\Localizer.csproj">
+      <Project>{2a8e5425-5675-4a83-938a-77d60d6d8142}</Project>
+      <Name>Localizer</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

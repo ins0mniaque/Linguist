@@ -37,7 +37,6 @@
   <ItemGroup>
     <Compile Include="PluralizerTests.cs" />
     <Compile Include="PluralRulesTests.cs" />
-    <Compile Include="Plural\PluralOperandTests.cs" />
     <Compile Include="FormattedNumberTests.cs" />
     <Compile Include="FormatStringTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

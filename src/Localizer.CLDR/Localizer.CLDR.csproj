@@ -37,18 +37,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CLDR.cs">
-      <DependentUpon>CLDR.tt</DependentUpon>
+    <Compile Include="CLDR.cs" />
+    <Compile Include="CLDR.Data.cs">
+      <DependentUpon>CLDR.Data.tt</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="PluralRule.cs" />
+    <Compile Include="Parsers\PluralRules.cs" />
+    <Compile Include="Parsers\PluralRule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="CLDR.tt">
+    <Content Include="CLDR.Data.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>CLDR.cs</LastGenOutput>
+      <LastGenOutput>CLDR.Data.cs</LastGenOutput>
     </Content>
     <None Include="CLDR\unicode-license.txt" />
     <None Include="CLDR\readme.html" />
@@ -70,6 +72,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)src\Localizer\bin\$(Configuration)\" /Y /I</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>
