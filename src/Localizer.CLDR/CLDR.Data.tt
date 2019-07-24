@@ -10,7 +10,7 @@
 <#@ import namespace="System.Xml.Linq" #>
 using System.Globalization;
 
-using Localizer.Plural;
+using Localizer.Pluralization;
 
 namespace Localizer.CLDR
 {

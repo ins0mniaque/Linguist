@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Localizer.Plural
+namespace Localizer.Pluralization
 {
     public class OrdinalRuleSet : PluralRuleSet
     {

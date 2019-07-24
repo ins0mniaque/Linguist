@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-using Localizer.Plural;
+using Localizer.Pluralization;
 
 namespace Localizer.CLDR
 {

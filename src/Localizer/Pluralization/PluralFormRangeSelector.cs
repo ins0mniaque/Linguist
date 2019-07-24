@@ -1,4 +1,4 @@
-﻿namespace Localizer.Plural
+﻿namespace Localizer.Pluralization
 {
     public abstract class PluralFormRangeSelector
     {
