@@ -32,23 +32,17 @@
         public OtherRule ( ) : base ( PluralForm.Other ) { }
     }
 
-    public sealed class ImplicitZeroRule : ZeroRule
+    public sealed class ExplicitZeroRule : PluralRule
     {
-        public override bool AppliesTo ( decimal number )
-        {
-            return Rule ( number.i ( ), number.v ( ) );
-        }
+        public ExplicitZeroRule ( ) : base ( PluralForm.ExplicitZero ) { }
 
-        private static bool Rule ( decimal i, decimal v ) => i == 0m && v == 0m;
+        public override bool AppliesTo ( decimal number ) => number.i ( ) == 0m && number.v ( ) == 0m;
     }
 
-    public sealed class ImplicitOneRule : OneRule
+    public sealed class ExplicitOneRule : PluralRule
     {
-        public override bool AppliesTo ( decimal number )
-        {
-            return Rule ( number.i ( ), number.v ( ) );
-        }
+        public ExplicitOneRule ( ) : base ( PluralForm.ExplicitOne ) { }
 
-        private static bool Rule ( decimal i, decimal v ) => i == 1m && v == 0m;
+        public override bool AppliesTo ( decimal number ) => number.i ( ) == 1m && number.v ( ) == 0m;
     }
 }

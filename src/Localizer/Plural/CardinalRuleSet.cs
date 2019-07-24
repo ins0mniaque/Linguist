@@ -6,8 +6,8 @@ namespace Localizer.Plural
     {
         public static CardinalRuleSet Default { get; } = new CardinalRuleSet ( Array.Empty < PluralRule > ( ) );
 
-        public static PluralRule ImplicitZeroRule { get; } = new ImplicitZeroRule ( );
-        public static PluralRule ImplicitOneRule  { get; } = new ImplicitOneRule  ( );
+        public static PluralRule ExplicitZeroRule { get; } = new ExplicitZeroRule ( );
+        public static PluralRule ExplicitOneRule  { get; } = new ExplicitOneRule  ( );
 
         private readonly bool hasZeroForm;
         private readonly bool hasOneForm;
@@ -20,13 +20,27 @@ namespace Localizer.Plural
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
-            if ( ! hasZeroForm && availablePluralForms.HasFlag ( PluralForm.Zero ) )
-                if ( ImplicitZeroRule.AppliesTo ( number ) )
-                    return ImplicitZeroRule.PluralForm;
+            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            {
+                if ( ExplicitZeroRule.AppliesTo ( number ) )
+                    return ExplicitZeroRule.PluralForm;
+            }
+            else if ( ! hasZeroForm && availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            {
+                if ( ExplicitZeroRule.AppliesTo ( number ) )
+                    return PluralForm.Zero;
+            }
 
-            if ( ! hasOneForm && availablePluralForms.HasFlag ( PluralForm.One ) )
-                if ( ImplicitOneRule.AppliesTo ( number ) )
-                    return ImplicitOneRule.PluralForm;
+            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            {
+                if ( ExplicitOneRule.AppliesTo ( number ) )
+                    return ExplicitOneRule.PluralForm;
+            }
+            else if ( ! hasOneForm && availablePluralForms.HasFlag ( PluralForm.One ) )
+            {
+                if ( ExplicitOneRule.AppliesTo ( number ) )
+                    return PluralForm.One;
+            }
 
             return base.SelectPluralForm ( number, availablePluralForms );
         }

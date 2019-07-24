@@ -33,6 +33,16 @@ namespace Localizer
         /// <summary>
         /// Common name for the default plural form.
         /// </summary>
-        Other = 0
+        Other = 0,
+
+        /// <summary>
+        /// Common name for the explicit 'zero' plural form.
+        /// </summary>
+        ExplicitZero = 1 << 5,
+
+        /// <summary>
+        /// Common name for the explicit 'one' plural form.
+        /// </summary>
+        ExplicitOne = 1 << 6
     }
 }

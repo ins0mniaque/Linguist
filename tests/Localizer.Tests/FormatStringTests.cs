@@ -24,6 +24,8 @@ namespace Localizer.Tests
 
         [ Theory ]
         [ InlineData ( null,  0, null, 0, 0, Cardinal, Other,               null,  "{}: Cardinal, Other"            ) ]
+        [ InlineData ( null,  0, null, 0, 0, Cardinal, ExplicitZero,        null,  "{}: Cardinal, ExplicitZero"     ) ]
+        [ InlineData ( null,  0, null, 0, 0, Cardinal, ExplicitOne,         null,  "{}: Cardinal, ExplicitOne"      ) ]
         [ InlineData ( null,  0, null, 0, 0, Ordinal,  Zero,                One,   "{}: Ordinal, Range, One"        ) ]
         [ InlineData ( 0,  0, null, 0, 2,    Cardinal, Other,               null,  "{0}: Cardinal, Other"           ) ]
         [ InlineData ( 0,  0, "X", 0, 2,     Ordinal,  Other,               null,  "{0:X}: Ordinal, Other"          ) ]

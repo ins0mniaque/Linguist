@@ -43,6 +43,8 @@ namespace Localizer.CLDR
                 case "few"   : return PluralForm.Few;
                 case "many"  : return PluralForm.Many;
                 case "other" : return PluralForm.Other;
+                case "0"     : return PluralForm.ExplicitZero;
+                case "1"     : return PluralForm.ExplicitOne;
                 default      : throw new FormatException ( "Invalid plural form" );
             }
         }

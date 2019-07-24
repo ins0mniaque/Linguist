@@ -14,12 +14,14 @@ namespace Localizer.CLDR.Tests
         public const string Rule5 = "v = 0 and i = 1,2,3 or v = 0 and i % 10 != 4,6,9 or v != 0 and f % 10 != 4,6,9 @integer 0~3, 5, 7, 8, 10~13, 15, 17, 18, 20, 21, 100, 1000, 10000, 100000, 1000000, … @decimal 0.0~0.3, 0.5, 0.7, 0.8, 1.0~1.3, 1.5, 1.7, 1.8, 2.0, 2.1, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …";
 
         [ Theory ]
-        [ InlineData ( "zero",  Rule0, PluralForm.Zero  ) ]
-        [ InlineData ( "one",   Rule1, PluralForm.One   ) ]
-        [ InlineData ( "two",   Rule2, PluralForm.Two   ) ]
-        [ InlineData ( "few",   Rule3, PluralForm.Few   ) ]
-        [ InlineData ( "many",  Rule4, PluralForm.Many  ) ]
-        [ InlineData ( "other", Rule5, PluralForm.Other ) ]
+        [ InlineData ( "zero",  Rule0, PluralForm.Zero         ) ]
+        [ InlineData ( "one",   Rule1, PluralForm.One          ) ]
+        [ InlineData ( "two",   Rule2, PluralForm.Two          ) ]
+        [ InlineData ( "few",   Rule3, PluralForm.Few          ) ]
+        [ InlineData ( "many",  Rule4, PluralForm.Many         ) ]
+        [ InlineData ( "other", Rule5, PluralForm.Other        ) ]
+        [ InlineData ( "0",     Rule5, PluralForm.ExplicitZero ) ]
+        [ InlineData ( "1",     Rule5, PluralForm.ExplicitOne  ) ]
         public static void ParseReturnsTheCorrectPluralForm ( string count, string rule, PluralForm expectedPluralForm )
         {
             Assert.Equal ( expectedPluralForm, PluralRule.Parse ( count, rule, out var _ ).PluralForm );
@@ -28,8 +30,8 @@ namespace Localizer.CLDR.Tests
         [ Theory ]
         [ InlineData ( "",       Rule0 ) ]
         [ InlineData ( " ",      Rule1 ) ]
-        [ InlineData ( "0",      Rule2 ) ]
-        [ InlineData ( "1",      Rule3 ) ]
+        [ InlineData ( "2",      Rule2 ) ]
+        [ InlineData ( "-1",     Rule3 ) ]
         [ InlineData ( "none",   Rule4 ) ]
         [ InlineData ( "others", Rule5 ) ]
         public static void ParseThrowsOnInvalidPluralForm ( string count, string rule )

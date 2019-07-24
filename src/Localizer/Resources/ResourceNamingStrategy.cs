@@ -15,6 +15,8 @@ namespace Localizer.Resources
         protected readonly string few;
         protected readonly string many;
         protected readonly string other;
+        protected readonly string explicitZero;
+        protected readonly string explicitOne;
         protected readonly string discard;
         protected readonly string ordinalZero;
         protected readonly string ordinalOne;
@@ -31,6 +33,8 @@ namespace Localizer.Resources
                                            string few,
                                            string many,
                                            string other,
+                                           string explicitZero,
+                                           string explicitOne,
                                            string discard,
                                            string ordinalZero,
                                            string ordinalOne,
@@ -48,6 +52,8 @@ namespace Localizer.Resources
             this.few          = few;
             this.many         = many;
             this.other        = other;
+            this.explicitZero = explicitZero;
+            this.explicitOne  = explicitOne;
             this.discard      = discard;
             this.ordinalZero  = ordinalZero;
             this.ordinalOne   = ordinalOne;
@@ -67,13 +73,15 @@ namespace Localizer.Resources
         {
             comparison = comparisonType;
 
-            zero    = string.Format ( CultureInfo.InvariantCulture, pluralFormFormat, Keywords.Zero  );
-            one     = string.Format ( CultureInfo.InvariantCulture, pluralFormFormat, Keywords.One   );
-            two     = string.Format ( CultureInfo.InvariantCulture, pluralFormFormat, Keywords.Two   );
-            few     = string.Format ( CultureInfo.InvariantCulture, pluralFormFormat, Keywords.Few   );
-            many    = string.Format ( CultureInfo.InvariantCulture, pluralFormFormat, Keywords.Many  );
-            other   = string.Format ( CultureInfo.InvariantCulture, pluralFormFormat, Keywords.Other );
-            discard = string.Format ( CultureInfo.InvariantCulture, pluralFormFormat, discardKeyword ?? Keywords.Discard );
+            zero         = string.Format ( CultureInfo.InvariantCulture, pluralFormFormat, Keywords.Zero  );
+            one          = string.Format ( CultureInfo.InvariantCulture, pluralFormFormat, Keywords.One   );
+            two          = string.Format ( CultureInfo.InvariantCulture, pluralFormFormat, Keywords.Two   );
+            few          = string.Format ( CultureInfo.InvariantCulture, pluralFormFormat, Keywords.Few   );
+            many         = string.Format ( CultureInfo.InvariantCulture, pluralFormFormat, Keywords.Many  );
+            other        = string.Format ( CultureInfo.InvariantCulture, pluralFormFormat, Keywords.Other );
+            explicitZero = string.Format ( CultureInfo.InvariantCulture, pluralFormFormat, Keywords.ExplicitZero );
+            explicitOne  = string.Format ( CultureInfo.InvariantCulture, pluralFormFormat, Keywords.ExplicitOne  );
+            discard      = string.Format ( CultureInfo.InvariantCulture, pluralFormFormat, discardKeyword ?? Keywords.Discard );
 
             ordinalZero  = string.Format ( CultureInfo.InvariantCulture, ordinalFormFormat, Keywords.Zero  );
             ordinalOne   = string.Format ( CultureInfo.InvariantCulture, ordinalFormFormat, Keywords.One   );
@@ -97,13 +105,15 @@ namespace Localizer.Resources
 
             var match = (string) null;
 
-            if      ( Match ( name, zero,    comparison ) ) { match = zero;    pluralForm = PluralForm.Zero;  }
-            else if ( Match ( name, one,     comparison ) ) { match = one;     pluralForm = PluralForm.One;   }
-            else if ( Match ( name, two,     comparison ) ) { match = two;     pluralForm = PluralForm.Two;   }
-            else if ( Match ( name, few,     comparison ) ) { match = few;     pluralForm = PluralForm.Few;   }
-            else if ( Match ( name, many,    comparison ) ) { match = many;    pluralForm = PluralForm.Many;  }
-            else if ( Match ( name, other,   comparison ) ) { match = other;   pluralForm = PluralForm.Other; }
-            else if ( Match ( name, discard, comparison ) ) { match = discard; pluralForm = PluralForm.Other; }
+            if      ( Match ( name, zero,         comparison ) ) { match = zero;    pluralForm = PluralForm.Zero;         }
+            else if ( Match ( name, one,          comparison ) ) { match = one;     pluralForm = PluralForm.One;          }
+            else if ( Match ( name, two,          comparison ) ) { match = two;     pluralForm = PluralForm.Two;          }
+            else if ( Match ( name, few,          comparison ) ) { match = few;     pluralForm = PluralForm.Few;          }
+            else if ( Match ( name, many,         comparison ) ) { match = many;    pluralForm = PluralForm.Many;         }
+            else if ( Match ( name, other,        comparison ) ) { match = other;   pluralForm = PluralForm.Other;        }
+            else if ( Match ( name, explicitZero, comparison ) ) { match = other;   pluralForm = PluralForm.ExplicitZero; }
+            else if ( Match ( name, explicitOne,  comparison ) ) { match = other;   pluralForm = PluralForm.ExplicitOne;  }
+            else if ( Match ( name, discard,      comparison ) ) { match = discard; pluralForm = PluralForm.Other;        }
             else
             {
                 if      ( Match ( name, ordinalZero,  comparison ) ) { match = ordinalZero;  pluralForm = PluralForm.Zero;  }
