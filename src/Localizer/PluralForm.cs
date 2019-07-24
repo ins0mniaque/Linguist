@@ -2,6 +2,18 @@
 
 namespace Localizer
 {
+    /// <remarks>
+    /// Explicit "0" and "1" rules:
+    ///
+    ///   • The explicit "0" and "1" cases are not defined by language-specific rules, and are available in any language
+    ///     for the CLDR data items that accept them.
+    ///   • The explicit "0" and "1" cases apply to the exact numeric values 0 and 1 respectively. These cases are
+    ///     typically used for plurals of items that do not have fractional value, like books or files.
+    ///   • The explicit "0" and "1" cases have precedence over the "zero" and "one" cases. For example, if for a
+    ///     particular element CLDR data includes values for both the "1" and "one" cases, then the "1" value is used for
+    ///     numeric values of exactly 1, while the "one" value is used for any other formatted numeric values matching
+    ///     the "one" plural rule for the language.
+    /// </remarks>
     [ Flags ]
     public enum PluralForm
     {
