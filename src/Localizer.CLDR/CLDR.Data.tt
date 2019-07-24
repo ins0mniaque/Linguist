@@ -14,13 +14,6 @@ using Localizer.Pluralization;
 
 namespace Localizer.CLDR
 {
-    // TODO: Implement explicit rules for cardinal rule sets
-    internal static class Explicit
-    {
-        public static bool ZeroRule ( decimal i, decimal v ) => i == 0m && v == 0m;
-        public static bool OneRule  ( decimal i, decimal v ) => i == 1m && v == 0m;
-    }
-
     internal static class PluralRuleSets
     {
         public static PluralFormSelector GetCardinalRuleSet ( CultureInfo culture )
@@ -56,6 +49,12 @@ namespace Localizer.CLDR
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
+            var i = number.i ( );
+            var v = number.v ( );
+<#
+            WriteExplicitRules ( pluralRuleSet.PluralForm );
+#>
+
             return PluralForm.Other;
         }
     }
@@ -81,18 +80,24 @@ namespace Localizer.CLDR
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
 <#
+        var operands = new HashSet < string > ( ) { "i", "v" };
         foreach ( var operand in pluralRuleSet.Operands )
+            operands.Add ( operand );
+
+        foreach ( var operand in operands )
         {
 #>
             var <#= operand #> = number.<#= operand #> ( );
 <#
         }
 
+        WriteExplicitRules ( pluralRuleSet.PluralForm );
+
         foreach ( var pluralRule in pluralRuleSet.Rules )
         {
 #>
 
-            // <#= pluralRule.RuleCode #>
+            // "<#= pluralRule.PluralForm.ToString ( ).ToLowerInvariant ( ) #>": <#= pluralRule.RuleCode #>
 <#
             WriteSamples ( "integer", pluralRule.IntegerSamples );
             WriteSamples ( "decimal", pluralRule.DecimalSamples );
@@ -110,6 +115,50 @@ namespace Localizer.CLDR
     }
 #>
 }<#+
+    private void WriteExplicitRules ( Localizer.PluralForm pluralForms )
+    {
+#>
+
+            // Explicit "0" rule
+            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            {
+                if ( ExplicitRule.Zero ( i, v ) )
+                    return PluralForm.ExplicitZero;
+            }
+<#+
+        if ( ! pluralForms.HasFlag ( Localizer.PluralForm.Zero ) )
+        {
+#>
+            // Explicit "0" rule "zero" fallback
+            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            {
+                if ( ExplicitRule.Zero ( i, v ) )
+                    return PluralForm.Zero;
+            }
+<#+
+        }
+#>
+
+            // Explicit "1" rule
+            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            {
+                if ( ExplicitRule.One ( i, v ) )
+                    return PluralForm.ExplicitOne;
+            }
+<#+
+        if ( ! pluralForms.HasFlag ( Localizer.PluralForm.One ) )
+        {
+#>
+            // Explicit "1" rule "one" fallback
+            else if ( availablePluralForms.HasFlag ( PluralForm.One ) )
+            {
+                if ( ExplicitRule.One ( i, v ) )
+                    return PluralForm.One;
+            }
+<#+
+        }
+    }
+
     private void WriteSamples ( string name, string [ ] samples )
     {
         if ( samples != null && samples.Length > 0 )

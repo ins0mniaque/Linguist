@@ -36,13 +36,13 @@
     {
         public ExplicitZeroRule ( ) : base ( PluralForm.ExplicitZero ) { }
 
-        public override bool AppliesTo ( decimal number ) => number.i ( ) == 0m && number.v ( ) == 0m;
+        public override bool AppliesTo ( decimal number ) => ExplicitRule.Zero ( number.i ( ), number.v ( ) );
     }
 
     public sealed class ExplicitOneRule : PluralRule
     {
         public ExplicitOneRule ( ) : base ( PluralForm.ExplicitOne ) { }
 
-        public override bool AppliesTo ( decimal number ) => number.i ( ) == 1m && number.v ( ) == 0m;
+        public override bool AppliesTo ( decimal number ) => ExplicitRule.One ( number.i ( ), number.v ( ) );
     }
 }

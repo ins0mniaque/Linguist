@@ -43,6 +43,15 @@ namespace Localizer.CLDR
         private static decimal Normalize ( decimal number ) => number / 1.000000000000000000000000000000000m;
     }
 
+    internal static class ExplicitRule
+    {
+        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        public static bool Zero ( decimal i, decimal v ) => i == 0m && v == 0m;
+
+        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        public static bool One  ( decimal i, decimal v ) => i == 1m && v == 0m;
+    }
+
     internal static class PluralRuleOperator
     {
         [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
