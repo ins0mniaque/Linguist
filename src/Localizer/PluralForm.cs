@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
+using Localizer.CLDR;
+
 namespace Localizer
 {
     /// <remarks>
@@ -61,7 +63,7 @@ namespace Localizer
 
     public static class PluralFormOperator
     {
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         public static bool HasBitMask ( this PluralForm pluralForm, PluralForm bitMask )
         {
             return ( pluralForm & bitMask ) == bitMask;

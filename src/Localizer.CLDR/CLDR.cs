@@ -6,6 +6,14 @@ namespace Localizer.CLDR
     using static System.Decimal;
 
     /// <summary>
+    /// Defines MethodImplOptions.AggressiveInlining for usage in older .NET frameworks.
+    /// </summary>
+    internal static class Inlining
+    {
+        public const MethodImplOptions Aggressive = (MethodImplOptions) 256;
+    }
+
+    /// <summary>
     /// Plural Operand Meanings
     /// 
     /// Symbol    Value
@@ -18,56 +26,56 @@ namespace Localizer.CLDR
     /// </summary>
     internal static class PluralOperand
     {
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         public static decimal n ( this decimal number ) => Math.Abs ( number );
 
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         public static decimal i ( this decimal number ) => Truncate ( Math.Abs ( number ) );
 
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         public static decimal v ( this decimal number ) => Scale ( number );
 
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         public static decimal w ( this decimal number ) => Scale ( Normalize ( number ) );
 
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         public static decimal f ( this decimal number ) => Math.Abs ( number ) % One;
 
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         public static decimal t ( this decimal number ) => Normalize ( Math.Abs ( number ) % One );
 
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         private static decimal Scale ( decimal number ) => ( GetBits ( number ) [ 3 ] >> 16 ) & 0x7F;
 
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         private static decimal Normalize ( decimal number ) => number / 1.000000000000000000000000000000000m;
     }
 
     internal static class ExplicitRule
     {
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         public static bool Zero ( decimal i, decimal v ) => i == 0m && v == 0m;
 
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         public static bool One  ( decimal i, decimal v ) => i == 1m && v == 0m;
     }
 
     internal static class PluralRuleOperator
     {
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         public static bool equals ( this decimal number, decimal arg0 )
         {
             return number == arg0;
         }
 
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         public static bool equals ( this decimal number, decimal arg0, decimal arg1 )
         {
             return number == arg0 ||
                    number == arg1;
         }
 
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         public static bool equals ( this decimal number, decimal arg0, decimal arg1, decimal arg2 )
         {
             return number == arg0 ||
@@ -75,7 +83,7 @@ namespace Localizer.CLDR
                    number == arg2;
         }
 
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         public static bool equals ( this decimal number, decimal arg0, decimal arg1, decimal arg2, decimal arg3 )
         {
             return number == arg0 ||
@@ -84,7 +92,7 @@ namespace Localizer.CLDR
                    number == arg3;
         }
 
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         public static bool equals ( this decimal number, decimal arg0, decimal arg1, decimal arg2, decimal arg3, decimal arg4 )
         {
             return number == arg0 ||
@@ -94,7 +102,7 @@ namespace Localizer.CLDR
                    number == arg4;
         }
 
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         public static bool equals ( this decimal number, decimal arg0, decimal arg1, decimal arg2, decimal arg3, decimal arg4, decimal arg5 )
         {
             return number == arg0 ||
@@ -105,20 +113,20 @@ namespace Localizer.CLDR
                    number == arg5;
         }
 
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         public static bool between ( this decimal number, decimal start0, decimal end0 )
         {
             return number >= start0 && number <= end0;
         }
 
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         public static bool between ( this decimal number, decimal start0, decimal end0, decimal start1, decimal end1 )
         {
             return number >= start0 && number <= end0 ||
                    number >= start1 && number <= end1;
         }
 
-        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        [ MethodImpl ( Inlining.Aggressive ) ]
         public static bool between ( this decimal number, decimal start0, decimal end0, decimal start1, decimal end1, decimal start2, decimal end2 )
         {
             return number >= start0 && number <= end0 ||
