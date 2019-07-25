@@ -181,6 +181,6 @@ namespace Localizer.Generator.Tests
 
         private static string GetFullPath ( string filename ) => Path.GetFullPath ( FindFile ( filename ) );
         private static string ReadFile    ( string filename ) => File.ReadAllText ( FindFile ( filename ) );
-        private static string FindFile    ( string filename ) => Path.Combine ( "..\\..\\", filename );
+        private static string FindFile    ( string filename ) => Path.Combine ( "..\\..\\..\\", filename );
     }
 }
