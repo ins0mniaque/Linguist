@@ -1,112 +1,35 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{37089D19-D5AF-4E10-B0D0-35BA32B26048}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
-    <RootNamespace>Localizer.WPF.Demo</RootNamespace>
-    <AssemblyName>Localizer.WPF.Demo</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WarningLevel>4</WarningLevel>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Deterministic>true</Deterministic>
+    <TargetFrameworks>net35;net45;net461</TargetFrameworks>
+    <OutputType>winexe</OutputType>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xaml">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="WindowsBase" />
+    <ProjectReference Include="..\..\src\Localizer.WPF\Localizer.WPF.csproj" />
+
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' != 'net35' ">
+    <Reference Include="System.Xaml" />
+  </ItemGroup>
+
   <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx" Generator="PublicResXFileCodeGenerator" LastGenOutput="Resources.Designer.cs" />
+    <Compile Update="Properties\Resources.Designer.cs" DesignTime="True" AutoGen="True" DependentUpon="Resources.resx" />
+    <None Update="Properties\Settings.settings" Generator="SettingsSingleFileGenerator" LastGenOutput="Settings.Designer.cs" />
+    <Compile Update="Properties\Settings.Designer.cs" DesignTimeSharedInput="True" AutoGen="True" DependentUpon="Settings.settings" />
+
     <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
+      <Generator>MsBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="Demos\AutomaticKeyDemo.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Demos\AutomaticKeyDemo.xaml.cs">
-      <DependentUpon>AutomaticKeyDemo.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
+
+    <Page Include="**\*.xaml" SubType="Designer" Generator="MSBuild:Compile" Exclude="App.xaml" />
+    <Compile Update="**\*.xaml.cs" SubType="Designer" DependentUpon="%(Filename)" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <EmbeddedResource Include="Properties\Resources.fr.resx">
-      <DependentUpon>Resources.resx</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Localizer.WPF\Localizer.WPF.csproj">
-      <Project>{e8de1891-4376-4957-b4a3-fd5b94304eaa}</Project>
-      <Name>Localizer.WPF</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Localizer\Localizer.csproj">
-      <Project>{2a8e5425-5675-4a83-938a-77d60d6d8142}</Project>
-      <Name>Localizer</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
 </Project>
