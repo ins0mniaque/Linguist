@@ -1,10 +1,8 @@
-﻿using System;
-
-namespace Localizer.Pluralization
+﻿namespace Localizer.Pluralization
 {
     public class CardinalRuleSet : PluralRuleSet
     {
-        public static CardinalRuleSet Default { get; } = new CardinalRuleSet ( Array.Empty < PluralRule > ( ) );
+        public static CardinalRuleSet Default { get; } = new CardinalRuleSet ( );
 
         public static PluralRule ExplicitZeroRule { get; } = new ExplicitZeroRule ( );
         public static PluralRule ExplicitOneRule  { get; } = new ExplicitOneRule  ( );
@@ -14,29 +12,29 @@ namespace Localizer.Pluralization
 
         public CardinalRuleSet ( params PluralRule [ ] ruleSet ) : base ( ruleSet )
         {
-            hasZeroForm = PluralForms.HasFlag ( PluralForm.Zero );
-            hasOneForm  = PluralForms.HasFlag ( PluralForm.One  );
+            hasZeroForm = PluralForms.HasBitMask ( PluralForm.Zero );
+            hasOneForm  = PluralForms.HasBitMask ( PluralForm.One  );
         }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitZeroRule.AppliesTo ( number ) )
                     return ExplicitZeroRule.PluralForm;
             }
-            else if ( ! hasZeroForm && availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( ! hasZeroForm && availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitZeroRule.AppliesTo ( number ) )
                     return PluralForm.Zero;
             }
 
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitOneRule.AppliesTo ( number ) )
                     return ExplicitOneRule.PluralForm;
             }
-            else if ( ! hasOneForm && availablePluralForms.HasFlag ( PluralForm.One ) )
+            else if ( ! hasOneForm && availablePluralForms.HasBitMask ( PluralForm.One ) )
             {
                 if ( ExplicitOneRule.AppliesTo ( number ) )
                     return PluralForm.One;

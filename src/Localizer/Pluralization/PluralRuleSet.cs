@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Localizer.Pluralization
+﻿namespace Localizer.Pluralization
 {
     public abstract class PluralRuleSet : PluralFormSelector
     {
@@ -8,7 +6,7 @@ namespace Localizer.Pluralization
 
         protected PluralRuleSet ( params PluralRule [ ] ruleSet ) : base ( GetPluralForms ( ruleSet ) )
         {
-            rules = ruleSet ?? Array.Empty < PluralRule > ( );
+            rules = ruleSet ?? new PluralRule [ 0 ];
         }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )

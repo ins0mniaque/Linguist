@@ -33,26 +33,26 @@ namespace Localizer.CLDR
             var v = number.v ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
             }
             // Explicit "1" rule "one" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.One ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.One ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.One;
@@ -74,20 +74,20 @@ namespace Localizer.CLDR
             var n = number.n ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -114,20 +114,20 @@ namespace Localizer.CLDR
             var v = number.v ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -154,20 +154,20 @@ namespace Localizer.CLDR
             var v = number.v ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -194,20 +194,20 @@ namespace Localizer.CLDR
             var v = number.v ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -235,20 +235,20 @@ namespace Localizer.CLDR
             var f = number.f ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -276,20 +276,20 @@ namespace Localizer.CLDR
             var n = number.n ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -317,20 +317,20 @@ namespace Localizer.CLDR
             var n = number.n ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -358,20 +358,20 @@ namespace Localizer.CLDR
             var n = number.n ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -400,20 +400,20 @@ namespace Localizer.CLDR
             var t = number.t ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -441,20 +441,20 @@ namespace Localizer.CLDR
             var t = number.t ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -482,20 +482,20 @@ namespace Localizer.CLDR
             var f = number.f ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -523,20 +523,20 @@ namespace Localizer.CLDR
             var f = number.f ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -565,14 +565,14 @@ namespace Localizer.CLDR
             var f = number.f ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -606,14 +606,14 @@ namespace Localizer.CLDR
             var n = number.n ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -647,14 +647,14 @@ namespace Localizer.CLDR
             var n = number.n ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -688,20 +688,20 @@ namespace Localizer.CLDR
             var n = number.n ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -735,20 +735,20 @@ namespace Localizer.CLDR
             var n = number.n ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -782,20 +782,20 @@ namespace Localizer.CLDR
             var n = number.n ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -828,20 +828,20 @@ namespace Localizer.CLDR
             var f = number.f ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -875,20 +875,20 @@ namespace Localizer.CLDR
             var n = number.n ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -927,20 +927,20 @@ namespace Localizer.CLDR
             var v = number.v ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -978,20 +978,20 @@ namespace Localizer.CLDR
             var f = number.f ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -1031,20 +1031,20 @@ namespace Localizer.CLDR
             var n = number.n ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -1080,20 +1080,20 @@ namespace Localizer.CLDR
             var v = number.v ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -1128,20 +1128,20 @@ namespace Localizer.CLDR
             var v = number.v ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -1178,20 +1178,20 @@ namespace Localizer.CLDR
             var n = number.n ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -1232,20 +1232,20 @@ namespace Localizer.CLDR
             var f = number.f ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -1283,20 +1283,20 @@ namespace Localizer.CLDR
             var n = number.n ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -1335,20 +1335,20 @@ namespace Localizer.CLDR
             var v = number.v ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -1385,20 +1385,20 @@ namespace Localizer.CLDR
             var n = number.n ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -1444,20 +1444,20 @@ namespace Localizer.CLDR
             var n = number.n ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -1502,20 +1502,20 @@ namespace Localizer.CLDR
             var v = number.v ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -1556,14 +1556,14 @@ namespace Localizer.CLDR
             var n = number.n ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -1615,14 +1615,14 @@ namespace Localizer.CLDR
             var n = number.n ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
@@ -1674,14 +1674,14 @@ namespace Localizer.CLDR
             var n = number.n ( );
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;

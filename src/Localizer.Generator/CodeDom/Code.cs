@@ -157,7 +157,7 @@ namespace Localizer.CodeDom
 
         public static CodeAttributeDeclaration Attribute < T > ( ) where T : Attribute
         {
-            return Attribute < T > ( Array.Empty < CodeExpression > ( ) );
+            return new CodeAttributeDeclaration ( TypeRef < T > ( ) );
         }
 
         public static CodeAttributeDeclaration Attribute < T > ( params object [ ] arguments ) where T : Attribute

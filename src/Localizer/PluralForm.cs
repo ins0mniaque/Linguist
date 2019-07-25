@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace Localizer
 {
@@ -56,5 +57,14 @@ namespace Localizer
         /// Common name for the explicit 'one' plural form.
         /// </summary>
         ExplicitOne = 1 << 6
+    }
+
+    public static class PluralFormOperator
+    {
+        [ MethodImpl ( MethodImplOptions.AggressiveInlining ) ]
+        public static bool HasBitMask ( this PluralForm pluralForm, PluralForm bitMask )
+        {
+            return ( pluralForm & bitMask ) == bitMask;
+        }
     }
 }

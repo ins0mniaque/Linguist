@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace Localizer.Resources
 {
@@ -15,9 +13,15 @@ namespace Localizer.Resources
             pluralResources = new Dictionary < string, FormatString [ ] > ( capacity );
         }
 
-        public void AddPluralResource ( string name, FormatString formatString, IEnumerable < FormatString > pluralFormatStrings )
+        public void AddPluralResource ( string name, FormatString defaultFormatString, ICollection < FormatString > pluralFormatStrings )
         {
-            pluralResources.Add ( name, pluralFormatStrings.Prepend ( formatString ).ToArray ( ) );
+            var formatStrings = new FormatString [ pluralFormatStrings.Count + 1 ];
+
+            formatStrings [ 0 ] = defaultFormatString;
+
+            pluralFormatStrings.CopyTo ( formatStrings, 1 );
+
+            pluralResources.Add ( name, formatStrings );
         }
 
         public FormatString SelectPluralResource ( string name, params object [ ] args )
@@ -80,7 +84,7 @@ namespace Localizer.Resources
             if ( pluralForm == PluralForm.Other )
                 return availablePluralForms == PluralForm.Other;
 
-            return availablePluralForms.HasFlag ( pluralForm );
+            return availablePluralForms.HasBitMask ( pluralForm );
         }
     }
 }

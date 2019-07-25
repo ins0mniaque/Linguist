@@ -120,17 +120,17 @@ namespace Localizer.CLDR
 #>
 
             // Explicit "0" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitZero ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.ExplicitZero;
             }
 <#+
-        if ( ! pluralForms.HasFlag ( Localizer.PluralForm.Zero ) )
+        if ( ( pluralForms & Localizer.PluralForm.Zero ) != Localizer.PluralForm.Zero )
         {
 #>
             // Explicit "0" rule "zero" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.Zero ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
             {
                 if ( ExplicitRule.Zero ( i, v ) )
                     return PluralForm.Zero;
@@ -140,17 +140,17 @@ namespace Localizer.CLDR
 #>
 
             // Explicit "1" rule
-            if ( availablePluralForms.HasFlag ( PluralForm.ExplicitOne ) )
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.ExplicitOne;
             }
 <#+
-        if ( ! pluralForms.HasFlag ( Localizer.PluralForm.One ) )
+        if ( ( pluralForms & Localizer.PluralForm.One ) != Localizer.PluralForm.One )
         {
 #>
             // Explicit "1" rule "one" fallback
-            else if ( availablePluralForms.HasFlag ( PluralForm.One ) )
+            else if ( availablePluralForms.HasBitMask ( PluralForm.One ) )
             {
                 if ( ExplicitRule.One ( i, v ) )
                     return PluralForm.One;
