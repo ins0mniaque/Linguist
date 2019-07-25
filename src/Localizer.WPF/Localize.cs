@@ -4,12 +4,9 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Markup;
-using System.Xaml;
 
 namespace Localizer.WPF
 {
-    using XamlParseException = System.Xaml.XamlParseException;
-
     public static class Localize
     {
         [ TypeConverter ( typeof ( LocalizationProviderTypeConverter ) ) ]
@@ -69,7 +66,8 @@ namespace Localizer.WPF
 
         internal static void AutoSetComponent ( IServiceProvider serviceProvider )
         {
-            var rootProvider = (IRootObjectProvider) serviceProvider.GetService ( typeof ( IRootObjectProvider ) );
+            #if ! NET35
+            var rootProvider = (System.Xaml.IRootObjectProvider) serviceProvider.GetService ( typeof ( System.Xaml.IRootObjectProvider ) );
             var root         = rootProvider?.RootObject as DependencyObject;
 
             if ( root is IComponentConnector )
@@ -78,6 +76,7 @@ namespace Localizer.WPF
                 if ( ! hasComponentSet )
                     root.SetValue ( ComponentProperty, root.GetType ( ).Name );
             }
+            #endif
         }
 
         internal static object ProvideResource ( ILocalizationProvider provider, CultureInfo culture, object key, object [ ] values, Type targetType )

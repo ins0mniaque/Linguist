@@ -7,8 +7,6 @@ using System.Windows.Markup;
 
 namespace Localizer.WPF
 {
-    using XamlParseException = System.Xaml.XamlParseException;
-
     public class LocalizeExtension : ResourceMarkupExtension
     {
         public LocalizeExtension ( )                                                                                                                                                                                                                                                                              : base ( ) { }
