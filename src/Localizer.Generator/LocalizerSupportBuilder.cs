@@ -178,11 +178,11 @@ namespace Localizer.Generator
             if ( CustomToolType != null ) type.AddRemarks ( ClassRemarksFormat,         generator.Name, CustomToolType.Name );
             else                          type.AddRemarks ( ClassRemarksToollessFormat, generator.Name );
 
-            return type.Attributed ( Code.Attribute < GeneratedCodeAttribute       > ( generator.FullName, version.ToString ( ) ),
-                                     Code.Attribute < DebuggerNonUserCodeAttribute > ( ),
-                                     Code.Attribute < ObfuscationAttribute         > ( ( nameof ( ObfuscationAttribute.Exclude        ), true ),
-                                                                                       ( nameof ( ObfuscationAttribute.ApplyToMembers ), true ) ),
-                                     Code.Attribute < SuppressMessageAttribute     > ( "Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces" ) );
+            return type.Attributed ( Code.Attribute      < GeneratedCodeAttribute       > ( generator.FullName, version.ToString ( ) ),
+                                     Code.Attribute      < DebuggerNonUserCodeAttribute > ( ),
+                                     Code.NamedAttribute < ObfuscationAttribute         > ( nameof ( ObfuscationAttribute.Exclude        ), true,
+                                                                                            nameof ( ObfuscationAttribute.ApplyToMembers ), true ),
+                                     Code.Attribute      < SuppressMessageAttribute     > ( "Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces" ) );
         }
 
         protected virtual IEnumerable < CodeTypeMember > GenerateClassMembers ( out CodeExpression localizationProvider )
@@ -192,16 +192,16 @@ namespace Localizer.Generator
 
             var members =
             Enumerable.Empty < CodeTypeMember > ( )
-                      .Append ( GenerateConstructor ( ) )
+                      .Concat ( new [ ] { GenerateConstructor ( ) } )
                       .Concat ( GenerateCultureChangedEvent ( out var notifyCultureChanged ) )
                       .Concat ( GenerateResourceManagerSingleton ( out var resourceManager ) )
-                      .Append ( GenerateResourceManagerProperty ( resourceManager ).Attributed ( editorBrowsable ) )
-                      .Append ( GenerateCultureProperty ( notifyCultureChanged, out var cultureField ).Attributed ( editorBrowsable ) )
-                      .Append ( cultureField );
+                      .Concat ( new [ ] { GenerateResourceManagerProperty ( resourceManager ).Attributed ( editorBrowsable ) } )
+                      .Concat ( new [ ] { GenerateCultureProperty ( notifyCultureChanged, out var cultureField ).Attributed ( editorBrowsable ) } )
+                      .Concat ( new [ ] { cultureField } );
 
             if ( ResourceNamingStrategy != null )
                 members = members.Concat ( GenerateLocalizationProviderSingleton ( resourceManager, out localizationProvider ) )
-                                 .Append ( GenerateLocalizationProviderProperty  ( localizationProvider ) );
+                                 .Concat ( new [ ] { GenerateLocalizationProviderProperty  ( localizationProvider ) } );
             else
                 localizationProvider = null;
 

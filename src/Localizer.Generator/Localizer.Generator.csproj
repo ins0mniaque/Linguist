@@ -1,65 +1,13 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{5FEADA46-A805-42F4-B29A-396DE43D911A}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Localizer.Generator</RootNamespace>
-    <AssemblyName>Localizer.Generator</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
+    <TargetFrameworks>net45</TargetFrameworks>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
+    <ProjectReference Include="..\Localizer\Localizer.csproj" />
+
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="CodeDom\ExtendedCodeGenerator.cs" />
-    <Compile Include="CodeDom\Code.cs" />
-    <Compile Include="CodeDom\Extensions\VBModuleSupport.cs" />
-    <Compile Include="CodeDom\Extensions\TextRewriterProxy.cs" />
-    <Compile Include="CodeDom\Extensions\CSharpStaticClassSupport.cs" />
-    <Compile Include="CodeDom\Language.cs" />
-    <Compile Include="CodeDom\Extensions\TextWriterProxy.cs" />
-    <Compile Include="CodeDom\Validator.cs" />
-    <Compile Include="LocalizerSupportBuilder.cs" />
-    <Compile Include="Parsers\ResourceSet.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Parsers\ResXParser.cs" />
-    <Compile Include="Constants\MemberNames.cs" />
-    <Compile Include="Constants\Comments.cs" />
-    <Compile Include="Constants\ErrorMessages.cs" />
-    <Compile Include="StringResource.cs" />
-    <Compile Include="Resource.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Localizer\Localizer.csproj">
-      <Project>{2a8e5425-5675-4a83-938a-77d60d6d8142}</Project>
-      <Name>Localizer</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
 </Project>

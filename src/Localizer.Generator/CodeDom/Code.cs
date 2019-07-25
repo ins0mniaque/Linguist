@@ -169,11 +169,21 @@ namespace Localizer.CodeDom
             return attribute;
         }
 
-        public static CodeAttributeDeclaration Attribute < T > ( params (string, object) [ ] arguments ) where T : Attribute
+        public static CodeAttributeDeclaration NamedAttribute < T > ( string name0, object arg0 ) where T : Attribute
         {
             var attribute = new CodeAttributeDeclaration ( TypeRef < T > ( ) );
-            foreach ( var argument in arguments )
-                attribute.Arguments.Add ( new CodeAttributeArgument ( argument.Item1, Constant ( argument.Item2 ) ) );
+
+            attribute.Arguments.Add ( new CodeAttributeArgument ( name0, Constant ( arg0 ) ) );
+
+            return attribute;
+        }
+
+        public static CodeAttributeDeclaration NamedAttribute < T > ( string name0, object arg0, string name1, object arg1 ) where T : Attribute
+        {
+            var attribute = new CodeAttributeDeclaration ( TypeRef < T > ( ) );
+
+            attribute.Arguments.Add ( new CodeAttributeArgument ( name0, Constant ( arg0 ) ) );
+            attribute.Arguments.Add ( new CodeAttributeArgument ( name1, Constant ( arg1 ) ) );
 
             return attribute;
         }
@@ -183,15 +193,6 @@ namespace Localizer.CodeDom
             var attribute = new CodeAttributeDeclaration ( TypeRef < T > ( ) );
             foreach ( var argument in arguments )
                 attribute.Arguments.Add ( new CodeAttributeArgument ( argument ) );
-
-            return attribute;
-        }
-
-        public static CodeAttributeDeclaration Attribute < T > ( params (string, CodeExpression) [ ] arguments ) where T : Attribute
-        {
-            var attribute = new CodeAttributeDeclaration ( TypeRef < T > ( ) );
-            foreach ( var argument in arguments )
-                attribute.Arguments.Add ( new CodeAttributeArgument ( argument.Item1, argument.Item2 ) );
 
             return attribute;
         }
