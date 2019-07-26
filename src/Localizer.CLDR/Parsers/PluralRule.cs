@@ -95,6 +95,9 @@ namespace Localizer.CLDR
 
             operands = variables.ToArray ( );
 
+            while ( rule is ParenthesisExpression parenthesis )
+                rule = parenthesis.Expression;
+
             return rule;
         }
 
@@ -130,7 +133,8 @@ namespace Localizer.CLDR
                                 .ToArray ( );
 
                 var between = ranges.Length == 0 ? null : new MethodExpression ( left, "between", ranges );
-                var equals  = values.Length == 0 ? null : new MethodExpression ( left, "equals",  values );
+                var equals  = values.Length == 1 ? (Expression) new BinaryExpression ( left, "==", values [ 0 ] ) :
+                              values.Length == 0 ? null : new MethodExpression ( left, "equals",  values );
 
                 var expression = (Expression) null;
 

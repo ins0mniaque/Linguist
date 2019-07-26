@@ -43,7 +43,7 @@ namespace Localizer.CLDR.Tests
         [ InlineData ( "zero",  Rule0, null ) ]
         [ InlineData ( "one",   Rule1, "i == 0m || n == 1m" ) ]
         [ InlineData ( "two",   Rule2, "v == 0m && ( i % 10m ).between ( 2m, 4m ) && ! ( i % 100m ).between ( 12m, 14m )" ) ]
-        [ InlineData ( "few",   Rule3, "( ( n % 10m ).between ( 3m, 4m ) || ( n % 10m ).equals ( 9m ) ) && ! ( n % 100m ).between ( 10m, 19m, 70m, 79m, 90m, 99m )" ) ]
+        [ InlineData ( "few",   Rule3, "( ( n % 10m ).between ( 3m, 4m ) || n % 10m == 9m ) && ! ( n % 100m ).between ( 10m, 19m, 70m, 79m, 90m, 99m )" ) ]
         [ InlineData ( "many",  Rule4, "( n % 100m ).equals ( 2m, 22m, 42m, 62m, 82m ) || n % 1000m == 0m && ( ( n % 100000m ).between ( 1000m, 20000m ) || ( n % 100000m ).equals ( 40000m, 60000m, 80000m ) ) || n != 0m && n % 1000000m == 100000m" ) ]
         [ InlineData ( "other", Rule5, "v == 0m && i.equals ( 1m, 2m, 3m ) || v == 0m && ! ( i % 10m ).equals ( 4m, 6m, 9m ) || v != 0m && ! ( f % 10m ).equals ( 4m, 6m, 9m )" ) ]
         public static void ParseReturnsTheCorrectRule ( string count, string rule, string expectedExpression )

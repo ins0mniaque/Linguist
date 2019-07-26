@@ -63,12 +63,6 @@ namespace Localizer.CLDR
     internal static class PluralRuleOperator
     {
         [ MethodImpl ( Inlining.Aggressive ) ]
-        public static bool equals ( this decimal number, decimal arg0 )
-        {
-            return number == arg0;
-        }
-
-        [ MethodImpl ( Inlining.Aggressive ) ]
         public static bool equals ( this decimal number, decimal arg0, decimal arg1 )
         {
             return number == arg0 ||

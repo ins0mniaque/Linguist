@@ -1701,7 +1701,7 @@ namespace Localizer.CLDR
             // "few": n % 10 = 3..4,9 and n % 100 != 10..19,70..79,90..99
             //   @integer: 3, 4, 9, 23, 24, 29, 33, 34, 39, 43, 44, 49, 103, 1003, …
             //   @decimal: 3.0, 4.0, 9.0, 23.0, 24.0, 29.0, 33.0, 34.0, 103.0, 1003.0, …
-            if ( ( ( n % 10m ).between ( 3m, 4m ) || ( n % 10m ).equals ( 9m ) ) && ! ( n % 100m ).between ( 10m, 19m, 70m, 79m, 90m, 99m ) )
+            if ( ( ( n % 10m ).between ( 3m, 4m ) || n % 10m == 9m ) && ! ( n % 100m ).between ( 10m, 19m, 70m, 79m, 90m, 99m ) )
                 return PluralForm.Few;
 
             // "many": n != 0 and n % 1000000 = 0
@@ -2545,7 +2545,7 @@ namespace Localizer.CLDR
 
             // "one": n = 1,5,7..9
             //   @integer: 1, 5, 7~9
-            if ( ( n.between ( 7m, 9m ) || n.equals ( 1m, 5m ) ) )
+            if ( n.between ( 7m, 9m ) || n.equals ( 1m, 5m ) )
                 return PluralForm.One;
 
             // "two": n = 2,3
