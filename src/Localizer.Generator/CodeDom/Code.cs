@@ -478,6 +478,16 @@ namespace Localizer.CodeDom
             return condition;
         }
 
+        public static CodeBinaryOperatorExpression And ( this CodeExpression left, CodeExpression right )
+        {
+            return new CodeBinaryOperatorExpression ( left, CodeBinaryOperatorType.BooleanAnd, right );
+        }
+
+        public static CodeBinaryOperatorExpression Or ( this CodeExpression left, CodeExpression right )
+        {
+            return new CodeBinaryOperatorExpression ( left, CodeBinaryOperatorType.BooleanOr, right );
+        }
+
         public static CodeBinaryOperatorExpression ValueEquals ( this CodeExpression left, CodeExpression right )
         {
             return new CodeBinaryOperatorExpression ( left, CodeBinaryOperatorType.ValueEquality, right );
@@ -496,6 +506,26 @@ namespace Localizer.CodeDom
         public static CodeMethodInvokeExpression ObjectEquals ( this CodeExpression left, CodeExpression right )
         {
             return Type < object > ( ).Method ( nameof ( object.Equals ) ).Invoke ( left, right );
+        }
+
+        public static CodeBinaryOperatorExpression IsLessThan ( this CodeExpression left, CodeExpression right )
+        {
+            return new CodeBinaryOperatorExpression ( left, CodeBinaryOperatorType.LessThan, right );
+        }
+
+        public static CodeBinaryOperatorExpression IsLessThanOrEquals ( this CodeExpression left, CodeExpression right )
+        {
+            return new CodeBinaryOperatorExpression ( left, CodeBinaryOperatorType.LessThanOrEqual, right );
+        }
+
+        public static CodeBinaryOperatorExpression IsGreaterThan ( this CodeExpression left, CodeExpression right )
+        {
+            return new CodeBinaryOperatorExpression ( left, CodeBinaryOperatorType.GreaterThan, right );
+        }
+
+        public static CodeBinaryOperatorExpression IsGreaterThanOrEquals ( this CodeExpression left, CodeExpression right )
+        {
+            return new CodeBinaryOperatorExpression ( left, CodeBinaryOperatorType.GreaterThanOrEqual, right );
         }
 
         public static bool Contains ( this CodeTypeMemberCollection members, string name )

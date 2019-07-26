@@ -435,16 +435,11 @@ namespace Localizer.Generator
             if ( ! CodeDomProvider.Supports ( GeneratorSupport.NestedTypes ) )
                 return null;
 
-            var type              = Code.CreateClass      ( ClassName + "Extension", MemberAttributes.Public );
-            var keyEnum           = Code.CreateNestedEnum ( ResourceKeyEnumName, MemberAttributes.Public )
-                                        .AddSummary       ( ResourceKeyEnumNameSummary )
-                                        .AddTo            ( type );
-            var keyEnumTypeRef    = Code.TypeRef ( ResourceKeyEnumName, default );
-            var keyTranslator     = Code.CreateNestedClass ( ResourceKeyTranslatorFieldName, MemberAttributes.Private | MemberAttributes.Static )
-                                        .AddTo             ( type );
-            var dictionaryTypeRef = Code.TypeRef ( "System.Collections.Generic.Dictionary",
-                                                   CodeTypeReferenceOptions.GlobalReference,
-                                                   keyEnumTypeRef, Code.TypeRef < string > ( ) );
+            var type           = Code.CreateClass      ( ClassName + "Extension", MemberAttributes.Public );
+            var keyEnum        = Code.CreateNestedEnum ( ResourceKeyEnumName, MemberAttributes.Public )
+                                     .AddSummary       ( ResourceKeyEnumNameSummary )
+                                     .AddTo            ( type );
+            var keyEnumTypeRef = Code.TypeRef ( ResourceKeyEnumName, default );
 
             type.BaseTypes.Add ( Code.TypeRef ( "Localizer.WPF.TypedLocalizeExtension",
                                                 CodeTypeReferenceOptions.GlobalReference,
@@ -492,13 +487,13 @@ namespace Localizer.Generator
                 .Get   ( get => get.Return ( Code.Type ( ClassName, default ).Property ( LocalizationProviderPropertyName ) ) )
                 .AddTo ( type );
 
-            var cctor       = new CodeTypeConstructor ( ).AddTo ( keyTranslator );
-            var translation = cctor.Statements;
-            var singleton   = Code.Static ( ).Field ( ResourceKeyTranslatorName );
-            var addKey      = singleton.Method ( nameof ( Dictionary < int, string >.Add ) );
-            var index       = 0;
+            var translator  = Code.CreateField < string [ ] > ( ResourceKeyTranslatorFieldName, MemberAttributes.Private | MemberAttributes.Static )
+                                  .AddTo ( type );
+            var translation = new CodeArrayCreateExpression ( Code.TypeRef < string > ( ) );
 
-            translation.Add ( singleton.Assign ( dictionaryTypeRef.Construct ( ) ) );
+            translator.InitExpression = translation;
+
+            var index = 0;
 
             foreach ( var entry in entries )
             {
@@ -507,24 +502,25 @@ namespace Localizer.Generator
                     .AddSummary  ( ResourceKeyFieldSummaryFormat, entry.Name )
                     .AddTo       ( keyEnum );
 
-                translation.Add ( addKey.Invoke ( keyEnumTypeRef.ToType ( ).Field ( entry.Key ),
-                                                  Code.Constant ( entry.Name ) ) );
+                translation.Initializers.Add ( Code.Constant ( entry.Name ) );
             }
-
-            Code.CreateField ( dictionaryTypeRef,
-                               ResourceKeyTranslatorName,
-                               MemberAttributes.Assembly | MemberAttributes.Static )
-                .AddTo       ( keyTranslator );
 
             var translate = Code.CreateMethod ( typeof ( string ),
                                                 "KeyToName",
                                                 MemberAttributes.Family | MemberAttributes.Override )
                                 .AddTo ( type );
 
+            var key   = Code.Variable ( ResourceKeyParameterName );
+            var first = keyEnumTypeRef.ToType ( ).Field ( entries [ 0 ].Key );
+            var last  = keyEnumTypeRef.ToType ( ).Field ( entries [ index - 1 ].Key );
+
             translate.Parameters.Add    ( keyEnumTypeRef.Parameter ( ResourceKeyParameterName ) );
-            translate.Statements.Return ( Code.Type    ( ResourceKeyTranslatorFieldName, default )
-                                              .Field   ( ResourceKeyTranslatorName )
-                                              .Indexer ( Code.Variable ( ResourceKeyParameterName ) ) );
+            translate.Statements.Add    ( Code.If   ( key.IsLessThan    ( first ).Or (
+                                                      key.IsGreaterThan ( last  ) ) )
+                                              .Then ( Code.Throw < ArgumentOutOfRangeException > ( Code.Constant ( ResourceKeyParameterName ) ) ) );
+            translate.Statements.Return ( Code.Static  ( )
+                                              .Field   ( ResourceKeyTranslatorFieldName )
+                                              .Indexer ( Code.Variable ( ResourceKeyParameterName ).Cast < int > ( ) ) );
 
             return type;
         }
