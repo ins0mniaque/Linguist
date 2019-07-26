@@ -12,7 +12,7 @@ namespace Localizer
         public static PluralRules Invariant { get; } = new PluralRules ( CultureInfo.InvariantCulture,
                                                                          CLDR.CardinalRuleSet.For ( CultureInfo.InvariantCulture ),
                                                                          CLDR.OrdinalRuleSet .For ( CultureInfo.InvariantCulture ),
-                                                                         PluralFormRangeSelector.Default );
+                                                                         CLDR.RangeRuleSet   .For ( CultureInfo.InvariantCulture ) );
 
         /// <summary>Retrieves a cached, read-only instance of a plural rule set for the current UI culture.</summary>
         /// <returns>A read-only <see cref="T:Localizer.PluralRules" /> object.</returns>
@@ -37,7 +37,7 @@ namespace Localizer
                 cache.Add ( culture, pluralRules = new PluralRules ( culture,
                                                                      CLDR.CardinalRuleSet.For ( culture ),
                                                                      CLDR.OrdinalRuleSet .For ( culture ),
-                                                                     PluralFormRangeSelector.Default ) );
+                                                                     CLDR.RangeRuleSet   .For ( culture ) ) );
 
             return pluralRules;
         }

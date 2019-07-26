@@ -23,7 +23,7 @@ namespace Localizer.CLDR
 
         public static PluralRule Parse ( string count, string rule, out string [ ] operands )
         {
-            var pluralForm     = ParsePluralForm ( count );
+            var pluralForm     = PluralFormParser.Parse ( count );
             var parts          = rule.Split ( '@' );
             var ruleCode       = parts [ 0 ].Trim ( );
             var integerSamples = parts.Length > 1 ? ParseSamples ( "integer", parts [ 1 ] ) : null;
@@ -31,22 +31,6 @@ namespace Localizer.CLDR
             var expression     = ParseExpression ( ruleCode, out operands );
 
             return new PluralRule ( pluralForm, expression, ruleCode, integerSamples, decimalSamples );
-        }
-
-        private static PluralForm ParsePluralForm ( string count )
-        {
-            switch ( count )
-            {
-                case "zero"  : return PluralForm.Zero;
-                case "one"   : return PluralForm.One;
-                case "two"   : return PluralForm.Two;
-                case "few"   : return PluralForm.Few;
-                case "many"  : return PluralForm.Many;
-                case "other" : return PluralForm.Other;
-                case "0"     : return PluralForm.ExplicitZero;
-                case "1"     : return PluralForm.ExplicitOne;
-                default      : throw new FormatException ( "Invalid plural form" );
-            }
         }
 
         private static string [ ] ParseSamples ( string name, string samples )

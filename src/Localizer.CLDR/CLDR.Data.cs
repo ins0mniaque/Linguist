@@ -242,6 +242,42 @@ namespace Localizer.CLDR
         }
     }
 
+    internal static class RangeRuleSet
+    {
+        public static PluralFormRangeSelector For ( CultureInfo culture )
+        {
+            switch ( culture.TwoLetterISOLanguageName )
+            {
+                case "ak"  : return RangeRuleSetOneA.Instance;
+                case "fa"  : return RangeRuleSetOneA.Instance;
+                case "or"  : return RangeRuleSetOneA.Instance;
+                case "sd"  : return RangeRuleSetOneA.Instance;
+                case "ka"  : return RangeRuleSetOneB.Instance;
+                case "af"  : return RangeRuleSetOneC.Instance;
+                case "bg"  : return RangeRuleSetOneC.Instance;
+                case "ca"  : return RangeRuleSetOneC.Instance;
+                case "en"  : return RangeRuleSetOneC.Instance;
+                case "es"  : return RangeRuleSetOneC.Instance;
+                case "et"  : return RangeRuleSetOneC.Instance;
+                case "eu"  : return RangeRuleSetOneC.Instance;
+                case "fi"  : return RangeRuleSetOneC.Instance;
+                case "ia"  : return RangeRuleSetOneC.Instance;
+                case "io"  : return RangeRuleSetOneC.Instance;
+                case "nb"  : return RangeRuleSetOneC.Instance;
+                case "si"  : return RangeRuleSetOneC.Instance;
+                case "sv"  : return RangeRuleSetOneC.Instance;
+                case "ur"  : return RangeRuleSetOneC.Instance;
+                case "mk"  : return RangeRuleSetOneD.Instance;
+                case "lv"  : return RangeRuleSetZeroOneA.Instance;
+                case "ro"  : return RangeRuleSetOneFewA.Instance;
+                case "sl"  : return RangeRuleSetOneTwoFewA.Instance;
+                case "he"  : return RangeRuleSetOneTwoManyA.Instance;
+                case "ar"  : return RangeRuleSetZeroOneTwoA.Instance;
+                default    : return DefaultRangeRuleSet.Instance;
+            }
+        }
+    }
+
     // Locales: bm, bo, dz, id, ig, ii, in, ja, jbo, jv, jw, kde, kea, km, ko, lkt, lo, ms, my, nqo, root, sah, ses, sg, th, to, vi, wo, yo, yue, zh
     internal class DefaultCardinalRuleSet : PluralFormSelector
     {
@@ -2748,6 +2784,208 @@ namespace Localizer.CLDR
             // "other"
             //   @integer: 10~25, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
+        }
+    }
+
+    // Locales: am, as, az, be, bn, bs, cs, cy, da, de, el, fil, fr, ga, gl, gsw, gu, hi, hr, hu, hy, id, is, it, ja, kk, km, kn, ko, ky, lo, lt, ml, mn, mr, ms, my, ne, nl, pa, pl, ps, pt, ru, sc, scn, sk, sq, sr, sw, ta, te, th, tk, tr, ug, uk, uz, vi, yue, zh, zu
+    internal class DefaultRangeRuleSet : PluralFormRangeSelector
+    {
+        public static readonly DefaultRangeRuleSet Instance = new DefaultRangeRuleSet ( );
+
+        private DefaultRangeRuleSet ( ) { }
+
+        public override PluralForm SelectPluralForm ( PluralForm start, PluralForm end )
+        {
+            return end;
+        }
+    }
+
+    // Locales: ak, fa, or, sd
+    internal class RangeRuleSetOneA : PluralFormRangeSelector
+    {
+        public static readonly RangeRuleSetOneA Instance = new RangeRuleSetOneA ( );
+
+        private RangeRuleSetOneA ( ) { }
+
+        public override PluralForm SelectPluralForm ( PluralForm start, PluralForm end )
+        {
+            if ( start == PluralForm.One && end == PluralForm.One )
+                return PluralForm.Other;
+
+            return end;
+        }
+    }
+
+    // Locales: ka
+    internal class RangeRuleSetOneB : PluralFormRangeSelector
+    {
+        public static readonly RangeRuleSetOneB Instance = new RangeRuleSetOneB ( );
+
+        private RangeRuleSetOneB ( ) { }
+
+        public override PluralForm SelectPluralForm ( PluralForm start, PluralForm end )
+        {
+            if ( start == PluralForm.One && end == PluralForm.Other )
+                return PluralForm.One;
+
+            if ( start == PluralForm.Other && end == PluralForm.One )
+                return PluralForm.Other;
+
+            return end;
+        }
+    }
+
+    // Locales: af, bg, ca, en, es, et, eu, fi, ia, io, nb, si, sv, ur
+    internal class RangeRuleSetOneC : PluralFormRangeSelector
+    {
+        public static readonly RangeRuleSetOneC Instance = new RangeRuleSetOneC ( );
+
+        private RangeRuleSetOneC ( ) { }
+
+        public override PluralForm SelectPluralForm ( PluralForm start, PluralForm end )
+        {
+            if ( start == PluralForm.Other && end == PluralForm.One )
+                return PluralForm.Other;
+
+            return end;
+        }
+    }
+
+    // Locales: mk
+    internal class RangeRuleSetOneD : PluralFormRangeSelector
+    {
+        public static readonly RangeRuleSetOneD Instance = new RangeRuleSetOneD ( );
+
+        private RangeRuleSetOneD ( ) { }
+
+        public override PluralForm SelectPluralForm ( PluralForm start, PluralForm end )
+        {
+            if ( start == PluralForm.One && end == PluralForm.One )
+                return PluralForm.Other;
+
+            if ( start == PluralForm.Other && end == PluralForm.One )
+                return PluralForm.Other;
+
+            return end;
+        }
+    }
+
+    // Locales: lv
+    internal class RangeRuleSetZeroOneA : PluralFormRangeSelector
+    {
+        public static readonly RangeRuleSetZeroOneA Instance = new RangeRuleSetZeroOneA ( );
+
+        private RangeRuleSetZeroOneA ( ) { }
+
+        public override PluralForm SelectPluralForm ( PluralForm start, PluralForm end )
+        {
+            if ( start == PluralForm.Zero && end == PluralForm.Zero )
+                return PluralForm.Other;
+
+            if ( start == PluralForm.One && end == PluralForm.Zero )
+                return PluralForm.Other;
+
+            if ( start == PluralForm.Other && end == PluralForm.Zero )
+                return PluralForm.Other;
+
+            return end;
+        }
+    }
+
+    // Locales: ro
+    internal class RangeRuleSetOneFewA : PluralFormRangeSelector
+    {
+        public static readonly RangeRuleSetOneFewA Instance = new RangeRuleSetOneFewA ( );
+
+        private RangeRuleSetOneFewA ( ) { }
+
+        public override PluralForm SelectPluralForm ( PluralForm start, PluralForm end )
+        {
+            if ( start == PluralForm.Few && end == PluralForm.One )
+                return PluralForm.Few;
+
+            return end;
+        }
+    }
+
+    // Locales: sl
+    internal class RangeRuleSetOneTwoFewA : PluralFormRangeSelector
+    {
+        public static readonly RangeRuleSetOneTwoFewA Instance = new RangeRuleSetOneTwoFewA ( );
+
+        private RangeRuleSetOneTwoFewA ( ) { }
+
+        public override PluralForm SelectPluralForm ( PluralForm start, PluralForm end )
+        {
+            if ( start == PluralForm.One && end == PluralForm.One )
+                return PluralForm.Few;
+
+            if ( start == PluralForm.Two && end == PluralForm.One )
+                return PluralForm.Few;
+
+            if ( start == PluralForm.Few && end == PluralForm.One )
+                return PluralForm.Few;
+
+            if ( start == PluralForm.Other && end == PluralForm.One )
+                return PluralForm.Few;
+
+            return end;
+        }
+    }
+
+    // Locales: he
+    internal class RangeRuleSetOneTwoManyA : PluralFormRangeSelector
+    {
+        public static readonly RangeRuleSetOneTwoManyA Instance = new RangeRuleSetOneTwoManyA ( );
+
+        private RangeRuleSetOneTwoManyA ( ) { }
+
+        public override PluralForm SelectPluralForm ( PluralForm start, PluralForm end )
+        {
+            if ( start == PluralForm.One && end == PluralForm.Two )
+                return PluralForm.Other;
+
+            if ( start == PluralForm.Two && end == PluralForm.Many )
+                return PluralForm.Other;
+
+            if ( start == PluralForm.Many && end == PluralForm.Other )
+                return PluralForm.Many;
+
+            if ( start == PluralForm.Other && end == PluralForm.One )
+                return PluralForm.Other;
+
+            if ( start == PluralForm.Other && end == PluralForm.Two )
+                return PluralForm.Other;
+
+            return end;
+        }
+    }
+
+    // Locales: ar
+    internal class RangeRuleSetZeroOneTwoA : PluralFormRangeSelector
+    {
+        public static readonly RangeRuleSetZeroOneTwoA Instance = new RangeRuleSetZeroOneTwoA ( );
+
+        private RangeRuleSetZeroOneTwoA ( ) { }
+
+        public override PluralForm SelectPluralForm ( PluralForm start, PluralForm end )
+        {
+            if ( start == PluralForm.Zero && end == PluralForm.One )
+                return PluralForm.Zero;
+
+            if ( start == PluralForm.Zero && end == PluralForm.Two )
+                return PluralForm.Zero;
+
+            if ( start == PluralForm.One && end == PluralForm.Two )
+                return PluralForm.Other;
+
+            if ( start == PluralForm.Other && end == PluralForm.One )
+                return PluralForm.Other;
+
+            if ( start == PluralForm.Other && end == PluralForm.Two )
+                return PluralForm.Other;
+
+            return end;
         }
     }
 }

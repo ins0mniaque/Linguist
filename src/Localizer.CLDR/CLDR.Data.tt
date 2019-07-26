@@ -18,16 +18,21 @@ namespace Localizer.CLDR
 <#
     var cardinals = XDocument.Load ( Host.ResolvePath ( "CLDR/common/supplemental/plurals.xml"  ) );
     var ordinals  = XDocument.Load ( Host.ResolvePath ( "CLDR/common/supplemental/ordinals.xml" ) );
+    var ranges    = XDocument.Load ( Host.ResolvePath ( "CLDR/common/supplemental/pluralRanges.xml" ) );
 
-    var cardinalRuleSet = PluralRules.Parse ( cardinals );
-    var ordinalRuleSet  = PluralRules.Parse ( ordinals  );
+    var cardinalRuleSet = PluralRules .Parse ( cardinals );
+    var ordinalRuleSet  = PluralRules .Parse ( ordinals  );
+    var rangeRuleSet    = PluralRanges.Parse ( ranges    );
 
     WriteLookup ( cardinalRuleSet, "CardinalRuleSet" );
     WriteLine   ( string.Empty );
     WriteLookup ( ordinalRuleSet,  "OrdinalRuleSet"  );
+    WriteLine   ( string.Empty );
+    WriteLookup ( rangeRuleSet,    "RangeRuleSet"    );
 
-    WritePluralRules ( cardinalRuleSet, true  );
-    WritePluralRules ( ordinalRuleSet,  false );
+    WritePluralRules  ( cardinalRuleSet, true  );
+    WritePluralRules  ( ordinalRuleSet,  false );
+    WritePluralRanges ( rangeRuleSet );
 #>}<#+
     private void WriteLookup ( PluralRules [ ] pluralRulesSet, string lookupName )
     {
@@ -60,7 +65,7 @@ namespace Localizer.CLDR
                 if ( pluralRules == defaultRules )
                     continue;
 
-                WriteLookupCases ( pluralRules, Array.FindAll ( pluralRules.Locales, locale => locale.IndexOf ( '-' ) >= 0 ), 8 );
+                WriteLookupCases ( pluralRules.Name, Array.FindAll ( pluralRules.Locales, locale => locale.IndexOf ( '-' ) >= 0 ), 8 );
             }
 #>
             }
@@ -76,7 +81,7 @@ namespace Localizer.CLDR
             if ( pluralRules == defaultRules )
                 continue;
 
-            WriteLookupCases ( pluralRules, Array.FindAll ( pluralRules.Locales, locale => locale.IndexOf ( '-' ) < 0 ), 5 );
+            WriteLookupCases ( pluralRules.Name, Array.FindAll ( pluralRules.Locales, locale => locale.IndexOf ( '-' ) < 0 ), 5 );
         }
 #>
                 default    : return <#= defaultRules.Name #>.Instance;
@@ -86,12 +91,69 @@ namespace Localizer.CLDR
 <#+
     }
 
-    private void WriteLookupCases ( PluralRules pluralRules, string [ ] locales, int padding )
+    private void WriteLookup ( PluralRanges [ ] pluralRangesSet, string lookupName )
+    {
+#>
+    internal static class <#= lookupName #>
+    {
+        public static PluralFormRangeSelector For ( CultureInfo culture )
+        {
+<#+
+        var defaultRanges = (PluralRanges) null;
+        var hasSubtags    = false;
+        foreach ( var pluralRanges in pluralRangesSet )
+        {
+            if ( pluralRanges.Name.IndexOf ( "default", StringComparison.OrdinalIgnoreCase ) >= 0 )
+                defaultRanges = pluralRanges;
+
+            foreach ( var locale in pluralRanges.Locales )
+                if ( locale.IndexOf ( '-' ) >= 0 )
+                    hasSubtags = true;
+        }
+
+        if ( hasSubtags )
+        {
+#>
+            switch ( culture.Name )
+            {
+<#+
+            foreach ( var pluralRanges in pluralRangesSet )
+            {
+                if ( pluralRanges == defaultRanges )
+                    continue;
+
+                WriteLookupCases ( pluralRanges.Name, Array.FindAll ( pluralRanges.Locales, locale => locale.IndexOf ( '-' ) >= 0 ), 8 );
+            }
+#>
+            }
+
+<#+
+        }
+#>
+            switch ( culture.TwoLetterISOLanguageName )
+            {
+<#+
+        foreach ( var pluralRanges in pluralRangesSet )
+        {
+            if ( pluralRanges == defaultRanges )
+                continue;
+
+            WriteLookupCases ( pluralRanges.Name, Array.FindAll ( pluralRanges.Locales, locale => locale.IndexOf ( '-' ) < 0 ), 5 );
+        }
+#>
+                default    : return <#= defaultRanges.Name #>.Instance;
+            }
+        }
+    }
+<#+
+    }
+
+    private void WriteLookupCases ( string className, string [ ] locales, int padding )
     {
         foreach ( var locale in locales )
         {
 #>
-                case <#= string.Format ( "{0,-" + padding + "}", "\"" + locale + "\"" ) #> : return <#= pluralRules.Name #>.Instance;
+                case <#= string.Format ( "{0,-" + padding + "}", "\"" + locale + "\"" ) #> : return <#= className #>.Instance;
 <#+
         }
     }
@@ -154,6 +216,40 @@ namespace Localizer.CLDR
             WriteSamples ( "decimal", pluralRules.DefaultRule.DecimalSamples );
 #>
             return PluralForm.Other;
+        }
+    }
+<#+
+        }
+    }
+
+    private void WritePluralRanges ( PluralRanges [ ] pluralRangesSet )
+    {
+        foreach ( var pluralRanges in pluralRangesSet )
+        {
+#>
+
+    // Locales: <#= string.Join ( ", ", pluralRanges.Locales ) #>
+    internal class <#= pluralRanges.Name #> : PluralFormRangeSelector
+    {
+        public static readonly <#= pluralRanges.Name #> Instance = new <#= pluralRanges.Name #> ( );
+
+        private <#= pluralRanges.Name #> ( ) { }
+
+        public override PluralForm SelectPluralForm ( PluralForm start, PluralForm end )
+        {
+<#+
+            foreach ( var pluralRange in pluralRanges.Ranges )
+            {
+                if ( pluralRange.End == pluralRange.Result )
+                    continue;
+#>
+            if ( start == PluralForm.<#= pluralRange.Start #> && end == PluralForm.<#= pluralRange.End #> )
+                return PluralForm.<#= pluralRange.Result #>;
+
+<#+
+            }
+#>
+            return end;
         }
     }
 <#+
