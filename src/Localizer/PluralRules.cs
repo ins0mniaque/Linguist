@@ -7,6 +7,8 @@ namespace Localizer
 {
     public sealed class PluralRules
     {
+        private static readonly Cache < CultureInfo, PluralRules > cache = new Cache < CultureInfo, PluralRules > ( );
+
         public static PluralRules Invariant { get; } = new PluralRules ( CultureInfo.InvariantCulture,
                                                                          CLDR.CardinalRuleSet.For ( CultureInfo.InvariantCulture ),
                                                                          CLDR.OrdinalRuleSet .For ( CultureInfo.InvariantCulture ),
@@ -25,10 +27,19 @@ namespace Localizer
         /// <exception cref="T:System.ArgumentNullException"><paramref name="culture" /> is null.</exception>
         public static PluralRules GetPluralRules ( CultureInfo culture )
         {
-            return new PluralRules ( culture ?? throw new ArgumentNullException ( nameof ( culture ) ),
-                                     CLDR.CardinalRuleSet.For ( culture ),
-                                     CLDR.OrdinalRuleSet .For ( culture ),
-                                     PluralFormRangeSelector.Default );
+            if ( culture == null )
+                throw new ArgumentNullException ( nameof ( culture ) );
+
+            if ( culture == CultureInfo.InvariantCulture )
+                return Invariant;
+
+            if ( ! cache.TryGet ( culture, out var pluralRules ) )
+                cache.Add ( culture, pluralRules = new PluralRules ( culture,
+                                                                     CLDR.CardinalRuleSet.For ( culture ),
+                                                                     CLDR.OrdinalRuleSet .For ( culture ),
+                                                                     PluralFormRangeSelector.Default ) );
+
+            return pluralRules;
         }
 
         public static PluralRules CreateSpecificRules ( CultureInfo culture, PluralFormSelector cardinalFormSelector, PluralFormSelector ordinalFormSelector, PluralFormRangeSelector rangeFormSelector )
