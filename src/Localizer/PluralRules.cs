@@ -8,8 +8,8 @@ namespace Localizer
     public sealed class PluralRules
     {
         public static PluralRules Invariant { get; } = new PluralRules ( CultureInfo.InvariantCulture,
-                                                                         CardinalRuleSet.Default,
-                                                                         OrdinalRuleSet.Default,
+                                                                         CLDR.CardinalRuleSet.For ( CultureInfo.InvariantCulture ),
+                                                                         CLDR.OrdinalRuleSet .For ( CultureInfo.InvariantCulture ),
                                                                          PluralFormRangeSelector.Default );
 
         /// <summary>Retrieves a cached, read-only instance of a plural rule set for the current UI culture.</summary>
@@ -25,25 +25,9 @@ namespace Localizer
         /// <exception cref="T:System.ArgumentNullException"><paramref name="culture" /> is null.</exception>
         public static PluralRules GetPluralRules ( CultureInfo culture )
         {
-            culture = culture ?? throw new ArgumentNullException ( nameof ( culture ) );
-
-            var unicodeLanguage = culture.Name;
-
-            if ( unicodeLanguage.StartsWith ( "en" ) )
-                return new PluralRules ( culture,
-                                         new CardinalRuleSet ( new EnglishOneRule ( ) ),
-                                         OrdinalRuleSet.Default,
-                                         PluralFormRangeSelector.Default );
-
-            if ( unicodeLanguage.StartsWith ( "fr" ) )
-                return new PluralRules ( culture,
-                                         new CardinalRuleSet ( new FrenchOneRule ( ) ),
-                                         OrdinalRuleSet.Default,
-                                         PluralFormRangeSelector.Default );
-
-            return new PluralRules ( culture,
-                                     CardinalRuleSet.Default,
-                                     OrdinalRuleSet.Default,
+            return new PluralRules ( culture ?? throw new ArgumentNullException ( nameof ( culture ) ),
+                                     CLDR.CardinalRuleSet.For ( culture ),
+                                     CLDR.OrdinalRuleSet .For ( culture ),
                                      PluralFormRangeSelector.Default );
         }
 

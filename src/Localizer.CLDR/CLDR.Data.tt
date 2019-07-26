@@ -15,107 +15,146 @@ using Localizer.Pluralization;
 
 namespace Localizer.CLDR
 {
-    internal static class PluralRuleSets
+<#
+    var cardinals = XDocument.Load ( Host.ResolvePath ( "CLDR/common/supplemental/plurals.xml"  ) );
+    var ordinals  = XDocument.Load ( Host.ResolvePath ( "CLDR/common/supplemental/ordinals.xml" ) );
+
+    var cardinalRuleSet = PluralRules.Parse ( cardinals );
+    var ordinalRuleSet  = PluralRules.Parse ( ordinals  );
+
+    WriteLookup ( cardinalRuleSet, "CardinalRuleSet" );
+    WriteLine   ( string.Empty );
+    WriteLookup ( ordinalRuleSet,  "OrdinalRuleSet"  );
+
+    WritePluralRules ( cardinalRuleSet, true  );
+    WritePluralRules ( ordinalRuleSet,  false );
+#>}<#+
+    private void WriteLookup ( PluralRules [ ] pluralRulesSet, string lookupName )
     {
-        public static PluralFormSelector GetCardinalRuleSet ( CultureInfo culture )
+#>
+    internal static class <#= lookupName #>
+    {
+        public static PluralFormSelector For ( CultureInfo culture )
         {
-            return null;
+<#+
+        var defaultRules = (PluralRules) null;
+        var hasSubtags   = false;
+        foreach ( var pluralRules in pluralRulesSet )
+        {
+            if ( pluralRules.Name.IndexOf ( "default", StringComparison.OrdinalIgnoreCase ) >= 0 )
+                defaultRules = pluralRules;
+
+            foreach ( var locale in pluralRules.Locales )
+                if ( locale.IndexOf ( '-' ) >= 0 )
+                    hasSubtags = true;
         }
 
-        public static PluralFormSelector GetOrdinalRuleSet ( CultureInfo culture )
+        if ( hasSubtags )
         {
-            return null;
-        }
+#>
+            switch ( culture.Name )
+            {
+<#+
+            foreach ( var pluralRules in pluralRulesSet )
+            {
+                if ( pluralRules == defaultRules )
+                    continue;
 
-        public static PluralFormRangeSelector GetRangeRuleSet ( CultureInfo culture )
+                WriteLookupCases ( pluralRules, Array.FindAll ( pluralRules.Locales, locale => locale.IndexOf ( '-' ) >= 0 ), 8 );
+            }
+#>
+            }
+
+<#+
+        }
+#>
+            switch ( culture.TwoLetterISOLanguageName )
+            {
+<#+
+        foreach ( var pluralRules in pluralRulesSet )
         {
-            return null;
+            if ( pluralRules == defaultRules )
+                continue;
+
+            WriteLookupCases ( pluralRules, Array.FindAll ( pluralRules.Locales, locale => locale.IndexOf ( '-' ) < 0 ), 5 );
+        }
+#>
+                default    : return <#= defaultRules.Name #>.Instance;
+            }
         }
     }
-<#
-    var plurals = XDocument.Load ( Host.ResolvePath ( "CLDR/common/supplemental/plurals.xml" ) );
+<#+
+    }
 
-    var names = new Dictionary < string, int > ( );
-
-    foreach ( var pluralRuleSet in PluralRules.Parse ( plurals ) )
+    private void WriteLookupCases ( PluralRules pluralRules, string [ ] locales, int padding )
     {
-        if ( pluralRuleSet.Rules.Length == 0 && pluralRuleSet.PluralForm == Localizer.PluralForm.Other )
+        foreach ( var locale in locales )
+        {
+#>
+                case <#= string.Format ( "{0,-" + padding + "}", "\"" + locale + "\"" ) #> : return <#= pluralRules.Name #>.Instance;
+<#+
+        }
+    }
+
+    private void WritePluralRules ( PluralRules [ ] pluralRulesSet, bool explicitRules )
+    {
+        foreach ( var pluralRules in pluralRulesSet )
         {
 #>
 
-    // Locales: <#= string.Join ( ", ", pluralRuleSet.Locales ) #>
-    public class DefaultCardinalRuleSet : PluralFormSelector
+    // Locales: <#= string.Join ( ", ", pluralRules.Locales ) #>
+    internal class <#= pluralRules.Name #> : PluralFormSelector
     {
-        public DefaultCardinalRuleSet ( ) : base ( PluralForm.Other ) { }
+        public static readonly <#= pluralRules.Name #> Instance = new <#= pluralRules.Name #> ( );
+
+        private <#= pluralRules.Name #> ( ) : base ( PluralForm.<#= pluralRules.PluralForm.ToString ( ).Replace ( ", ", " | PluralForm." ) #> ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
-            var i = number.i ( );
-            var v = number.v ( );
-<#
-            WriteExplicitRules ( pluralRuleSet.PluralForm );
-#>
+<#+
+            var operands = new HashSet < string > ( );
 
-            return PluralForm.Other;
-        }
-    }
-<#
-            continue;
-        }
+            if ( explicitRules )
+            {
+                operands.Add ( "i" );
+                operands.Add ( "v" );
+            }
 
-        var name = "CardinalRuleSet" + pluralRuleSet.PluralForm.ToString ( ).Replace ( ", ", string.Empty );
-        int index;
-        if ( ! names.TryGetValue ( name, out index ) )
-            index = -1;
+            foreach ( var operand in pluralRules.Operands )
+                operands.Add ( operand );
 
-        names [ name ] = ++index;
-
-        name += (char) ( 'A' + index );
-#>
-
-    // Locales: <#= string.Join ( ", ", pluralRuleSet.Locales ) #>
-    public class <#= name #> : PluralFormSelector
-    {
-        public <#= name #> ( ) : base ( PluralForm.<#= pluralRuleSet.PluralForm.ToString ( ).Replace ( ", ", " | PluralForm." ) #> ) { }
-
-        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
-        {
-<#
-        var operands = new HashSet < string > ( ) { "i", "v" };
-        foreach ( var operand in pluralRuleSet.Operands )
-            operands.Add ( operand );
-
-        foreach ( var operand in operands )
-        {
+            foreach ( var operand in operands )
+            {
 #>
             var <#= operand #> = number.<#= operand #> ( );
-<#
-        }
+<#+
+            }
 
-        WriteExplicitRules ( pluralRuleSet.PluralForm );
+            if ( explicitRules )
+                WriteExplicitRules ( pluralRules.PluralForm );
 
-        foreach ( var pluralRule in pluralRuleSet.Rules )
-        {
+            foreach ( var pluralRule in pluralRules.Rules )
+            {
 #>
 
             // "<#= pluralRule.PluralForm.ToString ( ).ToLowerInvariant ( ) #>": <#= pluralRule.RuleCode #>
-<#
-            WriteSamples ( "integer", pluralRule.IntegerSamples );
-            WriteSamples ( "decimal", pluralRule.DecimalSamples );
+<#+
+                WriteSamples ( "integer", pluralRule.IntegerSamples );
+                WriteSamples ( "decimal", pluralRule.DecimalSamples );
 #>
             if ( <#= pluralRule.Rule #> )
                 return PluralForm.<#= pluralRule.PluralForm #>;
-<#
-        }
+<#+
+            }
 #>
 
             return PluralForm.Other;
         }
     }
-<#
+<#+
+        }
     }
-#>
-}<#+
+
     private void WriteExplicitRules ( Localizer.PluralForm pluralForms )
     {
 #>

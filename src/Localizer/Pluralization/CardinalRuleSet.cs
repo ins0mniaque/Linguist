@@ -2,8 +2,6 @@
 {
     public class CardinalRuleSet : PluralRuleSet
     {
-        public static CardinalRuleSet Default { get; } = new CardinalRuleSet ( );
-
         public static PluralRule ExplicitZeroRule { get; } = new ExplicitZeroRule ( );
         public static PluralRule ExplicitOneRule  { get; } = new ExplicitOneRule  ( );
 

@@ -114,6 +114,60 @@ namespace Localizer.CLDR
         }
 
         [ MethodImpl ( Inlining.Aggressive ) ]
+        public static bool equals ( this decimal number, decimal arg0, decimal arg1, decimal arg2, decimal arg3, decimal arg4, decimal arg5, decimal arg6 )
+        {
+            return number == arg0 ||
+                   number == arg1 ||
+                   number == arg2 ||
+                   number == arg3 ||
+                   number == arg4 ||
+                   number == arg5 ||
+                   number == arg6;
+        }
+
+        [ MethodImpl ( Inlining.Aggressive ) ]
+        public static bool equals ( this decimal number, decimal arg0, decimal arg1, decimal arg2, decimal arg3, decimal arg4, decimal arg5, decimal arg6, decimal arg7 )
+        {
+            return number == arg0 ||
+                   number == arg1 ||
+                   number == arg2 ||
+                   number == arg3 ||
+                   number == arg4 ||
+                   number == arg5 ||
+                   number == arg6 ||
+                   number == arg7;
+        }
+
+        [ MethodImpl ( Inlining.Aggressive ) ]
+        public static bool equals ( this decimal number, decimal arg0, decimal arg1, decimal arg2, decimal arg3, decimal arg4, decimal arg5, decimal arg6, decimal arg7, decimal arg8 )
+        {
+            return number == arg0 ||
+                   number == arg1 ||
+                   number == arg2 ||
+                   number == arg3 ||
+                   number == arg4 ||
+                   number == arg5 ||
+                   number == arg6 ||
+                   number == arg7 ||
+                   number == arg8;
+        }
+
+        [ MethodImpl ( Inlining.Aggressive ) ]
+        public static bool equals ( this decimal number, decimal arg0, decimal arg1, decimal arg2, decimal arg3, decimal arg4, decimal arg5, decimal arg6, decimal arg7, decimal arg8, decimal arg9 )
+        {
+            return number == arg0 ||
+                   number == arg1 ||
+                   number == arg2 ||
+                   number == arg3 ||
+                   number == arg4 ||
+                   number == arg5 ||
+                   number == arg6 ||
+                   number == arg7 ||
+                   number == arg8 ||
+                   number == arg9;
+        }
+
+        [ MethodImpl ( Inlining.Aggressive ) ]
         public static bool between ( this decimal number, decimal start0, decimal end0 )
         {
             return number >= start0 && number <= end0;
@@ -132,6 +186,25 @@ namespace Localizer.CLDR
             return number >= start0 && number <= end0 ||
                    number >= start1 && number <= end1 ||
                    number >= start2 && number <= end2;
+        }
+
+        [ MethodImpl ( Inlining.Aggressive ) ]
+        public static bool between ( this decimal number, decimal start0, decimal end0, decimal start1, decimal end1, decimal start2, decimal end2, decimal start3, decimal end3 )
+        {
+            return number >= start0 && number <= end0 ||
+                   number >= start1 && number <= end1 ||
+                   number >= start2 && number <= end2 ||
+                   number >= start3 && number <= end3;
+        }
+
+        [ MethodImpl ( Inlining.Aggressive ) ]
+        public static bool between ( this decimal number, decimal start0, decimal end0, decimal start1, decimal end1, decimal start2, decimal end2, decimal start3, decimal end3, decimal start4, decimal end4 )
+        {
+            return number >= start0 && number <= end0 ||
+                   number >= start1 && number <= end1 ||
+                   number >= start2 && number <= end2 ||
+                   number >= start3 && number <= end3 ||
+                   number >= start4 && number <= end4;
         }
     }
 }

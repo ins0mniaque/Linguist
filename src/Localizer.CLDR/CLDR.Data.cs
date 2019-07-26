@@ -4,28 +4,250 @@ using Localizer.Pluralization;
 
 namespace Localizer.CLDR
 {
-    internal static class PluralRuleSets
+    internal static class CardinalRuleSet
     {
-        public static PluralFormSelector GetCardinalRuleSet ( CultureInfo culture )
+        public static PluralFormSelector For ( CultureInfo culture )
         {
-            return null;
-        }
+            switch ( culture.Name )
+            {
+                case "pt-PT"  : return CardinalRuleSetOneD.Instance;
+            }
 
-        public static PluralFormSelector GetOrdinalRuleSet ( CultureInfo culture )
-        {
-            return null;
+            switch ( culture.TwoLetterISOLanguageName )
+            {
+                case "am"  : return CardinalRuleSetOneA.Instance;
+                case "as"  : return CardinalRuleSetOneA.Instance;
+                case "bn"  : return CardinalRuleSetOneA.Instance;
+                case "fa"  : return CardinalRuleSetOneA.Instance;
+                case "gu"  : return CardinalRuleSetOneA.Instance;
+                case "hi"  : return CardinalRuleSetOneA.Instance;
+                case "kn"  : return CardinalRuleSetOneA.Instance;
+                case "zu"  : return CardinalRuleSetOneA.Instance;
+                case "ff"  : return CardinalRuleSetOneB.Instance;
+                case "fr"  : return CardinalRuleSetOneB.Instance;
+                case "hy"  : return CardinalRuleSetOneB.Instance;
+                case "kab" : return CardinalRuleSetOneB.Instance;
+                case "pt"  : return CardinalRuleSetOneC.Instance;
+                case "ast" : return CardinalRuleSetOneD.Instance;
+                case "ca"  : return CardinalRuleSetOneD.Instance;
+                case "de"  : return CardinalRuleSetOneD.Instance;
+                case "en"  : return CardinalRuleSetOneD.Instance;
+                case "et"  : return CardinalRuleSetOneD.Instance;
+                case "fi"  : return CardinalRuleSetOneD.Instance;
+                case "fy"  : return CardinalRuleSetOneD.Instance;
+                case "gl"  : return CardinalRuleSetOneD.Instance;
+                case "ia"  : return CardinalRuleSetOneD.Instance;
+                case "io"  : return CardinalRuleSetOneD.Instance;
+                case "it"  : return CardinalRuleSetOneD.Instance;
+                case "ji"  : return CardinalRuleSetOneD.Instance;
+                case "nl"  : return CardinalRuleSetOneD.Instance;
+                case "sc"  : return CardinalRuleSetOneD.Instance;
+                case "scn" : return CardinalRuleSetOneD.Instance;
+                case "sv"  : return CardinalRuleSetOneD.Instance;
+                case "sw"  : return CardinalRuleSetOneD.Instance;
+                case "ur"  : return CardinalRuleSetOneD.Instance;
+                case "yi"  : return CardinalRuleSetOneD.Instance;
+                case "si"  : return CardinalRuleSetOneE.Instance;
+                case "ak"  : return CardinalRuleSetOneF.Instance;
+                case "bh"  : return CardinalRuleSetOneF.Instance;
+                case "guw" : return CardinalRuleSetOneF.Instance;
+                case "ln"  : return CardinalRuleSetOneF.Instance;
+                case "mg"  : return CardinalRuleSetOneF.Instance;
+                case "nso" : return CardinalRuleSetOneF.Instance;
+                case "pa"  : return CardinalRuleSetOneF.Instance;
+                case "ti"  : return CardinalRuleSetOneF.Instance;
+                case "wa"  : return CardinalRuleSetOneF.Instance;
+                case "tzm" : return CardinalRuleSetOneG.Instance;
+                case "af"  : return CardinalRuleSetOneH.Instance;
+                case "asa" : return CardinalRuleSetOneH.Instance;
+                case "az"  : return CardinalRuleSetOneH.Instance;
+                case "bem" : return CardinalRuleSetOneH.Instance;
+                case "bez" : return CardinalRuleSetOneH.Instance;
+                case "bg"  : return CardinalRuleSetOneH.Instance;
+                case "brx" : return CardinalRuleSetOneH.Instance;
+                case "ce"  : return CardinalRuleSetOneH.Instance;
+                case "cgg" : return CardinalRuleSetOneH.Instance;
+                case "chr" : return CardinalRuleSetOneH.Instance;
+                case "ckb" : return CardinalRuleSetOneH.Instance;
+                case "dv"  : return CardinalRuleSetOneH.Instance;
+                case "ee"  : return CardinalRuleSetOneH.Instance;
+                case "el"  : return CardinalRuleSetOneH.Instance;
+                case "eo"  : return CardinalRuleSetOneH.Instance;
+                case "es"  : return CardinalRuleSetOneH.Instance;
+                case "eu"  : return CardinalRuleSetOneH.Instance;
+                case "fo"  : return CardinalRuleSetOneH.Instance;
+                case "fur" : return CardinalRuleSetOneH.Instance;
+                case "gsw" : return CardinalRuleSetOneH.Instance;
+                case "ha"  : return CardinalRuleSetOneH.Instance;
+                case "haw" : return CardinalRuleSetOneH.Instance;
+                case "hu"  : return CardinalRuleSetOneH.Instance;
+                case "jgo" : return CardinalRuleSetOneH.Instance;
+                case "jmc" : return CardinalRuleSetOneH.Instance;
+                case "ka"  : return CardinalRuleSetOneH.Instance;
+                case "kaj" : return CardinalRuleSetOneH.Instance;
+                case "kcg" : return CardinalRuleSetOneH.Instance;
+                case "kk"  : return CardinalRuleSetOneH.Instance;
+                case "kkj" : return CardinalRuleSetOneH.Instance;
+                case "kl"  : return CardinalRuleSetOneH.Instance;
+                case "ks"  : return CardinalRuleSetOneH.Instance;
+                case "ksb" : return CardinalRuleSetOneH.Instance;
+                case "ku"  : return CardinalRuleSetOneH.Instance;
+                case "ky"  : return CardinalRuleSetOneH.Instance;
+                case "lb"  : return CardinalRuleSetOneH.Instance;
+                case "lg"  : return CardinalRuleSetOneH.Instance;
+                case "mas" : return CardinalRuleSetOneH.Instance;
+                case "mgo" : return CardinalRuleSetOneH.Instance;
+                case "ml"  : return CardinalRuleSetOneH.Instance;
+                case "mn"  : return CardinalRuleSetOneH.Instance;
+                case "mr"  : return CardinalRuleSetOneH.Instance;
+                case "nah" : return CardinalRuleSetOneH.Instance;
+                case "nb"  : return CardinalRuleSetOneH.Instance;
+                case "nd"  : return CardinalRuleSetOneH.Instance;
+                case "ne"  : return CardinalRuleSetOneH.Instance;
+                case "nn"  : return CardinalRuleSetOneH.Instance;
+                case "nnh" : return CardinalRuleSetOneH.Instance;
+                case "no"  : return CardinalRuleSetOneH.Instance;
+                case "nr"  : return CardinalRuleSetOneH.Instance;
+                case "ny"  : return CardinalRuleSetOneH.Instance;
+                case "nyn" : return CardinalRuleSetOneH.Instance;
+                case "om"  : return CardinalRuleSetOneH.Instance;
+                case "or"  : return CardinalRuleSetOneH.Instance;
+                case "os"  : return CardinalRuleSetOneH.Instance;
+                case "pap" : return CardinalRuleSetOneH.Instance;
+                case "ps"  : return CardinalRuleSetOneH.Instance;
+                case "rm"  : return CardinalRuleSetOneH.Instance;
+                case "rof" : return CardinalRuleSetOneH.Instance;
+                case "rwk" : return CardinalRuleSetOneH.Instance;
+                case "saq" : return CardinalRuleSetOneH.Instance;
+                case "sd"  : return CardinalRuleSetOneH.Instance;
+                case "sdh" : return CardinalRuleSetOneH.Instance;
+                case "seh" : return CardinalRuleSetOneH.Instance;
+                case "sn"  : return CardinalRuleSetOneH.Instance;
+                case "so"  : return CardinalRuleSetOneH.Instance;
+                case "sq"  : return CardinalRuleSetOneH.Instance;
+                case "ss"  : return CardinalRuleSetOneH.Instance;
+                case "ssy" : return CardinalRuleSetOneH.Instance;
+                case "st"  : return CardinalRuleSetOneH.Instance;
+                case "syr" : return CardinalRuleSetOneH.Instance;
+                case "ta"  : return CardinalRuleSetOneH.Instance;
+                case "te"  : return CardinalRuleSetOneH.Instance;
+                case "teo" : return CardinalRuleSetOneH.Instance;
+                case "tig" : return CardinalRuleSetOneH.Instance;
+                case "tk"  : return CardinalRuleSetOneH.Instance;
+                case "tn"  : return CardinalRuleSetOneH.Instance;
+                case "tr"  : return CardinalRuleSetOneH.Instance;
+                case "ts"  : return CardinalRuleSetOneH.Instance;
+                case "ug"  : return CardinalRuleSetOneH.Instance;
+                case "uz"  : return CardinalRuleSetOneH.Instance;
+                case "ve"  : return CardinalRuleSetOneH.Instance;
+                case "vo"  : return CardinalRuleSetOneH.Instance;
+                case "vun" : return CardinalRuleSetOneH.Instance;
+                case "wae" : return CardinalRuleSetOneH.Instance;
+                case "xh"  : return CardinalRuleSetOneH.Instance;
+                case "xog" : return CardinalRuleSetOneH.Instance;
+                case "da"  : return CardinalRuleSetOneI.Instance;
+                case "is"  : return CardinalRuleSetOneJ.Instance;
+                case "mk"  : return CardinalRuleSetOneK.Instance;
+                case "ceb" : return CardinalRuleSetOneL.Instance;
+                case "fil" : return CardinalRuleSetOneL.Instance;
+                case "tl"  : return CardinalRuleSetOneL.Instance;
+                case "lv"  : return CardinalRuleSetZeroOneA.Instance;
+                case "prg" : return CardinalRuleSetZeroOneA.Instance;
+                case "lag" : return CardinalRuleSetZeroOneB.Instance;
+                case "ksh" : return CardinalRuleSetZeroOneC.Instance;
+                case "iu"  : return CardinalRuleSetOneTwoA.Instance;
+                case "naq" : return CardinalRuleSetOneTwoA.Instance;
+                case "se"  : return CardinalRuleSetOneTwoA.Instance;
+                case "sma" : return CardinalRuleSetOneTwoA.Instance;
+                case "smi" : return CardinalRuleSetOneTwoA.Instance;
+                case "smj" : return CardinalRuleSetOneTwoA.Instance;
+                case "smn" : return CardinalRuleSetOneTwoA.Instance;
+                case "sms" : return CardinalRuleSetOneTwoA.Instance;
+                case "shi" : return CardinalRuleSetOneFewA.Instance;
+                case "mo"  : return CardinalRuleSetOneFewB.Instance;
+                case "ro"  : return CardinalRuleSetOneFewB.Instance;
+                case "bs"  : return CardinalRuleSetOneFewC.Instance;
+                case "hr"  : return CardinalRuleSetOneFewC.Instance;
+                case "sh"  : return CardinalRuleSetOneFewC.Instance;
+                case "sr"  : return CardinalRuleSetOneFewC.Instance;
+                case "gd"  : return CardinalRuleSetOneTwoFewA.Instance;
+                case "sl"  : return CardinalRuleSetOneTwoFewB.Instance;
+                case "dsb" : return CardinalRuleSetOneTwoFewC.Instance;
+                case "hsb" : return CardinalRuleSetOneTwoFewC.Instance;
+                case "he"  : return CardinalRuleSetOneTwoManyA.Instance;
+                case "iw"  : return CardinalRuleSetOneTwoManyA.Instance;
+                case "cs"  : return CardinalRuleSetOneFewManyA.Instance;
+                case "sk"  : return CardinalRuleSetOneFewManyA.Instance;
+                case "pl"  : return CardinalRuleSetOneFewManyB.Instance;
+                case "be"  : return CardinalRuleSetOneFewManyC.Instance;
+                case "lt"  : return CardinalRuleSetOneFewManyD.Instance;
+                case "mt"  : return CardinalRuleSetOneFewManyE.Instance;
+                case "ru"  : return CardinalRuleSetOneFewManyF.Instance;
+                case "uk"  : return CardinalRuleSetOneFewManyF.Instance;
+                case "br"  : return CardinalRuleSetOneTwoFewManyA.Instance;
+                case "ga"  : return CardinalRuleSetOneTwoFewManyB.Instance;
+                case "gv"  : return CardinalRuleSetOneTwoFewManyC.Instance;
+                case "ar"  : return CardinalRuleSetZeroOneTwoFewManyA.Instance;
+                case "ars" : return CardinalRuleSetZeroOneTwoFewManyA.Instance;
+                case "cy"  : return CardinalRuleSetZeroOneTwoFewManyB.Instance;
+                case "kw"  : return CardinalRuleSetZeroOneTwoFewManyC.Instance;
+                default    : return DefaultCardinalRuleSet.Instance;
+            }
         }
+    }
 
-        public static PluralFormRangeSelector GetRangeRuleSet ( CultureInfo culture )
+    internal static class OrdinalRuleSet
+    {
+        public static PluralFormSelector For ( CultureInfo culture )
         {
-            return null;
+            switch ( culture.TwoLetterISOLanguageName )
+            {
+                case "sv"  : return OrdinalRuleSetOneA.Instance;
+                case "fil" : return OrdinalRuleSetOneB.Instance;
+                case "fr"  : return OrdinalRuleSetOneB.Instance;
+                case "ga"  : return OrdinalRuleSetOneB.Instance;
+                case "hy"  : return OrdinalRuleSetOneB.Instance;
+                case "lo"  : return OrdinalRuleSetOneB.Instance;
+                case "mo"  : return OrdinalRuleSetOneB.Instance;
+                case "ms"  : return OrdinalRuleSetOneB.Instance;
+                case "ro"  : return OrdinalRuleSetOneB.Instance;
+                case "tl"  : return OrdinalRuleSetOneB.Instance;
+                case "vi"  : return OrdinalRuleSetOneB.Instance;
+                case "hu"  : return OrdinalRuleSetOneC.Instance;
+                case "ne"  : return OrdinalRuleSetOneD.Instance;
+                case "be"  : return OrdinalRuleSetFewA.Instance;
+                case "uk"  : return OrdinalRuleSetFewB.Instance;
+                case "tk"  : return OrdinalRuleSetFewC.Instance;
+                case "kk"  : return OrdinalRuleSetManyA.Instance;
+                case "it"  : return OrdinalRuleSetManyB.Instance;
+                case "sc"  : return OrdinalRuleSetManyB.Instance;
+                case "scn" : return OrdinalRuleSetManyB.Instance;
+                case "ka"  : return OrdinalRuleSetOneManyA.Instance;
+                case "sq"  : return OrdinalRuleSetOneManyB.Instance;
+                case "kw"  : return OrdinalRuleSetOneManyC.Instance;
+                case "en"  : return OrdinalRuleSetOneTwoFewA.Instance;
+                case "mr"  : return OrdinalRuleSetOneTwoFewB.Instance;
+                case "gd"  : return OrdinalRuleSetOneTwoFewC.Instance;
+                case "ca"  : return OrdinalRuleSetOneTwoFewD.Instance;
+                case "mk"  : return OrdinalRuleSetOneTwoManyA.Instance;
+                case "az"  : return OrdinalRuleSetOneFewManyA.Instance;
+                case "gu"  : return OrdinalRuleSetOneTwoFewManyA.Instance;
+                case "hi"  : return OrdinalRuleSetOneTwoFewManyA.Instance;
+                case "as"  : return OrdinalRuleSetOneTwoFewManyB.Instance;
+                case "bn"  : return OrdinalRuleSetOneTwoFewManyB.Instance;
+                case "or"  : return OrdinalRuleSetOneTwoFewManyC.Instance;
+                case "cy"  : return OrdinalRuleSetZeroOneTwoFewManyA.Instance;
+                default    : return DefaultOrdinalRuleSet.Instance;
+            }
         }
     }
 
     // Locales: bm, bo, dz, id, ig, ii, in, ja, jbo, jv, jw, kde, kea, km, ko, lkt, lo, ms, my, nqo, root, sah, ses, sg, th, to, vi, wo, yo, yue, zh
-    public class DefaultCardinalRuleSet : PluralFormSelector
+    internal class DefaultCardinalRuleSet : PluralFormSelector
     {
-        public DefaultCardinalRuleSet ( ) : base ( PluralForm.Other ) { }
+        public static readonly DefaultCardinalRuleSet Instance = new DefaultCardinalRuleSet ( );
+
+        private DefaultCardinalRuleSet ( ) : base ( PluralForm.Other ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -63,9 +285,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: am, as, bn, fa, gu, hi, kn, zu
-    public class CardinalRuleSetOneA : PluralFormSelector
+    internal class CardinalRuleSetOneA : PluralFormSelector
     {
-        public CardinalRuleSetOneA ( ) : base ( PluralForm.One ) { }
+        public static readonly CardinalRuleSetOneA Instance = new CardinalRuleSetOneA ( );
+
+        private CardinalRuleSetOneA ( ) : base ( PluralForm.One ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -104,9 +328,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: ff, fr, hy, kab
-    public class CardinalRuleSetOneB : PluralFormSelector
+    internal class CardinalRuleSetOneB : PluralFormSelector
     {
-        public CardinalRuleSetOneB ( ) : base ( PluralForm.One ) { }
+        public static readonly CardinalRuleSetOneB Instance = new CardinalRuleSetOneB ( );
+
+        private CardinalRuleSetOneB ( ) : base ( PluralForm.One ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -144,9 +370,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: pt
-    public class CardinalRuleSetOneC : PluralFormSelector
+    internal class CardinalRuleSetOneC : PluralFormSelector
     {
-        public CardinalRuleSetOneC ( ) : base ( PluralForm.One ) { }
+        public static readonly CardinalRuleSetOneC Instance = new CardinalRuleSetOneC ( );
+
+        private CardinalRuleSetOneC ( ) : base ( PluralForm.One ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -184,9 +412,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: ast, ca, de, en, et, fi, fy, gl, ia, io, it, ji, nl, pt-PT, sc, scn, sv, sw, ur, yi
-    public class CardinalRuleSetOneD : PluralFormSelector
+    internal class CardinalRuleSetOneD : PluralFormSelector
     {
-        public CardinalRuleSetOneD ( ) : base ( PluralForm.One ) { }
+        public static readonly CardinalRuleSetOneD Instance = new CardinalRuleSetOneD ( );
+
+        private CardinalRuleSetOneD ( ) : base ( PluralForm.One ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -223,9 +453,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: si
-    public class CardinalRuleSetOneE : PluralFormSelector
+    internal class CardinalRuleSetOneE : PluralFormSelector
     {
-        public CardinalRuleSetOneE ( ) : base ( PluralForm.One ) { }
+        public static readonly CardinalRuleSetOneE Instance = new CardinalRuleSetOneE ( );
+
+        private CardinalRuleSetOneE ( ) : base ( PluralForm.One ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -265,9 +497,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: ak, bh, guw, ln, mg, nso, pa, ti, wa
-    public class CardinalRuleSetOneF : PluralFormSelector
+    internal class CardinalRuleSetOneF : PluralFormSelector
     {
-        public CardinalRuleSetOneF ( ) : base ( PluralForm.One ) { }
+        public static readonly CardinalRuleSetOneF Instance = new CardinalRuleSetOneF ( );
+
+        private CardinalRuleSetOneF ( ) : base ( PluralForm.One ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -306,9 +540,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: tzm
-    public class CardinalRuleSetOneG : PluralFormSelector
+    internal class CardinalRuleSetOneG : PluralFormSelector
     {
-        public CardinalRuleSetOneG ( ) : base ( PluralForm.One ) { }
+        public static readonly CardinalRuleSetOneG Instance = new CardinalRuleSetOneG ( );
+
+        private CardinalRuleSetOneG ( ) : base ( PluralForm.One ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -347,9 +583,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: af, asa, az, bem, bez, bg, brx, ce, cgg, chr, ckb, dv, ee, el, eo, es, eu, fo, fur, gsw, ha, haw, hu, jgo, jmc, ka, kaj, kcg, kk, kkj, kl, ks, ksb, ku, ky, lb, lg, mas, mgo, ml, mn, mr, nah, nb, nd, ne, nn, nnh, no, nr, ny, nyn, om, or, os, pap, ps, rm, rof, rwk, saq, sd, sdh, seh, sn, so, sq, ss, ssy, st, syr, ta, te, teo, tig, tk, tn, tr, ts, ug, uz, ve, vo, vun, wae, xh, xog
-    public class CardinalRuleSetOneH : PluralFormSelector
+    internal class CardinalRuleSetOneH : PluralFormSelector
     {
-        public CardinalRuleSetOneH ( ) : base ( PluralForm.One ) { }
+        public static readonly CardinalRuleSetOneH Instance = new CardinalRuleSetOneH ( );
+
+        private CardinalRuleSetOneH ( ) : base ( PluralForm.One ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -388,9 +626,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: da
-    public class CardinalRuleSetOneI : PluralFormSelector
+    internal class CardinalRuleSetOneI : PluralFormSelector
     {
-        public CardinalRuleSetOneI ( ) : base ( PluralForm.One ) { }
+        public static readonly CardinalRuleSetOneI Instance = new CardinalRuleSetOneI ( );
+
+        private CardinalRuleSetOneI ( ) : base ( PluralForm.One ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -430,9 +670,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: is
-    public class CardinalRuleSetOneJ : PluralFormSelector
+    internal class CardinalRuleSetOneJ : PluralFormSelector
     {
-        public CardinalRuleSetOneJ ( ) : base ( PluralForm.One ) { }
+        public static readonly CardinalRuleSetOneJ Instance = new CardinalRuleSetOneJ ( );
+
+        private CardinalRuleSetOneJ ( ) : base ( PluralForm.One ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -471,9 +713,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: mk
-    public class CardinalRuleSetOneK : PluralFormSelector
+    internal class CardinalRuleSetOneK : PluralFormSelector
     {
-        public CardinalRuleSetOneK ( ) : base ( PluralForm.One ) { }
+        public static readonly CardinalRuleSetOneK Instance = new CardinalRuleSetOneK ( );
+
+        private CardinalRuleSetOneK ( ) : base ( PluralForm.One ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -512,9 +756,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: ceb, fil, tl
-    public class CardinalRuleSetOneL : PluralFormSelector
+    internal class CardinalRuleSetOneL : PluralFormSelector
     {
-        public CardinalRuleSetOneL ( ) : base ( PluralForm.One ) { }
+        public static readonly CardinalRuleSetOneL Instance = new CardinalRuleSetOneL ( );
+
+        private CardinalRuleSetOneL ( ) : base ( PluralForm.One ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -553,9 +799,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: lv, prg
-    public class CardinalRuleSetZeroOneA : PluralFormSelector
+    internal class CardinalRuleSetZeroOneA : PluralFormSelector
     {
-        public CardinalRuleSetZeroOneA ( ) : base ( PluralForm.Zero | PluralForm.One ) { }
+        public static readonly CardinalRuleSetZeroOneA Instance = new CardinalRuleSetZeroOneA ( );
+
+        private CardinalRuleSetZeroOneA ( ) : base ( PluralForm.Zero | PluralForm.One ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -595,9 +843,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: lag
-    public class CardinalRuleSetZeroOneB : PluralFormSelector
+    internal class CardinalRuleSetZeroOneB : PluralFormSelector
     {
-        public CardinalRuleSetZeroOneB ( ) : base ( PluralForm.Zero | PluralForm.One ) { }
+        public static readonly CardinalRuleSetZeroOneB Instance = new CardinalRuleSetZeroOneB ( );
+
+        private CardinalRuleSetZeroOneB ( ) : base ( PluralForm.Zero | PluralForm.One ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -636,9 +886,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: ksh
-    public class CardinalRuleSetZeroOneC : PluralFormSelector
+    internal class CardinalRuleSetZeroOneC : PluralFormSelector
     {
-        public CardinalRuleSetZeroOneC ( ) : base ( PluralForm.Zero | PluralForm.One ) { }
+        public static readonly CardinalRuleSetZeroOneC Instance = new CardinalRuleSetZeroOneC ( );
+
+        private CardinalRuleSetZeroOneC ( ) : base ( PluralForm.Zero | PluralForm.One ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -677,9 +929,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: iu, naq, se, sma, smi, smj, smn, sms
-    public class CardinalRuleSetOneTwoA : PluralFormSelector
+    internal class CardinalRuleSetOneTwoA : PluralFormSelector
     {
-        public CardinalRuleSetOneTwoA ( ) : base ( PluralForm.One | PluralForm.Two ) { }
+        public static readonly CardinalRuleSetOneTwoA Instance = new CardinalRuleSetOneTwoA ( );
+
+        private CardinalRuleSetOneTwoA ( ) : base ( PluralForm.One | PluralForm.Two ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -724,9 +978,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: shi
-    public class CardinalRuleSetOneFewA : PluralFormSelector
+    internal class CardinalRuleSetOneFewA : PluralFormSelector
     {
-        public CardinalRuleSetOneFewA ( ) : base ( PluralForm.One | PluralForm.Few ) { }
+        public static readonly CardinalRuleSetOneFewA Instance = new CardinalRuleSetOneFewA ( );
+
+        private CardinalRuleSetOneFewA ( ) : base ( PluralForm.One | PluralForm.Few ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -771,9 +1027,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: mo, ro
-    public class CardinalRuleSetOneFewB : PluralFormSelector
+    internal class CardinalRuleSetOneFewB : PluralFormSelector
     {
-        public CardinalRuleSetOneFewB ( ) : base ( PluralForm.One | PluralForm.Few ) { }
+        public static readonly CardinalRuleSetOneFewB Instance = new CardinalRuleSetOneFewB ( );
+
+        private CardinalRuleSetOneFewB ( ) : base ( PluralForm.One | PluralForm.Few ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -817,9 +1075,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: bs, hr, sh, sr
-    public class CardinalRuleSetOneFewC : PluralFormSelector
+    internal class CardinalRuleSetOneFewC : PluralFormSelector
     {
-        public CardinalRuleSetOneFewC ( ) : base ( PluralForm.One | PluralForm.Few ) { }
+        public static readonly CardinalRuleSetOneFewC Instance = new CardinalRuleSetOneFewC ( );
+
+        private CardinalRuleSetOneFewC ( ) : base ( PluralForm.One | PluralForm.Few ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -864,9 +1124,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: gd
-    public class CardinalRuleSetOneTwoFewA : PluralFormSelector
+    internal class CardinalRuleSetOneTwoFewA : PluralFormSelector
     {
-        public CardinalRuleSetOneTwoFewA ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Few ) { }
+        public static readonly CardinalRuleSetOneTwoFewA Instance = new CardinalRuleSetOneTwoFewA ( );
+
+        private CardinalRuleSetOneTwoFewA ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Few ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -917,9 +1179,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: sl
-    public class CardinalRuleSetOneTwoFewB : PluralFormSelector
+    internal class CardinalRuleSetOneTwoFewB : PluralFormSelector
     {
-        public CardinalRuleSetOneTwoFewB ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Few ) { }
+        public static readonly CardinalRuleSetOneTwoFewB Instance = new CardinalRuleSetOneTwoFewB ( );
+
+        private CardinalRuleSetOneTwoFewB ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Few ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -967,9 +1231,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: dsb, hsb
-    public class CardinalRuleSetOneTwoFewC : PluralFormSelector
+    internal class CardinalRuleSetOneTwoFewC : PluralFormSelector
     {
-        public CardinalRuleSetOneTwoFewC ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Few ) { }
+        public static readonly CardinalRuleSetOneTwoFewC Instance = new CardinalRuleSetOneTwoFewC ( );
+
+        private CardinalRuleSetOneTwoFewC ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Few ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -1020,9 +1286,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: he, iw
-    public class CardinalRuleSetOneTwoManyA : PluralFormSelector
+    internal class CardinalRuleSetOneTwoManyA : PluralFormSelector
     {
-        public CardinalRuleSetOneTwoManyA ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Many ) { }
+        public static readonly CardinalRuleSetOneTwoManyA Instance = new CardinalRuleSetOneTwoManyA ( );
+
+        private CardinalRuleSetOneTwoManyA ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Many ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -1070,9 +1338,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: cs, sk
-    public class CardinalRuleSetOneFewManyA : PluralFormSelector
+    internal class CardinalRuleSetOneFewManyA : PluralFormSelector
     {
-        public CardinalRuleSetOneFewManyA ( ) : base ( PluralForm.One | PluralForm.Few | PluralForm.Many ) { }
+        public static readonly CardinalRuleSetOneFewManyA Instance = new CardinalRuleSetOneFewManyA ( );
+
+        private CardinalRuleSetOneFewManyA ( ) : base ( PluralForm.One | PluralForm.Few | PluralForm.Many ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -1118,9 +1388,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: pl
-    public class CardinalRuleSetOneFewManyB : PluralFormSelector
+    internal class CardinalRuleSetOneFewManyB : PluralFormSelector
     {
-        public CardinalRuleSetOneFewManyB ( ) : base ( PluralForm.One | PluralForm.Few | PluralForm.Many ) { }
+        public static readonly CardinalRuleSetOneFewManyB Instance = new CardinalRuleSetOneFewManyB ( );
+
+        private CardinalRuleSetOneFewManyB ( ) : base ( PluralForm.One | PluralForm.Few | PluralForm.Many ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -1167,9 +1439,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: be
-    public class CardinalRuleSetOneFewManyC : PluralFormSelector
+    internal class CardinalRuleSetOneFewManyC : PluralFormSelector
     {
-        public CardinalRuleSetOneFewManyC ( ) : base ( PluralForm.One | PluralForm.Few | PluralForm.Many ) { }
+        public static readonly CardinalRuleSetOneFewManyC Instance = new CardinalRuleSetOneFewManyC ( );
+
+        private CardinalRuleSetOneFewManyC ( ) : base ( PluralForm.One | PluralForm.Few | PluralForm.Many ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -1220,9 +1494,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: lt
-    public class CardinalRuleSetOneFewManyD : PluralFormSelector
+    internal class CardinalRuleSetOneFewManyD : PluralFormSelector
     {
-        public CardinalRuleSetOneFewManyD ( ) : base ( PluralForm.One | PluralForm.Few | PluralForm.Many ) { }
+        public static readonly CardinalRuleSetOneFewManyD Instance = new CardinalRuleSetOneFewManyD ( );
+
+        private CardinalRuleSetOneFewManyD ( ) : base ( PluralForm.One | PluralForm.Few | PluralForm.Many ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -1272,9 +1548,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: mt
-    public class CardinalRuleSetOneFewManyE : PluralFormSelector
+    internal class CardinalRuleSetOneFewManyE : PluralFormSelector
     {
-        public CardinalRuleSetOneFewManyE ( ) : base ( PluralForm.One | PluralForm.Few | PluralForm.Many ) { }
+        public static readonly CardinalRuleSetOneFewManyE Instance = new CardinalRuleSetOneFewManyE ( );
+
+        private CardinalRuleSetOneFewManyE ( ) : base ( PluralForm.One | PluralForm.Few | PluralForm.Many ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -1325,9 +1603,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: ru, uk
-    public class CardinalRuleSetOneFewManyF : PluralFormSelector
+    internal class CardinalRuleSetOneFewManyF : PluralFormSelector
     {
-        public CardinalRuleSetOneFewManyF ( ) : base ( PluralForm.One | PluralForm.Few | PluralForm.Many ) { }
+        public static readonly CardinalRuleSetOneFewManyF Instance = new CardinalRuleSetOneFewManyF ( );
+
+        private CardinalRuleSetOneFewManyF ( ) : base ( PluralForm.One | PluralForm.Few | PluralForm.Many ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -1374,9 +1654,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: br
-    public class CardinalRuleSetOneTwoFewManyA : PluralFormSelector
+    internal class CardinalRuleSetOneTwoFewManyA : PluralFormSelector
     {
-        public CardinalRuleSetOneTwoFewManyA ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Few | PluralForm.Many ) { }
+        public static readonly CardinalRuleSetOneTwoFewManyA Instance = new CardinalRuleSetOneTwoFewManyA ( );
+
+        private CardinalRuleSetOneTwoFewManyA ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Few | PluralForm.Many ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -1433,9 +1715,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: ga
-    public class CardinalRuleSetOneTwoFewManyB : PluralFormSelector
+    internal class CardinalRuleSetOneTwoFewManyB : PluralFormSelector
     {
-        public CardinalRuleSetOneTwoFewManyB ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Few | PluralForm.Many ) { }
+        public static readonly CardinalRuleSetOneTwoFewManyB Instance = new CardinalRuleSetOneTwoFewManyB ( );
+
+        private CardinalRuleSetOneTwoFewManyB ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Few | PluralForm.Many ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -1492,9 +1776,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: gv
-    public class CardinalRuleSetOneTwoFewManyC : PluralFormSelector
+    internal class CardinalRuleSetOneTwoFewManyC : PluralFormSelector
     {
-        public CardinalRuleSetOneTwoFewManyC ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Few | PluralForm.Many ) { }
+        public static readonly CardinalRuleSetOneTwoFewManyC Instance = new CardinalRuleSetOneTwoFewManyC ( );
+
+        private CardinalRuleSetOneTwoFewManyC ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Few | PluralForm.Many ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -1545,9 +1831,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: ar, ars
-    public class CardinalRuleSetZeroOneTwoFewManyA : PluralFormSelector
+    internal class CardinalRuleSetZeroOneTwoFewManyA : PluralFormSelector
     {
-        public CardinalRuleSetZeroOneTwoFewManyA ( ) : base ( PluralForm.Zero | PluralForm.One | PluralForm.Two | PluralForm.Few | PluralForm.Many ) { }
+        public static readonly CardinalRuleSetZeroOneTwoFewManyA Instance = new CardinalRuleSetZeroOneTwoFewManyA ( );
+
+        private CardinalRuleSetZeroOneTwoFewManyA ( ) : base ( PluralForm.Zero | PluralForm.One | PluralForm.Two | PluralForm.Few | PluralForm.Many ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -1604,9 +1892,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: cy
-    public class CardinalRuleSetZeroOneTwoFewManyB : PluralFormSelector
+    internal class CardinalRuleSetZeroOneTwoFewManyB : PluralFormSelector
     {
-        public CardinalRuleSetZeroOneTwoFewManyB ( ) : base ( PluralForm.Zero | PluralForm.One | PluralForm.Two | PluralForm.Few | PluralForm.Many ) { }
+        public static readonly CardinalRuleSetZeroOneTwoFewManyB Instance = new CardinalRuleSetZeroOneTwoFewManyB ( );
+
+        private CardinalRuleSetZeroOneTwoFewManyB ( ) : base ( PluralForm.Zero | PluralForm.One | PluralForm.Two | PluralForm.Few | PluralForm.Many ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -1663,9 +1953,11 @@ namespace Localizer.CLDR
     }
 
     // Locales: kw
-    public class CardinalRuleSetZeroOneTwoFewManyC : PluralFormSelector
+    internal class CardinalRuleSetZeroOneTwoFewManyC : PluralFormSelector
     {
-        public CardinalRuleSetZeroOneTwoFewManyC ( ) : base ( PluralForm.Zero | PluralForm.One | PluralForm.Two | PluralForm.Few | PluralForm.Many ) { }
+        public static readonly CardinalRuleSetZeroOneTwoFewManyC Instance = new CardinalRuleSetZeroOneTwoFewManyC ( );
+
+        private CardinalRuleSetZeroOneTwoFewManyC ( ) : base ( PluralForm.Zero | PluralForm.One | PluralForm.Two | PluralForm.Few | PluralForm.Many ) { }
 
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
@@ -1715,6 +2007,600 @@ namespace Localizer.CLDR
             //   @integer: 21, 41, 61, 81, 101, 121, 141, 161, 1001, …
             //   @decimal: 21.0, 41.0, 61.0, 81.0, 101.0, 121.0, 141.0, 161.0, 1001.0, …
             if ( n != 1m && ( n % 100m ).equals ( 1m, 21m, 41m, 61m, 81m ) )
+                return PluralForm.Many;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: af, am, ar, bg, bs, ce, cs, da, de, dsb, el, es, et, eu, fa, fi, fy, gl, gsw, he, hr, hsb, ia, id, in, is, iw, ja, km, kn, ko, ky, lt, lv, ml, mn, my, nb, nl, pa, pl, prg, ps, pt, root, ru, sd, sh, si, sk, sl, sr, sw, ta, te, th, tr, ur, uz, yue, zh, zu
+    internal class DefaultOrdinalRuleSet : PluralFormSelector
+    {
+        public static readonly DefaultOrdinalRuleSet Instance = new DefaultOrdinalRuleSet ( );
+
+        private DefaultOrdinalRuleSet ( ) : base ( PluralForm.Other ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: sv
+    internal class OrdinalRuleSetOneA : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetOneA Instance = new OrdinalRuleSetOneA ( );
+
+        private OrdinalRuleSetOneA ( ) : base ( PluralForm.One ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var n = number.n ( );
+
+            // "one": n % 10 = 1,2 and n % 100 != 11,12
+            //   @integer: 1, 2, 21, 22, 31, 32, 41, 42, 51, 52, 61, 62, 71, 72, 81, 82, 101, 1001, …
+            if ( ( n % 10m ).equals ( 1m, 2m ) && ! ( n % 100m ).equals ( 11m, 12m ) )
+                return PluralForm.One;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: fil, fr, ga, hy, lo, mo, ms, ro, tl, vi
+    internal class OrdinalRuleSetOneB : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetOneB Instance = new OrdinalRuleSetOneB ( );
+
+        private OrdinalRuleSetOneB ( ) : base ( PluralForm.One ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var n = number.n ( );
+
+            // "one": n = 1
+            //   @integer: 1
+            if ( n == 1m )
+                return PluralForm.One;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: hu
+    internal class OrdinalRuleSetOneC : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetOneC Instance = new OrdinalRuleSetOneC ( );
+
+        private OrdinalRuleSetOneC ( ) : base ( PluralForm.One ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var n = number.n ( );
+
+            // "one": n = 1,5
+            //   @integer: 1, 5
+            if ( n.equals ( 1m, 5m ) )
+                return PluralForm.One;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: ne
+    internal class OrdinalRuleSetOneD : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetOneD Instance = new OrdinalRuleSetOneD ( );
+
+        private OrdinalRuleSetOneD ( ) : base ( PluralForm.One ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var n = number.n ( );
+
+            // "one": n = 1..4
+            //   @integer: 1~4
+            if ( n.between ( 1m, 4m ) )
+                return PluralForm.One;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: be
+    internal class OrdinalRuleSetFewA : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetFewA Instance = new OrdinalRuleSetFewA ( );
+
+        private OrdinalRuleSetFewA ( ) : base ( PluralForm.Few ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var n = number.n ( );
+
+            // "few": n % 10 = 2,3 and n % 100 != 12,13
+            //   @integer: 2, 3, 22, 23, 32, 33, 42, 43, 52, 53, 62, 63, 72, 73, 82, 83, 102, 1002, …
+            if ( ( n % 10m ).equals ( 2m, 3m ) && ! ( n % 100m ).equals ( 12m, 13m ) )
+                return PluralForm.Few;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: uk
+    internal class OrdinalRuleSetFewB : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetFewB Instance = new OrdinalRuleSetFewB ( );
+
+        private OrdinalRuleSetFewB ( ) : base ( PluralForm.Few ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var n = number.n ( );
+
+            // "few": n % 10 = 3 and n % 100 != 13
+            //   @integer: 3, 23, 33, 43, 53, 63, 73, 83, 103, 1003, …
+            if ( n % 10m == 3m && n % 100m != 13m )
+                return PluralForm.Few;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: tk
+    internal class OrdinalRuleSetFewC : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetFewC Instance = new OrdinalRuleSetFewC ( );
+
+        private OrdinalRuleSetFewC ( ) : base ( PluralForm.Few ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var n = number.n ( );
+
+            // "few": n % 10 = 6,9 or n = 10
+            //   @integer: 6, 9, 10, 16, 19, 26, 29, 36, 39, 106, 1006, …
+            if ( ( n % 10m ).equals ( 6m, 9m ) || n == 10m )
+                return PluralForm.Few;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: kk
+    internal class OrdinalRuleSetManyA : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetManyA Instance = new OrdinalRuleSetManyA ( );
+
+        private OrdinalRuleSetManyA ( ) : base ( PluralForm.Many ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var n = number.n ( );
+
+            // "many": n % 10 = 6 or n % 10 = 9 or n % 10 = 0 and n != 0
+            //   @integer: 6, 9, 10, 16, 19, 20, 26, 29, 30, 36, 39, 40, 100, 1000, 10000, 100000, 1000000, …
+            if ( n % 10m == 6m || n % 10m == 9m || n % 10m == 0m && n != 0m )
+                return PluralForm.Many;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: it, sc, scn
+    internal class OrdinalRuleSetManyB : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetManyB Instance = new OrdinalRuleSetManyB ( );
+
+        private OrdinalRuleSetManyB ( ) : base ( PluralForm.Many ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var n = number.n ( );
+
+            // "many": n = 11,8,80,800
+            //   @integer: 8, 11, 80, 800
+            if ( n.equals ( 11m, 8m, 80m, 800m ) )
+                return PluralForm.Many;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: ka
+    internal class OrdinalRuleSetOneManyA : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetOneManyA Instance = new OrdinalRuleSetOneManyA ( );
+
+        private OrdinalRuleSetOneManyA ( ) : base ( PluralForm.One | PluralForm.Many ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var i = number.i ( );
+
+            // "one": i = 1
+            //   @integer: 1
+            if ( i == 1m )
+                return PluralForm.One;
+
+            // "many": i = 0 or i % 100 = 2..20,40,60,80
+            //   @integer: 0, 2~16, 102, 1002, …
+            if ( i == 0m || ( ( i % 100m ).between ( 2m, 20m ) || ( i % 100m ).equals ( 40m, 60m, 80m ) ) )
+                return PluralForm.Many;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: sq
+    internal class OrdinalRuleSetOneManyB : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetOneManyB Instance = new OrdinalRuleSetOneManyB ( );
+
+        private OrdinalRuleSetOneManyB ( ) : base ( PluralForm.One | PluralForm.Many ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var n = number.n ( );
+
+            // "one": n = 1
+            //   @integer: 1
+            if ( n == 1m )
+                return PluralForm.One;
+
+            // "many": n % 10 = 4 and n % 100 != 14
+            //   @integer: 4, 24, 34, 44, 54, 64, 74, 84, 104, 1004, …
+            if ( n % 10m == 4m && n % 100m != 14m )
+                return PluralForm.Many;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: kw
+    internal class OrdinalRuleSetOneManyC : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetOneManyC Instance = new OrdinalRuleSetOneManyC ( );
+
+        private OrdinalRuleSetOneManyC ( ) : base ( PluralForm.One | PluralForm.Many ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var n = number.n ( );
+
+            // "one": n = 1..4 or n % 100 = 1..4,21..24,41..44,61..64,81..84
+            //   @integer: 1~4, 21~24, 41~44, 61~64, 101, 1001, …
+            if ( n.between ( 1m, 4m ) || ( n % 100m ).between ( 1m, 4m, 21m, 24m, 41m, 44m, 61m, 64m, 81m, 84m ) )
+                return PluralForm.One;
+
+            // "many": n = 5 or n % 100 = 5
+            //   @integer: 5, 105, 205, 305, 405, 505, 605, 705, 1005, …
+            if ( n == 5m || n % 100m == 5m )
+                return PluralForm.Many;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: en
+    internal class OrdinalRuleSetOneTwoFewA : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetOneTwoFewA Instance = new OrdinalRuleSetOneTwoFewA ( );
+
+        private OrdinalRuleSetOneTwoFewA ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Few ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var n = number.n ( );
+
+            // "one": n % 10 = 1 and n % 100 != 11
+            //   @integer: 1, 21, 31, 41, 51, 61, 71, 81, 101, 1001, …
+            if ( n % 10m == 1m && n % 100m != 11m )
+                return PluralForm.One;
+
+            // "two": n % 10 = 2 and n % 100 != 12
+            //   @integer: 2, 22, 32, 42, 52, 62, 72, 82, 102, 1002, …
+            if ( n % 10m == 2m && n % 100m != 12m )
+                return PluralForm.Two;
+
+            // "few": n % 10 = 3 and n % 100 != 13
+            //   @integer: 3, 23, 33, 43, 53, 63, 73, 83, 103, 1003, …
+            if ( n % 10m == 3m && n % 100m != 13m )
+                return PluralForm.Few;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: mr
+    internal class OrdinalRuleSetOneTwoFewB : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetOneTwoFewB Instance = new OrdinalRuleSetOneTwoFewB ( );
+
+        private OrdinalRuleSetOneTwoFewB ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Few ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var n = number.n ( );
+
+            // "one": n = 1
+            //   @integer: 1
+            if ( n == 1m )
+                return PluralForm.One;
+
+            // "two": n = 2,3
+            //   @integer: 2, 3
+            if ( n.equals ( 2m, 3m ) )
+                return PluralForm.Two;
+
+            // "few": n = 4
+            //   @integer: 4
+            if ( n == 4m )
+                return PluralForm.Few;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: gd
+    internal class OrdinalRuleSetOneTwoFewC : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetOneTwoFewC Instance = new OrdinalRuleSetOneTwoFewC ( );
+
+        private OrdinalRuleSetOneTwoFewC ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Few ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var n = number.n ( );
+
+            // "one": n = 1,11
+            //   @integer: 1, 11
+            if ( n.equals ( 1m, 11m ) )
+                return PluralForm.One;
+
+            // "two": n = 2,12
+            //   @integer: 2, 12
+            if ( n.equals ( 2m, 12m ) )
+                return PluralForm.Two;
+
+            // "few": n = 3,13
+            //   @integer: 3, 13
+            if ( n.equals ( 3m, 13m ) )
+                return PluralForm.Few;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: ca
+    internal class OrdinalRuleSetOneTwoFewD : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetOneTwoFewD Instance = new OrdinalRuleSetOneTwoFewD ( );
+
+        private OrdinalRuleSetOneTwoFewD ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Few ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var n = number.n ( );
+
+            // "one": n = 1,3
+            //   @integer: 1, 3
+            if ( n.equals ( 1m, 3m ) )
+                return PluralForm.One;
+
+            // "two": n = 2
+            //   @integer: 2
+            if ( n == 2m )
+                return PluralForm.Two;
+
+            // "few": n = 4
+            //   @integer: 4
+            if ( n == 4m )
+                return PluralForm.Few;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: mk
+    internal class OrdinalRuleSetOneTwoManyA : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetOneTwoManyA Instance = new OrdinalRuleSetOneTwoManyA ( );
+
+        private OrdinalRuleSetOneTwoManyA ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Many ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var i = number.i ( );
+
+            // "one": i % 10 = 1 and i % 100 != 11
+            //   @integer: 1, 21, 31, 41, 51, 61, 71, 81, 101, 1001, …
+            if ( i % 10m == 1m && i % 100m != 11m )
+                return PluralForm.One;
+
+            // "two": i % 10 = 2 and i % 100 != 12
+            //   @integer: 2, 22, 32, 42, 52, 62, 72, 82, 102, 1002, …
+            if ( i % 10m == 2m && i % 100m != 12m )
+                return PluralForm.Two;
+
+            // "many": i % 10 = 7,8 and i % 100 != 17,18
+            //   @integer: 7, 8, 27, 28, 37, 38, 47, 48, 57, 58, 67, 68, 77, 78, 87, 88, 107, 1007, …
+            if ( ( i % 10m ).equals ( 7m, 8m ) && ! ( i % 100m ).equals ( 17m, 18m ) )
+                return PluralForm.Many;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: az
+    internal class OrdinalRuleSetOneFewManyA : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetOneFewManyA Instance = new OrdinalRuleSetOneFewManyA ( );
+
+        private OrdinalRuleSetOneFewManyA ( ) : base ( PluralForm.One | PluralForm.Few | PluralForm.Many ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var i = number.i ( );
+
+            // "one": i % 10 = 1,2,5,7,8 or i % 100 = 20,50,70,80
+            //   @integer: 1, 2, 5, 7, 8, 11, 12, 15, 17, 18, 20~22, 25, 101, 1001, …
+            if ( ( i % 10m ).equals ( 1m, 2m, 5m, 7m, 8m ) || ( i % 100m ).equals ( 20m, 50m, 70m, 80m ) )
+                return PluralForm.One;
+
+            // "few": i % 10 = 3,4 or i % 1000 = 100,200,300,400,500,600,700,800,900
+            //   @integer: 3, 4, 13, 14, 23, 24, 33, 34, 43, 44, 53, 54, 63, 64, 73, 74, 100, 1003, …
+            if ( ( i % 10m ).equals ( 3m, 4m ) || ( i % 1000m ).equals ( 100m, 200m, 300m, 400m, 500m, 600m, 700m, 800m, 900m ) )
+                return PluralForm.Few;
+
+            // "many": i = 0 or i % 10 = 6 or i % 100 = 40,60,90
+            //   @integer: 0, 6, 16, 26, 36, 40, 46, 56, 106, 1006, …
+            if ( i == 0m || i % 10m == 6m || ( i % 100m ).equals ( 40m, 60m, 90m ) )
+                return PluralForm.Many;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: gu, hi
+    internal class OrdinalRuleSetOneTwoFewManyA : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetOneTwoFewManyA Instance = new OrdinalRuleSetOneTwoFewManyA ( );
+
+        private OrdinalRuleSetOneTwoFewManyA ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Few | PluralForm.Many ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var n = number.n ( );
+
+            // "one": n = 1
+            //   @integer: 1
+            if ( n == 1m )
+                return PluralForm.One;
+
+            // "two": n = 2,3
+            //   @integer: 2, 3
+            if ( n.equals ( 2m, 3m ) )
+                return PluralForm.Two;
+
+            // "few": n = 4
+            //   @integer: 4
+            if ( n == 4m )
+                return PluralForm.Few;
+
+            // "many": n = 6
+            //   @integer: 6
+            if ( n == 6m )
+                return PluralForm.Many;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: as, bn
+    internal class OrdinalRuleSetOneTwoFewManyB : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetOneTwoFewManyB Instance = new OrdinalRuleSetOneTwoFewManyB ( );
+
+        private OrdinalRuleSetOneTwoFewManyB ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Few | PluralForm.Many ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var n = number.n ( );
+
+            // "one": n = 1,5,7,8,9,10
+            //   @integer: 1, 5, 7~10
+            if ( n.equals ( 1m, 5m, 7m, 8m, 9m, 10m ) )
+                return PluralForm.One;
+
+            // "two": n = 2,3
+            //   @integer: 2, 3
+            if ( n.equals ( 2m, 3m ) )
+                return PluralForm.Two;
+
+            // "few": n = 4
+            //   @integer: 4
+            if ( n == 4m )
+                return PluralForm.Few;
+
+            // "many": n = 6
+            //   @integer: 6
+            if ( n == 6m )
+                return PluralForm.Many;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: or
+    internal class OrdinalRuleSetOneTwoFewManyC : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetOneTwoFewManyC Instance = new OrdinalRuleSetOneTwoFewManyC ( );
+
+        private OrdinalRuleSetOneTwoFewManyC ( ) : base ( PluralForm.One | PluralForm.Two | PluralForm.Few | PluralForm.Many ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var n = number.n ( );
+
+            // "one": n = 1,5,7..9
+            //   @integer: 1, 5, 7~9
+            if ( ( n.between ( 7m, 9m ) || n.equals ( 1m, 5m ) ) )
+                return PluralForm.One;
+
+            // "two": n = 2,3
+            //   @integer: 2, 3
+            if ( n.equals ( 2m, 3m ) )
+                return PluralForm.Two;
+
+            // "few": n = 4
+            //   @integer: 4
+            if ( n == 4m )
+                return PluralForm.Few;
+
+            // "many": n = 6
+            //   @integer: 6
+            if ( n == 6m )
+                return PluralForm.Many;
+
+            return PluralForm.Other;
+        }
+    }
+
+    // Locales: cy
+    internal class OrdinalRuleSetZeroOneTwoFewManyA : PluralFormSelector
+    {
+        public static readonly OrdinalRuleSetZeroOneTwoFewManyA Instance = new OrdinalRuleSetZeroOneTwoFewManyA ( );
+
+        private OrdinalRuleSetZeroOneTwoFewManyA ( ) : base ( PluralForm.Zero | PluralForm.One | PluralForm.Two | PluralForm.Few | PluralForm.Many ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+            var n = number.n ( );
+
+            // "zero": n = 0,7,8,9
+            //   @integer: 0, 7~9
+            if ( n.equals ( 0m, 7m, 8m, 9m ) )
+                return PluralForm.Zero;
+
+            // "one": n = 1
+            //   @integer: 1
+            if ( n == 1m )
+                return PluralForm.One;
+
+            // "two": n = 2
+            //   @integer: 2
+            if ( n == 2m )
+                return PluralForm.Two;
+
+            // "few": n = 3,4
+            //   @integer: 3, 4
+            if ( n.equals ( 3m, 4m ) )
+                return PluralForm.Few;
+
+            // "many": n = 5,6
+            //   @integer: 5, 6
+            if ( n.equals ( 5m, 6m ) )
                 return PluralForm.Many;
 
             return PluralForm.Other;
