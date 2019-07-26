@@ -133,7 +133,7 @@
     <value>Text value for NamedTextBlock</value>
   </data>
   <data name="AutomaticKeyDemo.PluralHint.Text" xml:space="preserve">
-    <value>Pluralization support: Try to enter numerical values such as 0, 1, 3.14...</value>
+    <value>Pluralization support: Try to enter numerical values such as '0', '1', '3.14'...</value>
   </data>
   <data name="AutomaticKeyDemo.TextBlock.Text" xml:space="preserve">
     <value>Text value for control type TextBlock</value>

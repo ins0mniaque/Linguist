@@ -106,7 +106,7 @@ namespace Localizer.WPF.Demo.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Pluralization support: Try to enter numerical values such as 0, 1, 3.14....
+        ///   Looks up a localized string similar to Pluralization support: Try to enter numerical values such as &apos;0&apos;, &apos;1&apos;, &apos;3.14&apos;....
         /// </summary>
         public static string AutomaticKeyDemo_PluralHint_Text {
             get {
