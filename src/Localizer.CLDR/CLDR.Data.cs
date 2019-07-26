@@ -280,6 +280,9 @@ namespace Localizer.CLDR
                     return PluralForm.One;
             }
 
+            // "other"
+            //   @integer: 0~15, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 0.0~1.5, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -323,6 +326,9 @@ namespace Localizer.CLDR
             if ( i == 0m || n == 1m )
                 return PluralForm.One;
 
+            // "other"
+            //   @integer: 2~17, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 1.1~2.6, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -365,6 +371,9 @@ namespace Localizer.CLDR
             if ( i.equals ( 0m, 1m ) )
                 return PluralForm.One;
 
+            // "other"
+            //   @integer: 2~17, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 2.0~3.5, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -407,6 +416,9 @@ namespace Localizer.CLDR
             if ( i.between ( 0m, 1m ) )
                 return PluralForm.One;
 
+            // "other"
+            //   @integer: 2~17, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 2.0~3.5, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -448,6 +460,9 @@ namespace Localizer.CLDR
             if ( i == 1m && v == 0m )
                 return PluralForm.One;
 
+            // "other"
+            //   @integer: 0, 2~16, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 0.0~1.5, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -492,6 +507,9 @@ namespace Localizer.CLDR
             if ( n.equals ( 0m, 1m ) || i == 0m && f == 1m )
                 return PluralForm.One;
 
+            // "other"
+            //   @integer: 2~17, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 0.2~0.9, 1.1~1.8, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -535,6 +553,9 @@ namespace Localizer.CLDR
             if ( n.between ( 0m, 1m ) )
                 return PluralForm.One;
 
+            // "other"
+            //   @integer: 2~17, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 0.1~0.9, 1.1~1.7, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -578,6 +599,9 @@ namespace Localizer.CLDR
             if ( n.between ( 0m, 1m ) || n.between ( 11m, 99m ) )
                 return PluralForm.One;
 
+            // "other"
+            //   @integer: 2~10, 100~106, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 0.1~0.9, 1.1~1.7, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -621,6 +645,9 @@ namespace Localizer.CLDR
             if ( n == 1m )
                 return PluralForm.One;
 
+            // "other"
+            //   @integer: 0, 2~16, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 0.0~0.9, 1.1~1.6, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -665,6 +692,9 @@ namespace Localizer.CLDR
             if ( n == 1m || t != 0m && i.equals ( 0m, 1m ) )
                 return PluralForm.One;
 
+            // "other"
+            //   @integer: 0, 2~16, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 0.0, 2.0~3.4, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -708,6 +738,9 @@ namespace Localizer.CLDR
             if ( t == 0m && i % 10m == 1m && i % 100m != 11m || t != 0m )
                 return PluralForm.One;
 
+            // "other"
+            //   @integer: 0, 2~16, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 0.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -751,6 +784,9 @@ namespace Localizer.CLDR
             if ( v == 0m && i % 10m == 1m && i % 100m != 11m || f % 10m == 1m && f % 100m != 11m )
                 return PluralForm.One;
 
+            // "other"
+            //   @integer: 0, 2~16, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 0.0, 0.2~1.0, 1.2~1.7, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -794,6 +830,9 @@ namespace Localizer.CLDR
             if ( v == 0m && i.equals ( 1m, 2m, 3m ) || v == 0m && ! ( i % 10m ).equals ( 4m, 6m, 9m ) || v != 0m && ! ( f % 10m ).equals ( 4m, 6m, 9m ) )
                 return PluralForm.One;
 
+            // "other"
+            //   @integer: 4, 6, 9, 14, 16, 19, 24, 26, 104, 1004, …
+            //   @decimal: 0.4, 0.6, 0.9, 1.4, 1.6, 1.9, 2.4, 2.6, 10.4, 100.4, 1000.4, …
             return PluralForm.Other;
         }
     }
@@ -838,6 +877,9 @@ namespace Localizer.CLDR
             if ( n % 10m == 1m && n % 100m != 11m || v == 2m && f % 10m == 1m && f % 100m != 11m || v != 2m && f % 10m == 1m )
                 return PluralForm.One;
 
+            // "other"
+            //   @integer: 2~9, 22~29, 102, 1002, …
+            //   @decimal: 0.2~0.9, 1.2~1.9, 10.2, 100.2, 1000.2, …
             return PluralForm.Other;
         }
     }
@@ -881,6 +923,9 @@ namespace Localizer.CLDR
             if ( i.equals ( 0m, 1m ) && n != 0m )
                 return PluralForm.One;
 
+            // "other"
+            //   @integer: 2~17, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 2.0~3.5, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -924,6 +969,9 @@ namespace Localizer.CLDR
             if ( n == 1m )
                 return PluralForm.One;
 
+            // "other"
+            //   @integer: 2~17, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 0.1~0.9, 1.1~1.7, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -973,6 +1021,9 @@ namespace Localizer.CLDR
             if ( n == 2m )
                 return PluralForm.Two;
 
+            // "other"
+            //   @integer: 0, 3~17, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 0.0~0.9, 1.1~1.6, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -1022,6 +1073,9 @@ namespace Localizer.CLDR
             if ( n.between ( 2m, 10m ) )
                 return PluralForm.Few;
 
+            // "other"
+            //   @integer: 11~26, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 1.1~1.9, 2.1~2.7, 10.1, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -1070,6 +1124,8 @@ namespace Localizer.CLDR
             if ( v != 0m || n == 0m || ( n % 100m ).between ( 2m, 19m ) )
                 return PluralForm.Few;
 
+            // "other"
+            //   @integer: 20~35, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -1119,6 +1175,9 @@ namespace Localizer.CLDR
             if ( v == 0m && ( i % 10m ).between ( 2m, 4m ) && ! ( i % 100m ).between ( 12m, 14m ) || ( f % 10m ).between ( 2m, 4m ) && ! ( f % 100m ).between ( 12m, 14m ) )
                 return PluralForm.Few;
 
+            // "other"
+            //   @integer: 0, 5~19, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 0.0, 0.5~1.0, 1.5~2.0, 2.5~2.7, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -1174,6 +1233,9 @@ namespace Localizer.CLDR
             if ( n.between ( 3m, 10m, 13m, 19m ) )
                 return PluralForm.Few;
 
+            // "other"
+            //   @integer: 0, 20~34, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 0.0~0.9, 1.1~1.6, 10.1, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -1226,6 +1288,8 @@ namespace Localizer.CLDR
             if ( v == 0m && ( i % 100m ).between ( 3m, 4m ) || v != 0m )
                 return PluralForm.Few;
 
+            // "other"
+            //   @integer: 0, 5~19, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -1281,6 +1345,9 @@ namespace Localizer.CLDR
             if ( v == 0m && ( i % 100m ).between ( 3m, 4m ) || ( f % 100m ).between ( 3m, 4m ) )
                 return PluralForm.Few;
 
+            // "other"
+            //   @integer: 0, 5~19, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 0.0, 0.5~1.0, 1.5~2.0, 2.5~2.7, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -1333,6 +1400,9 @@ namespace Localizer.CLDR
             if ( v == 0m && ! n.between ( 0m, 10m ) && n % 10m == 0m )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 0, 3~17, 101, 1001, …
+            //   @decimal: 0.0~1.5, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -1383,6 +1453,8 @@ namespace Localizer.CLDR
             if ( v != 0m )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 0, 5~19, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -1434,6 +1506,7 @@ namespace Localizer.CLDR
             if ( v == 0m && i != 1m && ( i % 10m ).between ( 0m, 1m ) || v == 0m && ( i % 10m ).between ( 5m, 9m ) || v == 0m && ( i % 100m ).between ( 12m, 14m ) )
                 return PluralForm.Many;
 
+            // "other"
             return PluralForm.Other;
         }
     }
@@ -1489,6 +1562,7 @@ namespace Localizer.CLDR
             if ( n % 10m == 0m || ( n % 10m ).between ( 5m, 9m ) || ( n % 100m ).between ( 11m, 14m ) )
                 return PluralForm.Many;
 
+            // "other"
             return PluralForm.Other;
         }
     }
@@ -1543,6 +1617,9 @@ namespace Localizer.CLDR
             if ( f != 0m )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 0, 10~20, 30, 40, 50, 60, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 0.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -1598,6 +1675,9 @@ namespace Localizer.CLDR
             if ( ( n % 100m ).between ( 11m, 19m ) )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 20~35, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 0.1~0.9, 1.1~1.7, 10.1, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -1649,6 +1729,7 @@ namespace Localizer.CLDR
             if ( v == 0m && i % 10m == 0m || v == 0m && ( i % 10m ).between ( 5m, 9m ) || v == 0m && ( i % 100m ).between ( 11m, 14m ) )
                 return PluralForm.Many;
 
+            // "other"
             return PluralForm.Other;
         }
     }
@@ -1710,6 +1791,9 @@ namespace Localizer.CLDR
             if ( n != 0m && n % 1000000m == 0m )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 0, 5~8, 10~20, 100, 1000, 10000, 100000, …
+            //   @decimal: 0.0~0.9, 1.1~1.6, 10.0, 100.0, 1000.0, 10000.0, 100000.0, …
             return PluralForm.Other;
         }
     }
@@ -1771,6 +1855,9 @@ namespace Localizer.CLDR
             if ( n.between ( 7m, 10m ) )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 0, 11~25, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 0.0~0.9, 1.1~1.6, 10.1, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -1826,6 +1913,8 @@ namespace Localizer.CLDR
             if ( v != 0m )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 3~10, 13~19, 23, 103, 1003, …
             return PluralForm.Other;
         }
     }
@@ -1887,6 +1976,9 @@ namespace Localizer.CLDR
             if ( ( n % 100m ).between ( 11m, 99m ) )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 100~102, 200~202, 300~302, 400~402, 500~502, 600, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 0.1~0.9, 1.1~1.7, 10.1, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -1948,6 +2040,9 @@ namespace Localizer.CLDR
             if ( n == 6m )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 4, 5, 7~20, 100, 1000, 10000, 100000, 1000000, …
+            //   @decimal: 0.1~0.9, 1.1~1.7, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -2009,6 +2104,9 @@ namespace Localizer.CLDR
             if ( n != 1m && ( n % 100m ).equals ( 1m, 21m, 41m, 61m, 81m ) )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 4~19, 100, 1000000, …
+            //   @decimal: 0.1~0.9, 1.1~1.7, 10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0, …
             return PluralForm.Other;
         }
     }
@@ -2023,6 +2121,8 @@ namespace Localizer.CLDR
         public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
         {
 
+            // "other"
+            //   @integer: 0~15, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2043,6 +2143,8 @@ namespace Localizer.CLDR
             if ( ( n % 10m ).equals ( 1m, 2m ) && ! ( n % 100m ).equals ( 11m, 12m ) )
                 return PluralForm.One;
 
+            // "other"
+            //   @integer: 0, 3~17, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2063,6 +2165,8 @@ namespace Localizer.CLDR
             if ( n == 1m )
                 return PluralForm.One;
 
+            // "other"
+            //   @integer: 0, 2~16, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2083,6 +2187,8 @@ namespace Localizer.CLDR
             if ( n.equals ( 1m, 5m ) )
                 return PluralForm.One;
 
+            // "other"
+            //   @integer: 0, 2~4, 6~17, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2103,6 +2209,8 @@ namespace Localizer.CLDR
             if ( n.between ( 1m, 4m ) )
                 return PluralForm.One;
 
+            // "other"
+            //   @integer: 0, 5~19, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2123,6 +2231,8 @@ namespace Localizer.CLDR
             if ( ( n % 10m ).equals ( 2m, 3m ) && ! ( n % 100m ).equals ( 12m, 13m ) )
                 return PluralForm.Few;
 
+            // "other"
+            //   @integer: 0, 1, 4~17, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2143,6 +2253,8 @@ namespace Localizer.CLDR
             if ( n % 10m == 3m && n % 100m != 13m )
                 return PluralForm.Few;
 
+            // "other"
+            //   @integer: 0~2, 4~16, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2163,6 +2275,8 @@ namespace Localizer.CLDR
             if ( ( n % 10m ).equals ( 6m, 9m ) || n == 10m )
                 return PluralForm.Few;
 
+            // "other"
+            //   @integer: 0~5, 7, 8, 11~15, 17, 18, 20, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2183,6 +2297,8 @@ namespace Localizer.CLDR
             if ( n % 10m == 6m || n % 10m == 9m || n % 10m == 0m && n != 0m )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 0~5, 7, 8, 11~15, 17, 18, 21, 101, 1001, …
             return PluralForm.Other;
         }
     }
@@ -2203,6 +2319,8 @@ namespace Localizer.CLDR
             if ( n.equals ( 11m, 8m, 80m, 800m ) )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 0~7, 9, 10, 12~17, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2228,6 +2346,8 @@ namespace Localizer.CLDR
             if ( i == 0m || ( ( i % 100m ).between ( 2m, 20m ) || ( i % 100m ).equals ( 40m, 60m, 80m ) ) )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 21~36, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2253,6 +2373,8 @@ namespace Localizer.CLDR
             if ( n % 10m == 4m && n % 100m != 14m )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 0, 2, 3, 5~17, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2278,6 +2400,8 @@ namespace Localizer.CLDR
             if ( n == 5m || n % 100m == 5m )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 0, 6~20, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2308,6 +2432,8 @@ namespace Localizer.CLDR
             if ( n % 10m == 3m && n % 100m != 13m )
                 return PluralForm.Few;
 
+            // "other"
+            //   @integer: 0, 4~18, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2338,6 +2464,8 @@ namespace Localizer.CLDR
             if ( n == 4m )
                 return PluralForm.Few;
 
+            // "other"
+            //   @integer: 0, 5~19, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2368,6 +2496,8 @@ namespace Localizer.CLDR
             if ( n.equals ( 3m, 13m ) )
                 return PluralForm.Few;
 
+            // "other"
+            //   @integer: 0, 4~10, 14~21, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2398,6 +2528,8 @@ namespace Localizer.CLDR
             if ( n == 4m )
                 return PluralForm.Few;
 
+            // "other"
+            //   @integer: 0, 5~19, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2428,6 +2560,8 @@ namespace Localizer.CLDR
             if ( ( i % 10m ).equals ( 7m, 8m ) && ! ( i % 100m ).equals ( 17m, 18m ) )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 0, 3~6, 9~19, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2458,6 +2592,8 @@ namespace Localizer.CLDR
             if ( i == 0m || i % 10m == 6m || ( i % 100m ).equals ( 40m, 60m, 90m ) )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 9, 10, 19, 29, 30, 39, 49, 59, 69, 79, 109, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2493,6 +2629,8 @@ namespace Localizer.CLDR
             if ( n == 6m )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 0, 5, 7~20, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2528,6 +2666,8 @@ namespace Localizer.CLDR
             if ( n == 6m )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 0, 11~25, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2563,6 +2703,8 @@ namespace Localizer.CLDR
             if ( n == 6m )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 0, 10~24, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }
@@ -2603,6 +2745,8 @@ namespace Localizer.CLDR
             if ( n.equals ( 5m, 6m ) )
                 return PluralForm.Many;
 
+            // "other"
+            //   @integer: 10~25, 100, 1000, 10000, 100000, 1000000, …
             return PluralForm.Other;
         }
     }

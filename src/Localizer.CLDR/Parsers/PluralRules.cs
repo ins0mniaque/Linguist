@@ -7,13 +7,16 @@ namespace Localizer.CLDR
 {
     public class PluralRules
     {
+        private static readonly PluralRule DefaultPluralRule = PluralRule.Parse ( "other", "", out var _ );
+
         private PluralRules ( ) { }
 
-        public string         Name       { get; private set; }
-        public string     [ ] Locales    { get; private set; }
-        public PluralForm     PluralForm { get; private set; }
-        public string     [ ] Operands   { get; private set; }
-        public PluralRule [ ] Rules      { get; private set; }
+        public string         Name        { get; private set; }
+        public string     [ ] Locales     { get; private set; }
+        public PluralForm     PluralForm  { get; private set; }
+        public string     [ ] Operands    { get; private set; }
+        public PluralRule [ ] Rules       { get; private set; }
+        public PluralRule     DefaultRule { get; private set; }
 
         public static PluralRules [ ] Parse ( XDocument document )
         {
@@ -34,29 +37,31 @@ namespace Localizer.CLDR
                                              .Replace ( "_", "-" )
                                              .Split   ( ' ' );
 
-                var operands = new HashSet < string >  ( );
-                var rules    = new List < PluralRule > ( );
+                var operands    = new HashSet < string >  ( );
+                var rules       = new List < PluralRule > ( );
+                var defaultRule = DefaultPluralRule;
 
                 foreach ( var pluralRule in pluralRules.Descendants ( "pluralRule" ) )
                 {
                     var rule = PluralRule.Parse ( pluralRule.Attribute ( "count" ).Value,
                                                   pluralRule.Value.ToString ( ),
                                                   out var ruleOperands );
-                    if ( rule.Rule == null )
-                        continue;
 
-                    foreach ( var operand in ruleOperands )
-                        operands.Add ( operand );
+                    if ( ruleOperands != null )
+                        foreach ( var operand in ruleOperands )
+                            operands.Add ( operand );
 
-                    rules.Add ( rule );
+                    if ( rule.Rule != null ) rules.Add ( rule );
+                    else                     defaultRule = rule;
                 }
 
                 foreach ( var rule in rules )
                     ruleSet.PluralForm |= rule.PluralForm;
 
-                var name      = (string) null;
-                var isDefault = rules.Count == 0 && ruleSet.PluralForm == PluralForm.Other;
-                if ( ! isDefault )
+                var name = (string) null;
+
+                var isDefaultRuleSet = rules.Count == 0 && ruleSet.PluralForm == PluralForm.Other;
+                if ( ! isDefaultRuleSet )
                 {
                     name = prefix + ruleSet.PluralForm.ToString ( ).Replace ( ", ", string.Empty );
                     if ( ! names.TryGetValue ( name, out var index ) )
@@ -69,9 +74,10 @@ namespace Localizer.CLDR
                 else
                     name = "Default" + prefix;
 
-                ruleSet.Name     = name;
-                ruleSet.Operands = operands.ToArray ( );
-                ruleSet.Rules    = rules   .ToArray ( );
+                ruleSet.Name        = name;
+                ruleSet.Operands    = operands.ToArray ( );
+                ruleSet.Rules       = rules   .ToArray ( );
+                ruleSet.DefaultRule = defaultRule;
 
                 ruleSets.Add ( ruleSet );
             }

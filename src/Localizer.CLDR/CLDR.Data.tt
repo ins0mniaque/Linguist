@@ -148,6 +148,11 @@ namespace Localizer.CLDR
             }
 #>
 
+            // "<#= pluralRules.DefaultRule.PluralForm.ToString ( ).ToLowerInvariant ( ) #>"
+<#+
+            WriteSamples ( "integer", pluralRules.DefaultRule.IntegerSamples );
+            WriteSamples ( "decimal", pluralRules.DefaultRule.DecimalSamples );
+#>
             return PluralForm.Other;
         }
     }
