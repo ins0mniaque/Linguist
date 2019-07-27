@@ -50,9 +50,7 @@ namespace Localizer.Generator
             var builder = GenerateBuilder ( codeDomProvider, inputFileName, inputFileContent, fileNamespace, resourcesNamespace, accessModifiers, customToolType );
             var code    = builder.Build ( );
 
-            errors = builder.ResourceSet.Resources.Values.Where ( resource => ! IsNullOrEmpty ( resource.ErrorText ) ).ToArray ( );
-            if ( errors.Length == 0 )
-                errors = null;
+            errors = builder.GetErrors ( );
 
             return code;
         }
@@ -101,6 +99,15 @@ namespace Localizer.Generator
         public CodeExpression          ResourceNamingStrategyInitializer { get; }
 
         public bool GenerateWPFSupport { get; set; }
+
+        public CompilerError [ ] GetErrors ( )
+        {
+            var errors = ResourceSet.Resources.Values.Where ( resource => ! IsNullOrEmpty ( resource.ErrorText ) ).ToArray ( );
+            if ( errors.Length == 0 )
+                errors = null;
+
+            return errors;
+        }
 
         public virtual CodeCompileUnit Build ( )
         {

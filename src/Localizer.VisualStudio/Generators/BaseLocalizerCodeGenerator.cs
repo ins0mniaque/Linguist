@@ -1,10 +1,13 @@
 ﻿using System;
 using System.CodeDom;
 using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+
+using EnvDTE;
 
 using Microsoft.VisualStudio.Designer.Interfaces;
 using Microsoft.VisualStudio.Shell;
@@ -33,13 +36,27 @@ namespace Localizer.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread ( );
 
-            var code = LocalizerSupportBuilder.GenerateCode ( CodeDomProvider, inputFileName, inputFileContent, FileNamespace, GetResourcesNamespace ( ), AccessModifier, GetType ( ), out var errors );
+            var builder = LocalizerSupportBuilder.GenerateBuilder ( CodeDomProvider,
+                                                                    inputFileName,
+                                                                    inputFileContent,
+                                                                    FileNamespace,
+                                                                    GetResourcesNamespace ( ),
+                                                                    AccessModifier,
+                                                                    GetType ( ) );
 
-            if ( errors != null )
-                foreach ( var error in errors )
-                    GeneratorErrorCallback ( error.IsWarning, default, error.ErrorText, error.Line, error.Column );
+            foreach ( var reference in GetReferences ( ) )
+                if ( reference == "Localizer.WPF" )
+                    builder.GenerateWPFSupport = true;
 
+            var code      = builder.Build ( );
+            var source    = new StringBuilder ( );
             var generator = new ExtendedCodeGenerator ( CodeDomProvider );
+
+            using ( var writer = new StringWriter ( source ) )
+                generator.GenerateCodeFromCompileUnit ( code, writer, null );
+
+            foreach ( var error in builder.GetErrors ( ) )
+                GeneratorErrorCallback ( error.IsWarning, default, error.ErrorText, error.Line, error.Column );
 
             using ( var stream = new MemoryStream ( ) )
             {
@@ -66,6 +83,36 @@ namespace Localizer.VisualStudio
 
                 return codeDomProvider;
             }
+        }
+
+        protected Project Project
+        {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread ( );
+
+                return ProjectItem.ContainingProject;
+            }
+        }
+
+        protected ProjectItem ProjectItem
+        {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread ( );
+
+                return (ProjectItem) GetService ( typeof ( ProjectItem ) );
+            }
+        }
+
+        // TODO: Add support for Project.Object is VsWebSite.VSWebSite.
+        protected IEnumerable < string > GetReferences ( )
+        {
+            ThreadHelper.ThrowIfNotOnUIThread ( );
+
+            if ( Project.Object is VSLangProj.VSProject vsProject )
+                foreach ( VSLangProj.Reference reference in vsProject.References )
+                    yield return reference.Name;
         }
 
         protected string GetResourcesNamespace ( )
