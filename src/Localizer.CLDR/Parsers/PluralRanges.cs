@@ -4,7 +4,7 @@ using System.Xml.Linq;
 
 namespace Localizer.CLDR
 {
-    public class PluralRanges
+    public class PluralRanges : IRuleSet
     {
         private PluralRanges ( ) { }
 

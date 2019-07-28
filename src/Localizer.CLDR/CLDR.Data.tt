@@ -24,32 +24,32 @@ namespace Localizer.CLDR
     var ordinalRuleSet  = PluralRules .Parse ( ordinals  );
     var rangeRuleSet    = PluralRanges.Parse ( ranges    );
 
-    WriteLookup ( cardinalRuleSet, "CardinalRuleSet" );
+    WriteLookup ( cardinalRuleSet, "CardinalRuleSet", "PluralFormSelector" );
     WriteLine   ( string.Empty );
-    WriteLookup ( ordinalRuleSet,  "OrdinalRuleSet"  );
+    WriteLookup ( ordinalRuleSet,  "OrdinalRuleSet",  "PluralFormSelector" );
     WriteLine   ( string.Empty );
-    WriteLookup ( rangeRuleSet,    "RangeRuleSet"    );
+    WriteLookup ( rangeRuleSet,    "RangeRuleSet",    "PluralFormRangeSelector" );
 
     WritePluralRules  ( cardinalRuleSet, true  );
     WritePluralRules  ( ordinalRuleSet,  false );
     WritePluralRanges ( rangeRuleSet );
 #>}<#+
-    private void WriteLookup ( PluralRules [ ] pluralRulesSet, string lookupName )
+    private void WriteLookup ( IRuleSet [ ] ruleSets, string lookupName, string type )
     {
 #>
     internal static class <#= lookupName #>
     {
-        public static PluralFormSelector For ( CultureInfo culture )
+        public static <#= type #> For ( CultureInfo culture )
         {
 <#+
-        var defaultRules = (PluralRules) null;
-        var hasSubtags   = false;
-        foreach ( var pluralRules in pluralRulesSet )
+        var defaultRuleSet = (IRuleSet) null;
+        var hasSubtags     = false;
+        foreach ( var ruleSet in ruleSets )
         {
-            if ( pluralRules.Name.IndexOf ( "default", StringComparison.OrdinalIgnoreCase ) >= 0 )
-                defaultRules = pluralRules;
+            if ( ruleSet.Name.IndexOf ( "default", StringComparison.OrdinalIgnoreCase ) >= 0 )
+                defaultRuleSet = ruleSet;
 
-            foreach ( var locale in pluralRules.Locales )
+            foreach ( var locale in ruleSet.Locales )
                 if ( locale.IndexOf ( '-' ) >= 0 )
                     hasSubtags = true;
         }
@@ -60,12 +60,12 @@ namespace Localizer.CLDR
             switch ( culture.Name )
             {
 <#+
-            foreach ( var pluralRules in pluralRulesSet )
+            foreach ( var ruleSet in ruleSets )
             {
-                if ( pluralRules == defaultRules )
+                if ( ruleSet == defaultRuleSet )
                     continue;
 
-                WriteLookupCases ( pluralRules.Name, Array.FindAll ( pluralRules.Locales, locale => locale.IndexOf ( '-' ) >= 0 ), 8 );
+                WriteLookupCases ( ruleSet.Name, Array.FindAll ( ruleSet.Locales, locale => locale.IndexOf ( '-' ) >= 0 ), 8 );
             }
 #>
             }
@@ -76,84 +76,27 @@ namespace Localizer.CLDR
             switch ( culture.TwoLetterISOLanguageName )
             {
 <#+
-        foreach ( var pluralRules in pluralRulesSet )
+        foreach ( var ruleSet in ruleSets )
         {
-            if ( pluralRules == defaultRules )
+            if ( ruleSet == defaultRuleSet )
                 continue;
 
-            WriteLookupCases ( pluralRules.Name, Array.FindAll ( pluralRules.Locales, locale => locale.IndexOf ( '-' ) < 0 ), 5 );
+            WriteLookupCases ( ruleSet.Name, Array.FindAll ( ruleSet.Locales, locale => locale.IndexOf ( '-' ) < 0 ), 5 );
         }
 #>
-                default    : return <#= defaultRules.Name #>.Instance;
+                default    : return <#= defaultRuleSet.Name #>.Instance;
             }
         }
     }
 <#+
     }
 
-    private void WriteLookup ( PluralRanges [ ] pluralRangesSet, string lookupName )
-    {
-#>
-    internal static class <#= lookupName #>
-    {
-        public static PluralFormRangeSelector For ( CultureInfo culture )
-        {
-<#+
-        var defaultRanges = (PluralRanges) null;
-        var hasSubtags    = false;
-        foreach ( var pluralRanges in pluralRangesSet )
-        {
-            if ( pluralRanges.Name.IndexOf ( "default", StringComparison.OrdinalIgnoreCase ) >= 0 )
-                defaultRanges = pluralRanges;
-
-            foreach ( var locale in pluralRanges.Locales )
-                if ( locale.IndexOf ( '-' ) >= 0 )
-                    hasSubtags = true;
-        }
-
-        if ( hasSubtags )
-        {
-#>
-            switch ( culture.Name )
-            {
-<#+
-            foreach ( var pluralRanges in pluralRangesSet )
-            {
-                if ( pluralRanges == defaultRanges )
-                    continue;
-
-                WriteLookupCases ( pluralRanges.Name, Array.FindAll ( pluralRanges.Locales, locale => locale.IndexOf ( '-' ) >= 0 ), 8 );
-            }
-#>
-            }
-
-<#+
-        }
-#>
-            switch ( culture.TwoLetterISOLanguageName )
-            {
-<#+
-        foreach ( var pluralRanges in pluralRangesSet )
-        {
-            if ( pluralRanges == defaultRanges )
-                continue;
-
-            WriteLookupCases ( pluralRanges.Name, Array.FindAll ( pluralRanges.Locales, locale => locale.IndexOf ( '-' ) < 0 ), 5 );
-        }
-#>
-                default    : return <#= defaultRanges.Name #>.Instance;
-            }
-        }
-    }
-<#+
-    }
-
-    private void WriteLookupCases ( string className, string [ ] locales, int padding )
+    private void WriteLookupCases ( string name, string [ ] locales, int padding )
     {
         foreach ( var locale in locales )
         {
 #>
-                case <#= string.Format ( "{0,-" + padding + "}", "\"" + locale + "\"" ) #> : return <#= className #>.Instance;
+                case <#= string.Format ( "{0,-" + padding + "}", "\"" + locale + "\"" ) #> : return <#= name #>.Instance;
 <#+
         }
     }

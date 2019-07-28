@@ -5,7 +5,7 @@ using System.Xml.Linq;
 
 namespace Localizer.CLDR
 {
-    public class PluralRules
+    public class PluralRules : IRuleSet
     {
         private static readonly PluralRule DefaultPluralRule = PluralRule.Parse ( "other", "", out var _ );
 
