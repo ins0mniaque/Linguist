@@ -62,7 +62,7 @@ namespace Localizer.CodeDom
 
         public static CodeExpression Access ( MemberAttributes accessModifiers )
         {
-            return accessModifiers.HasFlag ( MemberAttributes.Static ) ? Static ( ) : This ( );
+            return accessModifiers.HasBitMask ( MemberAttributes.Static ) ? Static ( ) : This ( );
         }
 
         public static CodeVariableDeclarationStatement Declare ( CodeTypeReference type, string name )
@@ -708,6 +708,16 @@ namespace Localizer.CodeDom
                 typeAttributes |= TypeAttributes.Sealed;
 
             return typeAttributes;
+        }
+
+        public static bool HasBitMask ( this MemberAttributes attributes, MemberAttributes bitMask )
+        {
+            return ( attributes & bitMask ) == bitMask;
+        }
+
+        public static bool HasBitMask ( this TypeAttributes attributes, TypeAttributes bitMask )
+        {
+            return ( attributes & bitMask ) == bitMask;
         }
     }
 }

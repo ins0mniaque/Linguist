@@ -23,6 +23,13 @@ namespace Localizer.Generator
         public CodeTypeReference               LocalizationProviderType        { get; }
         public LocalizationProviderInitializer LocalizationProviderInitializer { get; }
 
-        public IReadOnlyDictionary < string, Resource > Resources { get; }
+        public ReadOnlyDictionary < string, Resource > Resources { get; }
     }
+
+    #if NET35
+    public class ReadOnlyDictionary < TKey, TValue > : Dictionary < TKey, TValue >
+    {
+        public ReadOnlyDictionary ( IDictionary < TKey, TValue > dictionary ) : base ( dictionary ) { }
+    }
+    #endif
 }

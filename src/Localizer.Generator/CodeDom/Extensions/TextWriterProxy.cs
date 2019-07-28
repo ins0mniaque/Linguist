@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.Remoting;
 using System.Text;
+
+#if ! NET35
 using System.Threading.Tasks;
+#endif
 
 namespace Localizer.CodeDom.Extensions
 {
@@ -32,11 +34,9 @@ namespace Localizer.CodeDom.Extensions
         }
 
         public override void   Close        ( )                    => writer.Close ( );
-        public override ObjRef CreateObjRef ( Type requestedType ) => writer.CreateObjRef ( requestedType );
         public override object InitializeLifetimeService ( )       => writer.InitializeLifetimeService ( );
 
-        public override void Flush      ( ) => writer.Flush      ( );
-        public override Task FlushAsync ( ) => writer.FlushAsync ( );
+        public override void Flush ( ) => writer.Flush ( );
 
         public override void Write ( char    value ) => TriggerBeforeWriteThen.Write ( value );
         public override void Write ( bool    value ) => TriggerBeforeWriteThen.Write ( value );
@@ -56,10 +56,6 @@ namespace Localizer.CodeDom.Extensions
         public override void Write ( string format, object arg0, object arg1 )              => TriggerBeforeWriteThen.Write ( format, arg0, arg1 );
         public override void Write ( string format, object arg0, object arg1, object arg2 ) => TriggerBeforeWriteThen.Write ( format, arg0, arg1, arg2 );
         public override void Write ( string format, params object [ ] arg )                 => TriggerBeforeWriteThen.Write ( format, arg );
-
-        public override Task WriteAsync ( char     value )                        => TriggerBeforeWriteThen.WriteAsync ( value );
-        public override Task WriteAsync ( string   value )                        => TriggerBeforeWriteThen.WriteAsync ( value );
-        public override Task WriteAsync ( char [ ] buffer, int index, int count ) => TriggerBeforeWriteThen.WriteAsync ( buffer, index, count );
 
         public override void WriteLine ( )               => TriggerBeforeWriteThen.WriteLine ( );
         public override void WriteLine ( char    value ) => TriggerBeforeWriteThen.WriteLine ( value );
@@ -81,10 +77,22 @@ namespace Localizer.CodeDom.Extensions
         public override void WriteLine ( string format, object arg0, object arg1, object arg2 ) => TriggerBeforeWriteThen.WriteLine ( format, arg0, arg1, arg2 );
         public override void WriteLine ( string format, params object [ ] arg )                 => TriggerBeforeWriteThen.WriteLine ( format, arg );
 
+        #if ! NET35
+        public override Task FlushAsync ( ) => writer.FlushAsync ( );
+
+        public override Task WriteAsync ( char     value )                        => TriggerBeforeWriteThen.WriteAsync ( value );
+        public override Task WriteAsync ( string   value )                        => TriggerBeforeWriteThen.WriteAsync ( value );
+        public override Task WriteAsync ( char [ ] buffer, int index, int count ) => TriggerBeforeWriteThen.WriteAsync ( buffer, index, count );
+
         public override Task WriteLineAsync ( )                                       => TriggerBeforeWriteThen.WriteLineAsync ( );
         public override Task WriteLineAsync ( char     value )                        => TriggerBeforeWriteThen.WriteLineAsync ( value );
         public override Task WriteLineAsync ( string   value )                        => TriggerBeforeWriteThen.WriteLineAsync ( value );
         public override Task WriteLineAsync ( char [ ] buffer, int index, int count ) => TriggerBeforeWriteThen.WriteLineAsync ( buffer, index, count );
+        #endif
+
+        #if ! NETSTANDARD2_0
+        public override System.Runtime.Remoting.ObjRef CreateObjRef ( Type requestedType ) => writer.CreateObjRef ( requestedType );
+        #endif
 
         public override bool   Equals      ( object other ) => writer.Equals      ( other );
         public override int    GetHashCode ( )              => writer.GetHashCode ( );

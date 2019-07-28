@@ -75,7 +75,7 @@ namespace Localizer.CodeDom.Extensions
 
         private static string [ ] GetStaticClassDefinitionPath ( CodeDomProvider codeDomProvider, CodeTypeDeclaration type )
         {
-            var isStatic = type.Attributes.HasFlag ( MemberAttributes.Static );
+            var isStatic = type.Attributes.HasBitMask ( MemberAttributes.Static );
             var isClass  = type.IsClass && ( type.TypeAttributes & TypeAttributes.ClassSemanticsMask ) == TypeAttributes.Class;
 
             if ( ! isStatic || ! isClass )
@@ -107,9 +107,9 @@ namespace Localizer.CodeDom.Extensions
                     break;
             }
 
-            if ( type.TypeAttributes.HasFlag ( TypeAttributes.Sealed ) )
+            if ( type.TypeAttributes.HasBitMask ( TypeAttributes.Sealed ) )
                 path.Add ( "sealed " );
-            if ( type.TypeAttributes.HasFlag ( TypeAttributes.Abstract ) )
+            if ( type.TypeAttributes.HasBitMask ( TypeAttributes.Abstract ) )
                 path.Add ( "abstract " );
             if ( type.IsPartial )
                 path.Add ( "partial " );
@@ -123,7 +123,7 @@ namespace Localizer.CodeDom.Extensions
 
         private static string [ ] GetStaticEventDefinitionPath ( CodeDomProvider codeDomProvider, CodeMemberEvent @event )
         {
-            var isStatic = @event.Attributes.HasFlag ( MemberAttributes.Static ) &&
+            var isStatic = @event.Attributes.HasBitMask ( MemberAttributes.Static ) &&
                            @event.PrivateImplementationType == null;
 
             if ( ! isStatic )

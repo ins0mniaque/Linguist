@@ -16,7 +16,7 @@ namespace Localizer.CodeDom
 
         public static MemberAttributes ValidateAccessModifiers ( this CodeDomProvider codeDomProvider, MemberAttributes accessModifiers )
         {
-            if ( accessModifiers.HasFlag ( MemberAttributes.Public | MemberAttributes.Static ) )
+            if ( accessModifiers.HasBitMask ( MemberAttributes.Public | MemberAttributes.Static ) )
                 if ( ! codeDomProvider.Supports ( GeneratorSupport.PublicStaticMembers ) )
                     accessModifiers &= ~MemberAttributes.Static;
 

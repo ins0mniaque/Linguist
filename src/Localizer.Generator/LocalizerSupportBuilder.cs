@@ -78,8 +78,8 @@ namespace Localizer.Generator
                                                               baseName;
             ClassName          = codeDomProvider.ValidateBaseName        ( baseName );
             AccessModifiers    = codeDomProvider.ValidateAccessModifiers ( accessModifiers );
-            TypeAttributes     = AccessModifiers.HasFlag ( MemberAttributes.Public ) ? TypeAttributes.Public :
-                                                                                       TypeAttributes.AutoLayout;
+            TypeAttributes     = AccessModifiers.HasBitMask ( MemberAttributes.Public ) ? TypeAttributes.Public :
+                                                                                          TypeAttributes.AutoLayout;
             CustomToolType     = customToolType;
         }
 
@@ -164,7 +164,7 @@ namespace Localizer.Generator
             yield return CultureInfoFieldName;
             yield return NotifyCultureChangedMethodName;
 
-            if ( AccessModifiers.HasFlag ( MemberAttributes.Static ) )
+            if ( AccessModifiers.HasBitMask ( MemberAttributes.Static ) )
                 yield return "Static" + nameof ( INotifyPropertyChanged.PropertyChanged );
             else
                 yield return nameof ( INotifyPropertyChanged.PropertyChanged );
@@ -179,7 +179,7 @@ namespace Localizer.Generator
                                                CodeDomProvider.Supports ( GeneratorSupport.PartialTypes ) )
                                 .AddSummary ( ClassSummary );
 
-            if ( ! AccessModifiers.HasFlag ( MemberAttributes.Static ) )
+            if ( ! AccessModifiers.HasBitMask ( MemberAttributes.Static ) )
                 type.BaseTypes.Add ( Code.TypeRef < INotifyPropertyChanged > ( ) );
 
             if ( CustomToolType != null ) type.AddRemarks ( ClassRemarksFormat,         generator.Name, CustomToolType.Name );
@@ -219,8 +219,8 @@ namespace Localizer.Generator
         {
             var ctor = new CodeConstructor ( )
             {
-                Attributes = AccessModifiers.HasFlag ( MemberAttributes.Static ) ? MemberAttributes.Private :
-                                                                                   AccessModifiers & ~MemberAttributes.Static
+                Attributes = AccessModifiers.HasBitMask ( MemberAttributes.Static ) ? MemberAttributes.Private :
+                                                                                      AccessModifiers & ~MemberAttributes.Static
             };
 
             return ctor.AddSummary ( ConstructorSummaryFormat, ClassName )
@@ -236,7 +236,7 @@ namespace Localizer.Generator
                 Attributes = MemberAttributes.Public | AccessModifiers & MemberAttributes.Static
             };
 
-            if ( AccessModifiers.HasFlag ( MemberAttributes.Static ) )
+            if ( AccessModifiers.HasBitMask ( MemberAttributes.Static ) )
                 propertyChangedEvent.Name = "Static" + propertyChangedEvent.Name;
             else
                 propertyChangedEvent.ImplementationTypes.Add ( Code.TypeRef < INotifyPropertyChanged > ( ) );
@@ -431,8 +431,9 @@ namespace Localizer.Generator
 
         protected string FormatResourceComment ( string comment )
         {
-            if ( ! IsNullOrWhiteSpace ( comment ) )
-                return Format ( ResourceCommentFormat, comment.Trim ( ) );
+            comment = comment?.Trim ( );
+            if ( ! IsNullOrEmpty ( comment ) )
+                return Format ( ResourceCommentFormat, comment );
 
             return null;
         }

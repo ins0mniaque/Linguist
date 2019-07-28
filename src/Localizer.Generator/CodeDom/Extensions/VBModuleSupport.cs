@@ -38,7 +38,7 @@ namespace Localizer.CodeDom.Extensions
 
         private static void FixStaticClassDefinition ( CodeTypeDeclaration type )
         {
-            var isStatic = type.Attributes.HasFlag ( MemberAttributes.Static );
+            var isStatic = type.Attributes.HasBitMask ( MemberAttributes.Static );
             var isClass  = type.IsClass && ( type.TypeAttributes & TypeAttributes.ClassSemanticsMask ) == TypeAttributes.Class;
 
             if ( ! isStatic || ! isClass )
@@ -46,12 +46,12 @@ namespace Localizer.CodeDom.Extensions
 
             RemoveConstructors ( type );
 
-            var isNested = type.TypeAttributes.HasFlag ( TypeAttributes.NestedPublic      ) ||
-                           type.TypeAttributes.HasFlag ( TypeAttributes.NestedPrivate     ) ||
-                           type.TypeAttributes.HasFlag ( TypeAttributes.NestedFamily      ) ||
-                           type.TypeAttributes.HasFlag ( TypeAttributes.NestedAssembly    ) ||
-                           type.TypeAttributes.HasFlag ( TypeAttributes.NestedFamANDAssem ) ||
-                           type.TypeAttributes.HasFlag ( TypeAttributes.NestedFamORAssem  );
+            var isNested = type.TypeAttributes.HasBitMask ( TypeAttributes.NestedPublic      ) ||
+                           type.TypeAttributes.HasBitMask ( TypeAttributes.NestedPrivate     ) ||
+                           type.TypeAttributes.HasBitMask ( TypeAttributes.NestedFamily      ) ||
+                           type.TypeAttributes.HasBitMask ( TypeAttributes.NestedAssembly    ) ||
+                           type.TypeAttributes.HasBitMask ( TypeAttributes.NestedFamANDAssem ) ||
+                           type.TypeAttributes.HasBitMask ( TypeAttributes.NestedFamORAssem  );
 
             if ( isNested )
             {

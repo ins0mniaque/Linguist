@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.CodeDom;
 using System.IO;
-using System.Reflection;
 using System.Resources;
+using System.Xml;
+using System.Xml.Linq;
 
 using Localizer.CodeDom;
 
@@ -14,53 +14,62 @@ namespace Localizer.Generator
     {
         public static ResourceSet ExtractResourceSet ( string inputFileName, string inputFileContent )
         {
-            const AssemblyName [ ] DefaultAssemblies = null;
-
             var resources = new Dictionary < string, Resource > ( StringComparer.InvariantCultureIgnoreCase );
+            var document  = XDocument.Parse ( inputFileContent );
 
-            using ( var reader = ResXResourceReader.FromFileContents ( inputFileContent ) )
+            foreach ( var data in document.Descendants ( "data" ) )
             {
-                if ( reader is ResXResourceReader resXReader )
+                var name = data.Attribute ( "name" )?.Value;
+                if ( name == null )
+                    continue;
+
+                var type     = GetType ( data );
+                var comment  = data.Element ( "comment" )?.Value;
+                var resource = (Resource) null;
+
+                if ( type.BaseType == typeof ( string ).FullName )
+                    resource = new StringResource ( type, data.Element ( "value" )?.Value, GetString, comment );
+                else if ( type.BaseType == typeof ( MemoryStream          ).FullName ||
+                          type.BaseType == typeof ( UnmanagedMemoryStream ).FullName )
+                    resource = new Resource ( type, GetStream, comment );
+                else
+                    resource = new Resource ( type, GetObject ( type ), comment );
+
+                resource.FileName = inputFileName;
+
+                if ( data is IXmlLineInfo info && info.HasLineInfo ( ) )
                 {
-                    resXReader.UseResXDataNodes = true;
-                    resXReader.BasePath = Path.GetFullPath ( Path.GetDirectoryName ( inputFileName ) );
+                    resource.Line   = info.LineNumber;
+                    resource.Column = info.LinePosition;
                 }
 
-                foreach ( DictionaryEntry entry in reader )
+                resources.Add ( name, resource );
+            }
+
+            return new ResourceSet ( Code.TypeRef < ResourceManager >                     ( ), ManagerInitializer,
+                                     Code.TypeRef < ResourceManagerLocalizationProvider > ( ), ProviderInitializer,
+                                     resources );
+        }
+
+        private static CodeTypeReference GetType ( XElement data )
+        {
+            var type = data.Attribute ( "type" );
+            if ( type == null )
+                return Code.TypeRef < string > ( );
+
+            if ( type.Value == "System.Resources.ResXFileRef, System.Windows.Forms" )
+            {
+                var value = data.Element ( "value" );
+                if ( value != null )
                 {
-                    var node     = (ResXDataNode) entry.Value;
-                    var name     = (string)       entry.Key;
-                    var typeName = node.GetValueTypeName ( DefaultAssemblies );
-                    var type     = Type.GetType ( typeName );
-                    var position = node.GetNodePosition  ( );
-                    var comment  = node.Comment;
+                    var parts    = value.Value.Split ( ';' );
+                    var typeName = parts [ parts.Length - 1 ];
 
-                    while ( ! type.IsPublic )
-                        type = type.BaseType;
-
-                    typeName = type.FullName;
-
-                    var typeRef  = Code.TypeRef ( type );
-                    var resource = (Resource) null;
-
-                    if ( type == typeof ( string ) )
-                        resource = new StringResource ( typeRef, (string) node.GetValue ( DefaultAssemblies ), GetString, comment );
-                    else if ( type == typeof ( MemoryStream ) || type == typeof ( UnmanagedMemoryStream ) )
-                        resource = new Resource ( typeRef, GetStream, comment );
-                    else
-                        resource = new Resource ( typeRef, GetObject ( typeRef ), comment );
-
-                    resource.FileName = inputFileName;
-                    resource.Line     = position.Y;
-                    resource.Column   = position.X;
-
-                    resources.Add ( name, resource );
+                    return Code.TypeRef ( typeName );
                 }
             }
 
-            return new ResourceSet ( Code.TypeRef < ResourceManager > ( ),                     ManagerInitializer,
-                                     Code.TypeRef < ResourceManagerLocalizationProvider > ( ), ProviderInitializer,
-                                     resources );
+            return Code.TypeRef < object > ( );
         }
 
         private static CodeExpression ManagerInitializer ( string resourcesBaseName, string className )
