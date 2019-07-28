@@ -11,7 +11,7 @@ namespace Localizer.VisualStudio
 
     [ Guid ( PackageGuidString ) ]
     [ PackageRegistration ( UseManagedResourcesOnly = true, AllowsBackgroundLoading = true ) ]
-    [ InstalledProductRegistration ( PackageName, PackageDetails, PackageVersion ) ]
+    [ InstalledProductRegistration ( "#110", "#112", PackageVersion, IconResourceID = 400 ) ]
     [ ProvideMenuResource  ( "Menus.ctmenu", 1 ) ]
     [ ProvideCodeGenerator ( typeof ( LocalizerCodeGenerator         ), LocalizerCodeGenerator        .Name, LocalizerCodeGenerator        .Description, true ) ]
     [ ProvideCodeGenerator ( typeof ( InternalLocalizerCodeGenerator ), InternalLocalizerCodeGenerator.Name, InternalLocalizerCodeGenerator.Description, true ) ]
@@ -23,8 +23,6 @@ namespace Localizer.VisualStudio
                                                     "HierSingleSelectionName:.resw$" } ) ]
     public sealed class LocalizerPackage : AsyncPackage
     {
-        public const string PackageName       = "Localizer";
-        public const string PackageDetails    = "";
         public const string PackageVersion    = "1.0";
         public const string PackageGuidString = "97313391-C7DF-45DB-817D-BE297DE8BD35";
 
