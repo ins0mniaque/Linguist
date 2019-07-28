@@ -31,9 +31,9 @@ namespace Localizer.CLDR
 
                 foreach ( var pluralRange in pluralRanges.Descendants ( "pluralRange" ) )
                 {
-                    var start  = PluralFormParser.Parse ( pluralRange.Attribute ( "start"  ).Value.ToString ( ) );
-                    var end    = PluralFormParser.Parse ( pluralRange.Attribute ( "end"    ).Value.ToString ( ) );
-                    var result = PluralFormParser.Parse ( pluralRange.Attribute ( "result" ).Value.ToString ( ) );
+                    var start  = PluralFormParser.Parse ( pluralRange.Attribute ( "start"  ).Value );
+                    var end    = PluralFormParser.Parse ( pluralRange.Attribute ( "end"    ).Value );
+                    var result = PluralFormParser.Parse ( pluralRange.Attribute ( "result" ).Value );
 
                     var isDefaultRule = end == result;
                     if ( ! isDefaultRule )

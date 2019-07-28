@@ -23,7 +23,7 @@ namespace Localizer.CLDR
             var ruleSets = new List < PluralRules > ( );
 
             var plurals = document.Descendants ( "plurals" ).Single ( );
-            var type    = plurals .Attribute   ( "type"    ).Value?.ToString ( );
+            var type    = plurals .Attribute   ( "type"    )?.Value;
             var prefix  = type == "cardinal" ? "CardinalRuleSet" :
                           type == "ordinal"  ? "OrdinalRuleSet"  :
                           throw new XmlException ( "Invalid plurals type attribute" );
@@ -44,7 +44,7 @@ namespace Localizer.CLDR
                 foreach ( var pluralRule in pluralRules.Descendants ( "pluralRule" ) )
                 {
                     var rule = PluralRule.Parse ( pluralRule.Attribute ( "count" ).Value,
-                                                  pluralRule.Value.ToString ( ),
+                                                  pluralRule.Value,
                                                   out var ruleOperands );
 
                     if ( ruleOperands != null )
