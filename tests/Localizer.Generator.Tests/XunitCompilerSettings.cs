@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if NET452
+
+using System;
 using System.IO;
 using System.Reflection;
 
@@ -25,3 +27,5 @@ namespace Localizer.Generator.Tests
         public int    CompilerServerTimeToLive { get; }
     }
 }
+
+#endif
