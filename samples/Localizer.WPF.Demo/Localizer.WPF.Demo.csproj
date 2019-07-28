@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net35;net45;net461</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
     <OutputType>winexe</OutputType>
   </PropertyGroup>
 
