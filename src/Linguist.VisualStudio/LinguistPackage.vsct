@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <Extern  href="stdidcmd.h" />
+  <Extern  href="vsshlids.h" />
+  <Include href="KnownImageIds.vsct" />
+
+  <Commands package="guidLinguistPackage">
+    <Groups>
+      <Group guid="guidLinguistPackageCmdSet" id="ProjectItemMenuGroup" priority="0x0100">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_ITEMNODE" />
+      </Group>
+      <Group guid="guidLinguistPackageCmdSet" id="SubMenuGroup" priority="0x1000">
+          <Parent guid="guidLinguistPackageCmdSet" id="SubMenu" />
+      </Group>
+    </Groups>
+    <Menus>
+      <Menu guid="guidLinguistPackageCmdSet" id="SubMenu" type="Menu" priority="0x1000">
+        <Parent guid="guidLinguistPackageCmdSet" id="ProjectItemMenuGroup" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Linguist</ButtonText>
+        </Strings>
+      </Menu>
+    </Menus>
+    <Buttons>
+      <Button guid="guidLinguistPackageCmdSet" id="PublicApplyCustomToolId" priority="0x0100" type="Button">
+        <Parent guid="guidLinguistPackageCmdSet" id="SubMenuGroup"  />
+        <Icon   guid="ImageCatalogGuid"          id="TriggerScript" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
+        <Strings>
+          <ButtonText>Switch to Linguist</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidLinguistPackageCmdSet" id="InternalApplyCustomToolId" priority="0x0101" type="Button">
+        <Parent guid="guidLinguistPackageCmdSet" id="SubMenuGroup"  />
+        <Icon   guid="ImageCatalogGuid"          id="TriggerScript" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
+        <Strings>
+          <ButtonText>Switch to Linguist (Internal)</ButtonText>
+        </Strings>
+      </Button>
+    </Buttons>
+  </Commands>
+
+  <VisibilityConstraints>
+    <VisibilityItem guid="guidLinguistPackageCmdSet" id="SubMenu" context="guidLinguistUIContext" />
+  </VisibilityConstraints>
+
+  <Symbols>
+    <GuidSymbol name="guidLinguistPackage"       value="{97313391-C7DF-45DB-817D-BE297DE8BD35}" />
+    <GuidSymbol name="guidLinguistUIContext"     value="{DF9405E1-FFE4-4C7D-A491-6FECEA978857}" />
+    <GuidSymbol name="guidLinguistPackageCmdSet" value="{79EF3C41-702D-4334-9A18-85CC8693758E}">
+      <IDSymbol name="ProjectItemMenuGroup"      value="0x1100" />
+      <IDSymbol name="SubMenu"                   value="0x1101" />
+      <IDSymbol name="SubMenuGroup"              value="0x1102" />
+      <IDSymbol name="PublicApplyCustomToolId"   value="0x0100" />
+      <IDSymbol name="InternalApplyCustomToolId" value="0x0101" />
+    </GuidSymbol>
+  </Symbols>
+</CommandTable>

@@ -1,0 +1,255 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ output extension=".cs" #>
+<#@ assembly name="NetStandard" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ assembly name="$(TargetDir)Linguist.dll" #>
+<#@ assembly name="$(TargetDir)Linguist.CLDR.dll" #>
+<#@ import namespace="Linguist.CLDR" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Xml.Linq" #>
+using System.Globalization;
+
+using Linguist.Pluralization;
+
+namespace Linguist.CLDR
+{
+<#
+    var cardinals = XDocument.Load ( Host.ResolvePath ( "CLDR/common/supplemental/plurals.xml"  ) );
+    var ordinals  = XDocument.Load ( Host.ResolvePath ( "CLDR/common/supplemental/ordinals.xml" ) );
+    var ranges    = XDocument.Load ( Host.ResolvePath ( "CLDR/common/supplemental/pluralRanges.xml" ) );
+
+    var cardinalRuleSet = PluralRules .Parse ( cardinals );
+    var ordinalRuleSet  = PluralRules .Parse ( ordinals  );
+    var rangeRuleSet    = PluralRanges.Parse ( ranges    );
+
+    WriteLookup ( cardinalRuleSet, "CardinalRuleSet", "PluralFormSelector" );
+    WriteLine   ( string.Empty );
+    WriteLookup ( ordinalRuleSet,  "OrdinalRuleSet",  "PluralFormSelector" );
+    WriteLine   ( string.Empty );
+    WriteLookup ( rangeRuleSet,    "RangeRuleSet",    "PluralFormRangeSelector" );
+
+    WritePluralRules  ( cardinalRuleSet, true  );
+    WritePluralRules  ( ordinalRuleSet,  false );
+    WritePluralRanges ( rangeRuleSet );
+#>}<#+
+    private void WriteLookup ( IRuleSet [ ] ruleSets, string lookupName, string type )
+    {
+#>
+    internal static class <#= lookupName #>
+    {
+        public static <#= type #> For ( CultureInfo culture )
+        {
+<#+
+        var defaultRuleSet = (IRuleSet) null;
+        var hasSubtags     = false;
+        foreach ( var ruleSet in ruleSets )
+        {
+            if ( ruleSet.Name.IndexOf ( "default", StringComparison.OrdinalIgnoreCase ) >= 0 )
+                defaultRuleSet = ruleSet;
+
+            foreach ( var locale in ruleSet.Locales )
+                if ( locale.IndexOf ( '-' ) >= 0 )
+                    hasSubtags = true;
+        }
+
+        if ( hasSubtags )
+        {
+#>
+            switch ( culture.Name )
+            {
+<#+
+            foreach ( var ruleSet in ruleSets )
+            {
+                if ( ruleSet == defaultRuleSet )
+                    continue;
+
+                WriteLookupCases ( ruleSet.Name, Array.FindAll ( ruleSet.Locales, locale => locale.IndexOf ( '-' ) >= 0 ), 8 );
+            }
+#>
+            }
+
+<#+
+        }
+#>
+            switch ( culture.TwoLetterISOLanguageName )
+            {
+<#+
+        foreach ( var ruleSet in ruleSets )
+        {
+            if ( ruleSet == defaultRuleSet )
+                continue;
+
+            WriteLookupCases ( ruleSet.Name, Array.FindAll ( ruleSet.Locales, locale => locale.IndexOf ( '-' ) < 0 ), 5 );
+        }
+#>
+                default    : return <#= defaultRuleSet.Name #>.Instance;
+            }
+        }
+    }
+<#+
+    }
+
+    private void WriteLookupCases ( string name, string [ ] locales, int padding )
+    {
+        foreach ( var locale in locales )
+        {
+#>
+                case <#= string.Format ( "{0,-" + padding + "}", "\"" + locale + "\"" ) #> : return <#= name #>.Instance;
+<#+
+        }
+    }
+
+    private void WritePluralRules ( PluralRules [ ] pluralRulesSet, bool explicitRules )
+    {
+        foreach ( var pluralRules in pluralRulesSet )
+        {
+#>
+
+    // Locales: <#= string.Join ( ", ", pluralRules.Locales ) #>
+    internal class <#= pluralRules.Name #> : PluralFormSelector
+    {
+        public static readonly <#= pluralRules.Name #> Instance = new <#= pluralRules.Name #> ( );
+
+        private <#= pluralRules.Name #> ( ) : base ( PluralForm.<#= pluralRules.PluralForm.ToString ( ).Replace ( ", ", " | PluralForm." ) #> ) { }
+
+        public override PluralForm SelectPluralForm ( decimal number, PluralForm availablePluralForms )
+        {
+<#+
+            var operands = new HashSet < string > ( );
+
+            if ( explicitRules )
+            {
+                operands.Add ( "i" );
+                operands.Add ( "v" );
+            }
+
+            foreach ( var operand in pluralRules.Operands )
+                operands.Add ( operand );
+
+            foreach ( var operand in operands )
+            {
+#>
+            var <#= operand #> = number.<#= operand #> ( );
+<#+
+            }
+
+            if ( explicitRules )
+                WriteExplicitRules ( pluralRules.PluralForm );
+
+            foreach ( var pluralRule in pluralRules.Rules )
+            {
+#>
+
+            // "<#= pluralRule.PluralForm.ToString ( ).ToLowerInvariant ( ) #>": <#= pluralRule.RuleCode #>
+<#+
+                WriteSamples ( "integer", pluralRule.IntegerSamples );
+                WriteSamples ( "decimal", pluralRule.DecimalSamples );
+#>
+            if ( <#= pluralRule.Rule #> )
+                return PluralForm.<#= pluralRule.PluralForm #>;
+<#+
+            }
+#>
+
+            // "<#= pluralRules.DefaultRule.PluralForm.ToString ( ).ToLowerInvariant ( ) #>"
+<#+
+            WriteSamples ( "integer", pluralRules.DefaultRule.IntegerSamples );
+            WriteSamples ( "decimal", pluralRules.DefaultRule.DecimalSamples );
+#>
+            return PluralForm.Other;
+        }
+    }
+<#+
+        }
+    }
+
+    private void WritePluralRanges ( PluralRanges [ ] pluralRangesSet )
+    {
+        foreach ( var pluralRanges in pluralRangesSet )
+        {
+#>
+
+    // Locales: <#= string.Join ( ", ", pluralRanges.Locales ) #>
+    internal class <#= pluralRanges.Name #> : PluralFormRangeSelector
+    {
+        public static readonly <#= pluralRanges.Name #> Instance = new <#= pluralRanges.Name #> ( );
+
+        private <#= pluralRanges.Name #> ( ) { }
+
+        public override PluralForm SelectPluralForm ( PluralForm start, PluralForm end )
+        {
+<#+
+            foreach ( var pluralRange in pluralRanges.Ranges )
+            {
+                if ( pluralRange.End == pluralRange.Result )
+                    continue;
+#>
+            if ( start == PluralForm.<#= pluralRange.Start #> && end == PluralForm.<#= pluralRange.End #> )
+                return PluralForm.<#= pluralRange.Result #>;
+
+<#+
+            }
+#>
+            return end;
+        }
+    }
+<#+
+        }
+    }
+
+    private void WriteExplicitRules ( Linguist.PluralForm pluralForms )
+    {
+#>
+
+            // Explicit "0" rule
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitZero ) )
+            {
+                if ( ExplicitRule.Zero ( i, v ) )
+                    return PluralForm.ExplicitZero;
+            }
+<#+
+        if ( ( pluralForms & Linguist.PluralForm.Zero ) != Linguist.PluralForm.Zero )
+        {
+#>
+            // Explicit "0" rule "zero" fallback
+            else if ( availablePluralForms.HasBitMask ( PluralForm.Zero ) )
+            {
+                if ( ExplicitRule.Zero ( i, v ) )
+                    return PluralForm.Zero;
+            }
+<#+
+        }
+#>
+
+            // Explicit "1" rule
+            if ( availablePluralForms.HasBitMask ( PluralForm.ExplicitOne ) )
+            {
+                if ( ExplicitRule.One ( i, v ) )
+                    return PluralForm.ExplicitOne;
+            }
+<#+
+        if ( ( pluralForms & Linguist.PluralForm.One ) != Linguist.PluralForm.One )
+        {
+#>
+            // Explicit "1" rule "one" fallback
+            else if ( availablePluralForms.HasBitMask ( PluralForm.One ) )
+            {
+                if ( ExplicitRule.One ( i, v ) )
+                    return PluralForm.One;
+            }
+<#+
+        }
+    }
+
+    private void WriteSamples ( string name, string [ ] samples )
+    {
+        if ( samples != null && samples.Length > 0 )
+        {
+#>
+            //   @<#= name #>: <#= string.Join ( ", ", samples ) #>
+<#+
+        }
+    }
+#>

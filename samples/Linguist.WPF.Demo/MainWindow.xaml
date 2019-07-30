@@ -1,0 +1,55 @@
+﻿<Window x:Class="Linguist.WPF.Demo.MainWindow"
+        x:Name="WindowElement"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Linguist.WPF.Demo"
+
+        Localize.Provider="Linguist.WPF.Demo/Properties/Resources"
+        Localize.Component="MainWindow"
+
+        Title="{Localize}"
+        Width="480" Height="320"
+
+        Language="en-US"> <!-- NOTE: Change the language to see live changes in the designer. e.g. Language="fr" -->
+
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Bottom"
+                    Margin="16 8"
+                    Orientation="Horizontal">
+            <TextBlock Localize.Name="Language.Label"
+                       Text="{Localize}" />
+            <!-- NOTE: Binding to window through element name instead of relative source to support the designer. -->
+            <TextBox Margin="8 0 0 0"
+                     MinWidth="50"
+                     Text="{Binding Language,
+                                    ElementName=WindowElement,
+                                    UpdateSourceTrigger=PropertyChanged,
+                                    ValidatesOnExceptions=True}" />
+        </StackPanel>
+
+        <TabControl Margin="16 16 16 0">
+            <TabItem Localize.Name="AutomaticKeyDemo"
+                     Header="{Localize}">
+                <local:AutomaticKeyDemo />
+            </TabItem>
+            <TabItem Localize.Name="KeyDemo"
+                     Header="{Localize}">
+
+            </TabItem>
+            <TabItem Localize.Name="KeyPathDemo"
+                     Header="{Localize}">
+
+            </TabItem>
+            <TabItem Localize.Name="ProviderDemo"
+                     Header="{Localize}">
+
+            </TabItem>
+            <TabItem Localize.Name="NoCustomToolDemo"
+                     Header="{Localize}">
+
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+
+</Window>

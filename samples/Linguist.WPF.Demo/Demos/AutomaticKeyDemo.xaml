@@ -1,0 +1,39 @@
+﻿<UserControl x:Class="Linguist.WPF.Demo.AutomaticKeyDemo"
+
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+             Localize.Provider="Linguist.WPF.Demo/Properties/Resources"
+             Localize.Component="AutomaticKeyDemo">
+
+    <!-- AutomaticKeyDemo.LayoutRoot.Background -->
+    <StackPanel x:Name="LayoutRoot"
+                Background="{Localize}">
+
+        <!-- AutomaticKeyDemo.TextBlock.Text -->
+        <TextBlock Text="{Localize}" />
+
+        <!-- AutomaticKeyDemo.NamedTextBlock.Text -->
+        <TextBlock x:Name="NamedTextBlock"
+                   Text="{Localize}" />
+
+        <DockPanel>
+            <!-- AutomaticKeyDemo.PluralHint.Text -->
+            <TextBlock DockPanel.Dock="Top"
+                       Localize.Name="PluralHint"
+                       TextWrapping="Wrap"
+                       Text="{Localize}" />
+
+            <TextBox x:Name="FormatArgumentSource"
+                     DockPanel.Dock="Left"
+                     MinWidth="32"
+                     Text="0" />
+
+            <!-- AutomaticKeyDemo.FormattedTextBlock.Text -->
+            <TextBlock Margin="8 0 0 0"
+                       Localize.Name="FormattedTextBlock"
+                       Text="{Localize {Binding Text, ElementName=FormatArgumentSource}}" />
+        </DockPanel>
+    </StackPanel>
+
+</UserControl>

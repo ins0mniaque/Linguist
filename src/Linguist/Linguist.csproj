@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net35;net45</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <VersionPrefix>0.9.0</VersionPrefix>
+    <VersionSuffix>preview</VersionSuffix>
+    <Authors>Jean-Philippe Leconte</Authors>
+    <Description>Linguist is an advanced strongly typed resource localizer for all .NET platforms with formatting and pluralization support.</Description>
+    <Copyright>Copyright © Jean-Philippe Leconte 2019</Copyright>
+    <PackageTags>Linguist;Localization;Pluralization</PackageTags>
+    <PackageIconUrl>https://raw.githubusercontent.com/ins0mniaque/Linguist/master/content/images/icon.64x64.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/ins0mniaque/Linguist</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/ins0mniaque/Linguist</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\LICENSE" Visible="false" Pack="true" PackagePath="LICENSE" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Linguist.CLDR\CLDR.cs">
+      <Link>CLDR\CLDR.cs</Link>
+    </Compile>
+    <Compile Include="..\Linguist.CLDR\CLDR.Data.cs">
+      <Link>CLDR\CLDR.Data.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+</Project>
