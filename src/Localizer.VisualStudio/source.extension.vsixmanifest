@@ -5,8 +5,8 @@
         <DisplayName>Localizer</DisplayName>
         <Description xml:space="preserve">An advanced strongly typed resource localizer for all .NET platforms with formatting and grammatical features support.</Description>
         <License>LICENSE</License>
-        <Icon>Resources\Icon.png</Icon>
-        <PreviewImage>Resources\Icon.png</PreviewImage>
+        <Icon>Resources\icon.128x128.png</Icon>
+        <PreviewImage>Resources\icon.128x128.png</PreviewImage>
     </Metadata>
     <Installation>
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0, 17.0)" />

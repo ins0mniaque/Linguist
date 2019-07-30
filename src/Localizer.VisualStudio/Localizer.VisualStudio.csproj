@@ -75,9 +75,8 @@
     <Compile Include="Generators\InternalLocalizerCodeGenerator.cs" />
     <Compile Include="Generators\BaseLocalizerCodeGenerator.cs" />
     <Compile Include="Generators\LocalizerCodeGenerator.cs" />
-    <Content Include="Resources\Icon.ico" />
-    <Content Include="Resources\Icon.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="..\..\content\images\icon.128x128.png">
+      <Link>Resources\icon.128x128.png</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <Compile Include="LocalizerPackage.cs" />
@@ -95,6 +94,7 @@
     <EmbeddedResource Include="VSPackage.resx">
       <ManifestResourceName>VSPackage</ManifestResourceName>
       <MergeWithCTO>true</MergeWithCTO>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
