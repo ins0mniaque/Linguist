@@ -3,7 +3,10 @@ using System.ComponentModel.Design;
 
 using EnvDTE;
 
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
+
+using NuGet.VisualStudio;
 
 namespace Linguist.VisualStudio
 {
@@ -68,8 +71,24 @@ namespace Linguist.VisualStudio
             ThreadHelper.ThrowIfNotOnUIThread ( );
 
             var item = dte.SelectedItems.Item ( 1 ).ProjectItem;
-            if ( item != null )
-                item.Properties.Item ( "CustomTool" ).Value = customTool;
+            if ( item == null )
+                return;
+
+            var project = item.ContainingProject;
+
+            var package = "Linguist";
+            if ( project.HasReference ( "PresentationFramework" ) )
+                package = "Linguist.WPF";
+
+            if ( ! project.HasReference ( package ) )
+            {
+                var componentModel = (IComponentModel) Package.GetGlobalService ( typeof ( SComponentModel ) );
+                var installer      = componentModel.GetService < IVsPackageInstaller2 > ( );
+
+                installer.InstallLatestPackage ( null, project, package, LinguistPackage.Preview, false );
+            }
+
+            item.Properties.Item ( "CustomTool" ).Value = customTool;
         }
     }
 }

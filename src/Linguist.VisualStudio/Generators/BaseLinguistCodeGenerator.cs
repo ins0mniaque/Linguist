@@ -1,7 +1,6 @@
 ﻿using System;
 using System.CodeDom;
 using System.CodeDom.Compiler;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -37,16 +36,14 @@ namespace Linguist.VisualStudio
             ThreadHelper.ThrowIfNotOnUIThread ( );
 
             var builder = LinguistSupportBuilder.GenerateBuilder ( CodeDomProvider,
-                                                                    inputFileName,
-                                                                    inputFileContent,
-                                                                    FileNamespace,
-                                                                    GetResourcesNamespace ( ),
-                                                                    AccessModifier,
-                                                                    GetType ( ) );
+                                                                   inputFileName,
+                                                                   inputFileContent,
+                                                                   FileNamespace,
+                                                                   GetResourcesNamespace ( ),
+                                                                   AccessModifier,
+                                                                   GetType ( ) );
 
-            foreach ( var reference in GetReferences ( ) )
-                if ( reference == "Linguist.WPF" )
-                    builder.GenerateWPFSupport = true;
+            builder.GenerateWPFSupport = Project.HasReference ( "Linguist.WPF" );
 
             var code      = builder.Build ( );
             var source    = new StringBuilder ( );
@@ -103,16 +100,6 @@ namespace Linguist.VisualStudio
 
                 return (ProjectItem) GetService ( typeof ( ProjectItem ) );
             }
-        }
-
-        // TODO: Add support for Project.Object is VsWebSite.VSWebSite.
-        protected IEnumerable < string > GetReferences ( )
-        {
-            ThreadHelper.ThrowIfNotOnUIThread ( );
-
-            if ( Project.Object is VSLangProj.VSProject vsProject )
-                foreach ( VSLangProj.Reference reference in vsProject.References )
-                    yield return reference.Name;
         }
 
         protected string GetResourcesNamespace ( )
