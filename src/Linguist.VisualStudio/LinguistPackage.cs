@@ -9,9 +9,9 @@ namespace Linguist.VisualStudio
 {
     using Task = System.Threading.Tasks.Task;
 
-    [ Guid ( PackageGuidString ) ]
+    [ Guid ( GuidString ) ]
     [ PackageRegistration ( UseManagedResourcesOnly = true, AllowsBackgroundLoading = true ) ]
-    [ InstalledProductRegistration ( "#110", "#112", PackageVersion, IconResourceID = 400 ) ]
+    [ InstalledProductRegistration ( "#110", "#112", Version, IconResourceID = 400 ) ]
     [ ProvideMenuResource  ( "Menus.ctmenu", 1 ) ]
     [ ProvideCodeGenerator ( typeof ( LinguistCodeGenerator         ), LinguistCodeGenerator        .Name, LinguistCodeGenerator        .Description, true ) ]
     [ ProvideCodeGenerator ( typeof ( InternalLinguistCodeGenerator ), InternalLinguistCodeGenerator.Name, InternalLinguistCodeGenerator.Description, true ) ]
@@ -23,8 +23,9 @@ namespace Linguist.VisualStudio
                                                     "HierSingleSelectionName:.resw$" } ) ]
     public sealed class LinguistPackage : AsyncPackage
     {
-        public const string PackageVersion    = "0.9.0-preview";
-        public const string PackageGuidString = "97313391-C7DF-45DB-817D-BE297DE8BD35";
+        public const string Version    = "0.9.0.0";
+        public const bool   Preview    = true;
+        public const string GuidString = "97313391-C7DF-45DB-817D-BE297DE8BD35";
 
         protected override async Task InitializeAsync ( CancellationToken cancellationToken, IProgress < ServiceProgressData > progress )
         {
