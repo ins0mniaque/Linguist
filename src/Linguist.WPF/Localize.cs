@@ -58,27 +58,6 @@ namespace Linguist.WPF
                                                   typeof ( Localize ),
                                                   new FrameworkPropertyMetadata ( null ) );
 
-        private static bool? isInDesignMode;
-        private static bool  IsInDesignMode => isInDesignMode ?? ( isInDesignMode = DesignMode ( ) ).Value;
-        private static bool  DesignMode ( ) => (bool) DesignerProperties.IsInDesignModeProperty
-                                                                        .GetMetadata ( typeof ( DependencyObject ) )
-                                                                        .DefaultValue;
-
-        internal static void AutoSetComponent ( IServiceProvider serviceProvider )
-        {
-            #if ! NET35
-            var rootProvider = (System.Xaml.IRootObjectProvider) serviceProvider.GetService ( typeof ( System.Xaml.IRootObjectProvider ) );
-            var root         = rootProvider?.RootObject as DependencyObject;
-
-            if ( root is IComponentConnector )
-            {
-                var hasComponentSet = root.ReadLocalValue ( ComponentProperty ) != DependencyProperty.UnsetValue;
-                if ( ! hasComponentSet )
-                    root.SetValue ( ComponentProperty, root.GetType ( ).Name );
-            }
-            #endif
-        }
-
         internal static object ProvideResource ( ILocalizationProvider provider, CultureInfo culture, object key, object [ ] values, Type targetType )
         {
             var start = 0;
@@ -112,7 +91,7 @@ namespace Linguist.WPF
                 return provider.GetString ( culture, name ) ?? $"[{ name }]";
 
             var resource = provider.GetObject ( culture, name );
-            if ( IsInDesignMode && resource == null )
+            if ( Designer.IsInDesignMode && resource == null )
                 throw new XamlParseException ( $"Missing { targetType.Name } resource named '{ name }'" );
 
             return ConvertTo ( resource, targetType );
@@ -122,30 +101,8 @@ namespace Linguist.WPF
         {
             var target    = pvt.TargetObject   as DependencyObject;
             var property  = pvt.TargetProperty as DependencyProperty;
-            var component = GetComponent ( target );
 
-            if ( component == null )
-            {
-                if ( IsInDesignMode )
-                    throw new XamlParseException ( "Missing Localization.Component on root component for design-time support. e.g. Localization.Component=\"UserControl1\"" );
-
-                return null;
-            }
-
-            var isComponent = target.ReadLocalValue ( ComponentProperty ) != DependencyProperty.UnsetValue;
-            if ( isComponent )
-                return GenerateKey ( component, property.Name );
-
-            var name = GetName ( target );
-            if ( string.IsNullOrEmpty ( name ) ) name = ( target as FrameworkElement )?.Name;
-            if ( string.IsNullOrEmpty ( name ) ) name = target.GetType ( ).Name;
-
-            return GenerateKey ( component, name, property.Name );
-        }
-
-        private static string GenerateKey ( params string [ ] parts )
-        {
-            return string.Join ( ".", Array.FindAll ( parts, part => ! string.IsNullOrEmpty ( part ) ) );
+            return Auto.GenerateKey ( target, property );
         }
 
         private static object ConvertTo ( object resource, Type targetType )

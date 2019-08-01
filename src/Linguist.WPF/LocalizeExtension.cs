@@ -63,7 +63,7 @@ namespace Linguist.WPF
                 if ( serviceProvider == null )
                     throw new XamlParseException ( "Missing resource key; auto-generated keys are not supported in styles. e.g. {Localize Key=Name}" );
 
-                Localize.AutoSetComponent ( serviceProvider );
+                Auto.SetComponent ( serviceProvider );
 
                 var pvt = (IProvideValueTarget) serviceProvider.GetService ( typeof ( IProvideValueTarget ) );
 
