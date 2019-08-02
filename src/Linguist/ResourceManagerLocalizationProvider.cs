@@ -29,7 +29,7 @@ namespace Linguist
             var pluralResource    = pluralResourceSet.SelectPluralResource ( name, args );
             var format            = pluralResource?.Format ?? GetString ( culture, name );
 
-            return string.Format ( provider, format, args );
+            return format != null ? string.Format ( provider, format, args ) : null;
         }
     }
 }
