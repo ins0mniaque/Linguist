@@ -50,10 +50,6 @@ namespace Linguist.WPF
 
         private static void SetDesignModeComponent ( IServiceProvider serviceProvider )
         {
-            var viewPath = Designer.GetCurrentViewPath ( );
-            if ( string.IsNullOrEmpty ( viewPath ) )
-                return;
-
             var pvt  = (IProvideValueTarget) serviceProvider.GetService ( typeof ( IProvideValueTarget ) );
             var root = pvt.TargetObject as DependencyObject;
 
@@ -68,8 +64,21 @@ namespace Linguist.WPF
             }
 
             var hasComponentSet = root.ReadLocalValue ( Localize.ComponentProperty ) != DependencyProperty.UnsetValue;
-            if ( ! hasComponentSet )
-                root.SetValue ( Localize.ComponentProperty, Path.GetFileNameWithoutExtension ( viewPath ) );
+            if ( hasComponentSet )
+                return;
+
+            var component = ( root as IComponentConnector )?.GetType ( ).Name;
+
+            if ( component == null )
+            {
+                var viewPath = Designer.GetCurrentViewPath ( );
+                if ( string.IsNullOrEmpty ( viewPath ) )
+                    return;
+
+                component = Path.GetFileNameWithoutExtension ( viewPath );
+            }
+
+            root.SetValue ( Localize.ComponentProperty, component );
         }
     }
 }
