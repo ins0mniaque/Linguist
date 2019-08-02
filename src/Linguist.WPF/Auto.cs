@@ -30,7 +30,7 @@ namespace Linguist.WPF
             return string.Join ( ".", Array.FindAll ( parts, part => ! string.IsNullOrEmpty ( part ) ) );
         }
 
-        internal static void SetComponent ( IServiceProvider serviceProvider )
+        public static void SetComponent ( IServiceProvider serviceProvider )
         {
             if ( Designer.IsInDesignMode )
             {
@@ -38,9 +38,7 @@ namespace Linguist.WPF
                 return;
             }
 
-            #if ! NET35
-            var rootProvider = (System.Xaml.IRootObjectProvider) serviceProvider.GetService ( typeof ( System.Xaml.IRootObjectProvider ) );
-            var root         = rootProvider?.RootObject as DependencyObject;
+            var root = RootObjectProvider.GetRootObject ( serviceProvider );
 
             if ( root is IComponentConnector )
             {
@@ -48,7 +46,6 @@ namespace Linguist.WPF
                 if ( ! hasComponentSet )
                     root.SetValue ( Localize.ComponentProperty, root.GetType ( ).Name );
             }
-            #endif
         }
 
         private static void SetDesignModeComponent ( IServiceProvider serviceProvider )
