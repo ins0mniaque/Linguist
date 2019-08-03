@@ -6,7 +6,6 @@
         xmlns:local="clr-namespace:Linguist.WPF.Demo"
 
         Localize.Provider="Linguist.WPF.Demo/Properties/Resources"
-        Localize.Component="MainWindow"
 
         Title="{Localize}"
         Width="480" Height="320"

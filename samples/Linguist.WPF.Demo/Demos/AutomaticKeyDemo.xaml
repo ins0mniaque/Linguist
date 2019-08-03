@@ -3,8 +3,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 
-             Localize.Provider="Linguist.WPF.Demo/Properties/Resources"
-             Localize.Component="AutomaticKeyDemo">
+             Localize.Provider="Linguist.WPF.Demo/Properties/Resources">
 
     <!-- AutomaticKeyDemo.LayoutRoot.Background -->
     <StackPanel x:Name="LayoutRoot"
