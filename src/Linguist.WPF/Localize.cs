@@ -84,15 +84,15 @@ namespace Linguist.WPF
             {
                 var arguments = new object [ values.Length - start ];
                 Array.Copy ( values, start, arguments, 0, arguments.Length );
-                return provider.Format ( culture, culture, name, arguments ) ?? $"[{ name }]";
+                return provider.Format ( culture, culture, name, arguments ) ?? Fallback.String ( name );
             }
 
             if ( targetType.IsAssignableFrom ( typeof ( string ) ) )
-                return provider.GetString ( culture, name ) ?? $"[{ name }]";
+                return provider.GetString ( culture, name ) ?? Fallback.String ( name );
 
             var resource = provider.GetObject ( culture, name );
-            if ( Designer.IsInDesignMode && resource == null )
-                throw new XamlParseException ( $"Missing { targetType.Name } resource named '{ name }'" );
+            if ( resource == null )
+                return Fallback.Object ( name, targetType );
 
             return ConvertTo ( resource, targetType );
         }
