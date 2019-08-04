@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <VersionPrefix>0.9.0</VersionPrefix>
+    <VersionSuffix>preview</VersionSuffix>
+    <Authors>Jean-Philippe Leconte</Authors>
+    <Description>Linguist Xamarin.Forms extensions provide strongly typed resource localization, formatting and pluralization directly from XAML.</Description>
+    <Copyright>Copyright © Jean-Philippe Leconte 2019</Copyright>
+    <PackageTags>Linguist;Localization;Pluralization;Xamarin;XamForms;Xamarin.Forms;XAML</PackageTags>
+    <PackageIconUrl>https://raw.githubusercontent.com/ins0mniaque/Linguist/master/content/images/icon.64x64.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/ins0mniaque/Linguist</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/ins0mniaque/Linguist</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\LICENSE" Visible="false" Pack="true" PackagePath="LICENSE" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="Xamarin.Forms.XmlnsDefinition">
+      <_Parameter1>http://xamarin.com/schemas/2014/forms</_Parameter1>
+      <_Parameter2>$(RootNamespace)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Xamarin.Forms" Version="4.1.0.618606" />
+
+    <ProjectReference Include="..\Linguist\Linguist.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\fallback.png" />
+  </ItemGroup>
+
+</Project>
