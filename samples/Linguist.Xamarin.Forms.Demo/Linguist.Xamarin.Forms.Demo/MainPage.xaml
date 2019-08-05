@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+
+             x:Class="Linguist.Xamarin.Forms.Demo.MainPage"
+
+             Localize.Provider="Linguist.Xamarin.Forms.Demo/Resources">
+
+    <StackLayout>
+
+        <!-- Place new controls here -->
+        <Label Localize.Name="Welcome"
+               Text="{Localize}"
+               HorizontalOptions="Center"
+               VerticalOptions="CenterAndExpand" />
+
+    </StackLayout>
+
+</ContentPage>
