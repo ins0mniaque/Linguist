@@ -120,6 +120,8 @@ namespace Linguist.Xamarin.Forms
 
                 multiBinding.Path   = nameof ( MultiBindingProxy.Value );
                 multiBinding.Source = source;
+
+                source.Activate ( );
             }
 
             public object Convert ( object value, Type targetType, object parameter, CultureInfo culture )
@@ -142,6 +144,8 @@ namespace Linguist.Xamarin.Forms
         private class MultiBindingProxy : BindableObject
         {
             private readonly BindingProxy [ ] bindings;
+            private bool                      active;
+            private bool                      invalidated;
 
             public MultiBindingProxy ( BindingProxy [ ] bindings )
             {
@@ -160,8 +164,22 @@ namespace Linguist.Xamarin.Forms
                                           typeof ( MultiBindingProxy ),
                                           null );
 
+            public void Activate ( )
+            {
+                active = true;
+
+                if ( invalidated )
+                    UpdateTarget ( );
+            }
+
             internal void UpdateTarget ( )
             {
+                if ( ! active )
+                {
+                    invalidated = true;
+                    return;
+                }
+
                 var oldValue = Value;
                 var newValue = new object [ bindings.Length ];
 
@@ -170,6 +188,8 @@ namespace Linguist.Xamarin.Forms
 
                 if ( oldValue == null || HasChanged ( oldValue, newValue ) )
                     Value = newValue;
+
+                invalidated = false;
             }
 
             private static bool HasChanged ( object [ ] oldValue, object [ ] newValue )
