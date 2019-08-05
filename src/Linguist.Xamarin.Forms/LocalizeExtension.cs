@@ -52,7 +52,7 @@ namespace Linguist.Xamarin.Forms
                 foreach ( var argument in arguments )
                     bindings.Add ( ProvideParameterBinding ( argument ) );
 
-            binding.EmulateMultiBinding ( bindings );
+            serviceProvider.EmulateMultiBinding ( binding, bindings );
         }
 
         protected override object ProvideResource ( object [ ] values, Type targetType, object parameter, CultureInfo culture )
