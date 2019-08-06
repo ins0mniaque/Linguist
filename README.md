@@ -7,14 +7,14 @@ An advanced strongly typed resource localizer for all .NET platforms with format
 ## NuGet Packages
 Install the following package to start using Linguist in your own app.
 
-| Platform          | Package                 | NuGet                |
-| ----------------- | ----------------------- | -------------------- |
-| .NET Standard     | [Linguist][CoreLink]    | [![CoreBadge]][Core] |
-| .NET 4.6          |                         |                      |
-| .NET 3.5          |                         |                      |
-| Universal Windows | Coming soon             |                      |
-| WPF               | [Linguist.WPF][WPFLink] | [![WPFBadge]][WPF]   |
-| Xamarin.Forms     | Coming soon             |                      |
+| Platform          | Package                          | NuGet                | Demo            |
+| ----------------- | -------------------------------- | -------------------- | --------------- |
+| .NET Standard     | [Linguist][CoreLink]             | [![CoreBadge]][Core] |                 |
+| .NET 4.6          |                                  |                      |                 |
+| .NET 3.5          |                                  |                      |                 |
+| Universal Windows | Coming soon                      |                      |                 |
+| WPF               | [Linguist.WPF][WPFLink]          | [![WPFBadge]][WPF]   | [Demo][WPFDemo] |
+| Xamarin.Forms     | [Linguist.Xamarin.Forms][XFLink] | [![XFBadge]][XF]     | [Demo][XFDemo]  |
 
 [Core]: https://www.nuget.org/packages/Linguist/
 [CoreBadge]: https://img.shields.io/nuget/v/Linguist.svg
@@ -23,6 +23,12 @@ Install the following package to start using Linguist in your own app.
 [WPF]: https://www.nuget.org/packages/Linguist.WPF/
 [WPFBadge]: https://img.shields.io/nuget/v/Linguist.WPF.svg
 [WPFLink]: https://github.com/ins0mniaque/Linguist/tree/master/src/Linguist.WPF
+[WPFDemo]: https://github.com/ins0mniaque/Linguist/tree/master/samples/Linguist.WPF.Demo
+
+[XF]: https://www.nuget.org/packages/Linguist.Xamarin.Forms/
+[XFBadge]: https://img.shields.io/nuget/v/Linguist.Xamarin.Forms.svg
+[XFLink]: https://github.com/ins0mniaque/Linguist/tree/master/src/Linguist.Xamarin.Forms
+[XFDemo]: https://github.com/ins0mniaque/Linguist/tree/master/samples/Linguist.Xamarin.Forms.Demo
 
 ## Tools
 The following tools are available for development and customization.
