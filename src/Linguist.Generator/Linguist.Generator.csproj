@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net35;net45</TargetFrameworks>
     <LangVersion>latest</LangVersion>
-    <VersionPrefix>0.9.0</VersionPrefix>
+    <VersionPrefix>0.9.1</VersionPrefix>
     <VersionSuffix>preview</VersionSuffix>
     <Authors>Jean-Philippe Leconte</Authors>
     <Description>Code generator for Linguist</Description>

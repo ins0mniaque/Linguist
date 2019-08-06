@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
-    <VersionPrefix>0.9.0</VersionPrefix>
+    <VersionPrefix>0.9.1</VersionPrefix>
     <VersionSuffix>preview</VersionSuffix>
     <Authors>Jean-Philippe Leconte</Authors>
     <Description>Linguist Xamarin.Forms extensions provide strongly typed resource localization, formatting and pluralization directly from XAML.</Description>
