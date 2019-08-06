@@ -31,7 +31,9 @@ namespace Linguist.Xamarin.Forms
 
             if ( KeyPath != null )
             {
-                bindings.Add ( ProvideParameterBinding ( KeyPath ) );
+                ResolveBindingSource ( KeyPath, serviceProvider );
+
+                bindings.Add ( KeyPath );
                 resource.Key = null;
             }
             else if ( Key == null )
@@ -46,11 +48,11 @@ namespace Linguist.Xamarin.Forms
                 resource.Provider = Auto.GetProvider ( serviceProvider );
 
             if ( resource.Provider == null )
-                throw new Exception ( "Missing Localize.Provider on root element, or not set before first {Localize}." );
+                throw XamlParseException ( serviceProvider, "Missing Localize.Provider on root element, or not set before first {Localize}." );
 
             if ( arguments != null )
                 foreach ( var argument in arguments )
-                    bindings.Add ( ProvideParameterBinding ( argument ) );
+                    bindings.Add ( argument );
 
             serviceProvider.EmulateMultiBinding ( binding, bindings );
         }
