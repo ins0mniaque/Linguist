@@ -3,10 +3,14 @@ using Xamarin.Forms.Xaml;
 
 namespace Linguist.Xamarin.Forms
 {
-    [ TypeConversion ( typeof ( BindingBase ) ) ]
-    public class BindingBaseTypeConverter : TypeConverter
+    public static class BindingSyntax
     {
-        public override object ConvertFromInvariantString ( string path )
+        public static BindingBase From ( object value )
+        {
+            return value as BindingBase ?? Parse ( value?.ToString ( ) );
+        }
+
+        public static BindingBase Parse ( string path )
         {
             path = ParseSource ( path, out var source );
 
@@ -55,6 +59,15 @@ namespace Linguist.Xamarin.Forms
 
             token = path.Substring ( 1 );
             return ".";
+        }
+
+        [ TypeConversion ( typeof ( BindingBase ) ) ]
+        public class TypeConverter : global::Xamarin.Forms.TypeConverter
+        {
+            public override object ConvertFromInvariantString ( string path )
+            {
+                return Parse ( path );
+            }
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Linguist.Xamarin.Forms
 
         public string Key { get; set; }
 
-        [ TypeConverter ( typeof ( BindingBaseTypeConverter ) ) ]
+        [ TypeConverter ( typeof ( BindingSyntax.TypeConverter ) ) ]
         public BindingBase KeyPath { get; set; }
 
         public Type Type { get; set; }
