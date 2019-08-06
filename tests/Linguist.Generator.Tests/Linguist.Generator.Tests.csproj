@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.0;net452</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
@@ -12,10 +12,11 @@
     <ProjectReference Include="..\..\src\Linguist.Generator\Linguist.Generator.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <PackageReference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform" Version="2.0.1" />
 
     <ProjectReference Include="..\..\src\Linguist.WPF\Linguist.WPF.csproj" />
+    <ProjectReference Include="..\..\src\Linguist.Xamarin.Forms\Linguist.Xamarin.Forms.csproj" />
   </ItemGroup>
 
   <ItemGroup>

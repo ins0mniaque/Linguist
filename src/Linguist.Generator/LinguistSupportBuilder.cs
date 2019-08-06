@@ -98,7 +98,8 @@ namespace Linguist.Generator
         public IResourceNamingStrategy ResourceNamingStrategy            { get; } = Resources.ResourceNamingStrategy.Default;
         public CodeExpression          ResourceNamingStrategyInitializer { get; }
 
-        public bool GenerateWPFSupport { get; set; }
+        public bool GenerateWPFSupport          { get; set; }
+        public bool GenerateXamarinFormsSupport { get; set; }
 
         public CompilerError [ ] GetErrors ( )
         {
@@ -139,6 +140,8 @@ namespace Linguist.Generator
 
             if ( GenerateWPFSupport )
                 GenerateWPFTypedLocalizeExtension ( validResources )?.AddTo ( codeNamespace );
+            else if ( GenerateXamarinFormsSupport )
+                GenerateXamarinFormsTypedLocalizeExtension ( validResources )?.AddTo ( codeNamespace );
 
             CodeGenerator.ValidateIdentifiers ( codeCompileUnit );
 
@@ -440,6 +443,25 @@ namespace Linguist.Generator
 
         protected virtual CodeTypeDeclaration GenerateWPFTypedLocalizeExtension ( IList < Entry > entries )
         {
+            return GenerateTypedLocalizeExtension ( entries,
+                                                    "Linguist.WPF.TypedLocalizeExtension",
+                                                    true,
+                                                    "System.Windows.Data.BindingBase",
+                                                    Code.Attribute < TypeConverterAttribute > ( Code.TypeOf ( Code.TypeRef ( "Linguist.WPF.BindingSyntax+TypeConverter" ) ) ) );
+        }
+
+        protected virtual CodeTypeDeclaration GenerateXamarinFormsTypedLocalizeExtension ( IList < Entry > entries )
+        {
+            return GenerateTypedLocalizeExtension ( entries,
+                                                    "Linguist.Xamarin.Forms.TypedLocalizeExtension",
+                                                    false,
+                                                    "Xamarin.Forms.BindingBase",
+                                                    Code.Attribute ( Code.TypeRef ( "Xamarin.Forms.TypeConverterAttribute" ),
+                                                                     Code.TypeOf ( Code.TypeRef ( "Linguist.Xamarin.Forms.BindingSyntax+TypeConverter" ) ) ) );
+        }
+
+        protected virtual CodeTypeDeclaration GenerateTypedLocalizeExtension ( IList < Entry > entries, string extensionType, bool generateConstructors, string bindingType, CodeAttributeDeclaration bindingTypeConverter )
+        {
             if ( ! CodeDomProvider.Supports ( GeneratorSupport.NestedTypes ) )
                 return null;
 
@@ -449,7 +471,7 @@ namespace Linguist.Generator
                                      .AddTo            ( type );
             var keyEnumTypeRef = Code.TypeRef ( ResourceKeyEnumName, default );
 
-            type.BaseTypes.Add ( Code.TypeRef ( "Linguist.WPF.TypedLocalizeExtension",
+            type.BaseTypes.Add ( Code.TypeRef ( extensionType,
                                                 CodeTypeReferenceOptions.GlobalReference,
                                                 Code.TypeRef ( type.Name + "+" + ResourceKeyEnumName, default ) ) );
 
@@ -459,16 +481,19 @@ namespace Linguist.Generator
                                                    .Distinct ( )
                                                    .OrderBy  ( numberOfArguments => numberOfArguments );
 
-            foreach ( var numberOfArguments in distinctNumberOfArguments )
+            if ( generateConstructors )
             {
-                var ctor = new CodeConstructor ( ) { Attributes = MemberAttributes.Public }.AddTo ( type );
-
-                for ( var argument = 0; argument < numberOfArguments; argument++ )
+                foreach ( var numberOfArguments in distinctNumberOfArguments )
                 {
-                    var parameterName = Format ( CultureInfo.InvariantCulture, FormatMethodParameterName, argument );
+                    var ctor = new CodeConstructor ( ) { Attributes = MemberAttributes.Public }.AddTo ( type );
 
-                    ctor.Parameters         .Add ( objectType.Parameter ( parameterName ) );
-                    ctor.BaseConstructorArgs.Add ( Code.Variable        ( parameterName ) );
+                    for ( var argument = 0; argument < numberOfArguments; argument++ )
+                    {
+                        var parameterName = Format ( CultureInfo.InvariantCulture, FormatMethodParameterName, argument );
+
+                        ctor.Parameters         .Add ( objectType.Parameter ( parameterName ) );
+                        ctor.BaseConstructorArgs.Add ( Code.Variable        ( parameterName ) );
+                    }
                 }
             }
 
@@ -478,11 +503,13 @@ namespace Linguist.Generator
                 .Set   ( (set, value) => set.Add    ( Code.Assign ( Code.This ( ).Field ( "_key" ), value ) ) )
                 .AddTo ( type );
 
-            Code.CreateField    ( Code.TypeRef ( "System.Windows.Data.BindingBase" ), "_keyPath", MemberAttributes.Private ).AddTo ( type );
-            Code.CreateProperty ( Code.TypeRef ( "System.Windows.Data.BindingBase" ), "KeyPath", MemberAttributes.Public | MemberAttributes.Override )
+            var bindingTypeRef = Code.TypeRef ( bindingType );
+
+            Code.CreateField    ( bindingTypeRef, "_keyPath", MemberAttributes.Private ).AddTo ( type );
+            Code.CreateProperty ( bindingTypeRef, "KeyPath", MemberAttributes.Public | MemberAttributes.Override )
                 .Get        ( get          => get.Return ( Code.This ( ).Field ( "_keyPath" ) ) )
                 .Set        ( (set, value) => set.Add    ( Code.Assign ( Code.This ( ).Field ( "_keyPath" ), value ) ) )
-                .Attributed ( Code.Attribute < TypeConverterAttribute > ( Code.TypeOf ( Code.TypeRef ( "Linguist.WPF.BindingBaseTypeConverter" ) ) ) )
+                .Attributed ( bindingTypeConverter )
                 .AddTo      ( type );
 
             Code.CreateField    < Type > ( "_type", MemberAttributes.Private ).AddTo ( type );

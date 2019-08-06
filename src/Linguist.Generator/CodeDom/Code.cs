@@ -155,6 +155,29 @@ namespace Linguist.CodeDom
             return new CodeCastExpression ( TypeRef < T > ( ), expression );
         }
 
+        public static CodeAttributeDeclaration Attribute ( CodeTypeReference type )
+        {
+            return new CodeAttributeDeclaration ( type );
+        }
+
+        public static CodeAttributeDeclaration Attribute ( CodeTypeReference type, params object [ ] arguments )
+        {
+            var attribute = new CodeAttributeDeclaration ( type );
+            foreach ( var argument in arguments )
+                attribute.Arguments.Add ( new CodeAttributeArgument ( Constant ( argument ) ) );
+
+            return attribute;
+        }
+
+        public static CodeAttributeDeclaration Attribute ( CodeTypeReference type, params CodeExpression [ ] arguments )
+        {
+            var attribute = new CodeAttributeDeclaration ( type );
+            foreach ( var argument in arguments )
+                attribute.Arguments.Add ( new CodeAttributeArgument ( argument ) );
+
+            return attribute;
+        }
+
         public static CodeAttributeDeclaration Attribute < T > ( ) where T : Attribute
         {
             return new CodeAttributeDeclaration ( TypeRef < T > ( ) );
@@ -165,6 +188,15 @@ namespace Linguist.CodeDom
             var attribute = new CodeAttributeDeclaration ( TypeRef < T > ( ) );
             foreach ( var argument in arguments )
                 attribute.Arguments.Add ( new CodeAttributeArgument ( Constant ( argument ) ) );
+
+            return attribute;
+        }
+
+        public static CodeAttributeDeclaration Attribute < T > ( params CodeExpression [ ] arguments ) where T : Attribute
+        {
+            var attribute = new CodeAttributeDeclaration ( TypeRef < T > ( ) );
+            foreach ( var argument in arguments )
+                attribute.Arguments.Add ( new CodeAttributeArgument ( argument ) );
 
             return attribute;
         }
@@ -184,15 +216,6 @@ namespace Linguist.CodeDom
 
             attribute.Arguments.Add ( new CodeAttributeArgument ( name0, Constant ( arg0 ) ) );
             attribute.Arguments.Add ( new CodeAttributeArgument ( name1, Constant ( arg1 ) ) );
-
-            return attribute;
-        }
-
-        public static CodeAttributeDeclaration Attribute < T > ( params CodeExpression [ ] arguments ) where T : Attribute
-        {
-            var attribute = new CodeAttributeDeclaration ( TypeRef < T > ( ) );
-            foreach ( var argument in arguments )
-                attribute.Arguments.Add ( new CodeAttributeArgument ( argument ) );
 
             return attribute;
         }
