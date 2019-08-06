@@ -9,7 +9,7 @@ namespace Linguist.WPF
 {
     public class LocalizeExtension : ResourceMarkupExtension
     {
-        public LocalizeExtension ( )                                                                                                                                                                                                                                                                              : base ( ) { }
+        public LocalizeExtension ( )                                                                                                                                                                                                                                                                              : base ( null ) { }
         public LocalizeExtension ( object arg0 )                                                                                                                                                                                                                                                                  : base ( arg0 ) { }
         public LocalizeExtension ( object arg0, object arg1 )                                                                                                                                                                                                                                                     : base ( arg0, arg1 ) { }
         public LocalizeExtension ( object arg0, object arg1, object arg2 )                                                                                                                                                                                                                                        : base ( arg0, arg1, arg2 ) { }
@@ -36,9 +36,9 @@ namespace Linguist.WPF
         [ TypeConverter ( typeof ( LocalizationProviderTypeConverter ) ) ]
         public ILocalizationProvider Provider { get; set; }
 
-        public object Key { get; set; }
+        public string Key { get; set; }
 
-        [ TypeConverter ( typeof ( BindingBaseTypeConverter ) ) ]
+        [ TypeConverter ( typeof ( BindingSyntax.TypeConverter ) ) ]
         public BindingBase KeyPath { get; set; }
 
         public Type Type { get; set; }
@@ -49,13 +49,13 @@ namespace Linguist.WPF
             binding.ConverterParameter = Key;
 
             if ( Provider == null )
-                binding.Bindings.Add ( ProvideInheritanceBinding ( Localize.ProviderProperty ) );
+                binding.Bindings.Add ( InheritanceBinding ( Localize.ProviderProperty ) );
 
-            binding.Bindings.Add ( ProvideInheritanceBinding ( FrameworkElement.LanguageProperty ) );
+            binding.Bindings.Add ( InheritanceBinding ( FrameworkElement.LanguageProperty ) );
 
             if ( KeyPath != null )
             {
-                binding.Bindings.Add ( ProvideParameterBinding ( KeyPath ) );
+                binding.Bindings.Add ( KeyPath );
                 binding.ConverterParameter = null;
             }
             else if ( Key == null )
@@ -70,8 +70,9 @@ namespace Linguist.WPF
                 binding.ConverterParameter = new ProvideValueTarget ( pvt.TargetObject, pvt.TargetProperty );
             }
 
-            foreach ( var parameter in arguments )
-                binding.Bindings.Add ( ProvideParameterBinding ( parameter ) );
+            if ( arguments != null )
+                foreach ( var argument in arguments )
+                    binding.Bindings.Add ( argument );
         }
 
         protected override object ProvideResource ( object [ ] values, Type targetType, object parameter, CultureInfo culture )

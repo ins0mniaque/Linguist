@@ -28,16 +28,17 @@ namespace Linguist.WPF
             binding.Converter          = this;
             binding.ConverterParameter = Key;
 
-            binding.Bindings.Add ( ProvideInheritanceBinding ( FrameworkElement.LanguageProperty ) );
+            binding.Bindings.Add ( InheritanceBinding ( FrameworkElement.LanguageProperty ) );
 
             if ( KeyPath != null )
             {
-                binding.Bindings.Add ( ProvideParameterBinding ( KeyPath ) );
+                binding.Bindings.Add ( KeyPath );
                 binding.ConverterParameter = null;
             }
 
-            foreach ( var parameter in arguments )
-                binding.Bindings.Add ( ProvideParameterBinding ( parameter ) );
+            if ( arguments != null )
+                foreach ( var argument in arguments )
+                    binding.Bindings.Add ( argument );
         }
 
         protected override object ProvideResource ( object [ ] values, Type targetType, object parameter, CultureInfo culture )
