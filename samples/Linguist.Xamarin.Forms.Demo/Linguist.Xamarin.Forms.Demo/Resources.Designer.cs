@@ -61,6 +61,33 @@ namespace Linguist.Xamarin.Forms.Demo {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Welcome.
+        /// </summary>
+        internal static string MainPage_Arg0_Text {
+            get {
+                return ResourceManager.GetString("MainPage.Arg0.Text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Linguist.
+        /// </summary>
+        internal static string MainPage_Arg1_Text {
+            get {
+                return ResourceManager.GetString("MainPage.Arg1.Text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} to {1}!.
+        /// </summary>
+        internal static string MainPage_Formatted_Text {
+            get {
+                return ResourceManager.GetString("MainPage.Formatted.Text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Welcome to Xamarin.Forms!.
         /// </summary>
         internal static string MainPage_Welcome_Text {

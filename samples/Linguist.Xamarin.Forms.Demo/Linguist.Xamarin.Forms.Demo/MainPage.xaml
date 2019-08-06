@@ -6,13 +6,26 @@
 
              Localize.Provider="Linguist.Xamarin.Forms.Demo/Resources">
 
-    <StackLayout>
+    <StackLayout HorizontalOptions="Center"
+                 VerticalOptions="CenterAndExpand">
 
-        <!-- Place new controls here -->
         <Label Localize.Name="Welcome"
-               Text="{Localize}"
-               HorizontalOptions="Center"
-               VerticalOptions="CenterAndExpand" />
+               Text="{Localize}" />
+
+        <Entry x:Name="Arg0" Text="{Localize}" />
+        <Entry x:Name="Arg1" Text="{Localize}" />
+
+        <!-- Short binding syntax -->
+        <Label x:Name="Formatted"
+               LineBreakMode="WordWrap"
+               Text="{Localize #Arg0.Text,
+                               #Arg1.Text}" />
+
+        <!-- Conventional binding syntax -->
+        <Label Localize.Name="Formatted"
+               LineBreakMode="WordWrap"
+               Text="{Localize Arg0={Binding Text, Source={x:Reference Arg0}},
+                               Arg1={Binding Text, Source={x:Reference Arg1}}}" />
 
     </StackLayout>
 
