@@ -1,67 +1,37 @@
 ﻿using System.Collections;
 using System.Globalization;
-using System.Resources;
 
 using Xunit;
+
+using Linguist.Resources.Dictionary;
 
 namespace Linguist.Resources.Tests
 {
     public class ResourceManagerLocalizerFixture
     {
-        private class en_US : IResourceReader
-        {
-            public void Close   ( ) { }
-            public void Dispose ( ) { }
-
-            public IDictionaryEnumerator GetEnumerator ( )
-            {
-                return new Hashtable ( )
-                {
-                    { "Items",      "{0} items"  },
-                    { "Items.Zero", "No items"   },
-                    { "Items.One",  "{0} item"   },
-                    { "Pixels",     "{0} pixels" },
-                    { "Pixels.One", "{0} pixel"  }
-                }.GetEnumerator ( );
-            }
-
-            IEnumerator IEnumerable.GetEnumerator ( ) => GetEnumerator ( );
-        }
-
-        private class fr_FR : IResourceReader
-        {
-            public void Close   ( ) { }
-            public void Dispose ( ) { }
-
-            public IDictionaryEnumerator GetEnumerator ( )
-            {
-                return new Hashtable ( )
-                {
-                    { "Items",      "{0} items"  },
-                    { "Items.Zero", "Aucun item" },
-                    { "Items.One",  "{0} item"   },
-                    { "Pixels",     "{0} pixels" },
-                    { "Pixels.One", "{0} pixel"  }
-                }.GetEnumerator ( );
-            }
-
-            IEnumerator IEnumerable.GetEnumerator ( ) => GetEnumerator ( );
-        }
-
-        private class InMemoryResourceManager : ResourceManager
-        {
-            protected override ResourceSet InternalGetResourceSet ( CultureInfo culture, bool createIfNotExists, bool tryParents )
-            {
-                if ( culture.Name == "en-US" ) return new ResourceSet ( new en_US ( ) );
-                if ( culture.Name == "fr-FR" ) return new ResourceSet ( new fr_FR ( ) );
-
-                return null;
-            }
-        }
-
         public ResourceManagerLocalizerFixture ( )
         {
-            Localizer = new ResourceManagerLocalizer ( new InMemoryResourceManager ( ) );
+            var resourceManager = new DictionaryResourceManager ( "en-US" );
+
+            resourceManager.Add ( "en-US", new Hashtable ( )
+            {
+                { "Items",      "{0} items"  },
+                { "Items.Zero", "No items"   },
+                { "Items.One",  "{0} item"   },
+                { "Pixels",     "{0} pixels" },
+                { "Pixels.One", "{0} pixel"  }
+            } );
+
+            resourceManager.Add ( "fr-FR", new Hashtable ( )
+            {
+                { "Items",      "{0} items"  },
+                { "Items.Zero", "Aucun item" },
+                { "Items.One",  "{0} item"   },
+                { "Pixels",     "{0} pixels" },
+                { "Pixels.One", "{0} pixel"  }
+            } );
+
+            Localizer = new ResourceManagerLocalizer ( resourceManager );
         }
 
         public ResourceManagerLocalizer Localizer { get; }
