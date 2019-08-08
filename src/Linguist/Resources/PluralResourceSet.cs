@@ -1,90 +1,37 @@
-﻿using System.Collections.Generic;
-
-namespace Linguist.Resources
+﻿namespace Linguist.Resources
 {
     public class PluralResourceSet
     {
-        private readonly PluralRules                              pluralRules;
-        private readonly IDictionary < string, FormatString [ ] > pluralResources;
+        private readonly PluralRules                          pluralRules;
+        private readonly Cache < string, PluralFormatString > resources;
 
         public PluralResourceSet ( PluralRules rules, int capacity )
         {
-            pluralRules     = rules;
-            pluralResources = new Dictionary < string, FormatString [ ] > ( capacity );
+            pluralRules = rules;
+            resources   = new Cache < string, PluralFormatString > ( capacity );
         }
 
-        public void AddPluralResource ( string name, FormatString defaultFormatString, ICollection < FormatString > pluralFormatStrings )
+        public void Add ( string name, PluralFormatString pluralFormatString )
         {
-            var formatStrings = new FormatString [ pluralFormatStrings.Count + 1 ];
-
-            formatStrings [ 0 ] = defaultFormatString;
-
-            pluralFormatStrings.CopyTo ( formatStrings, 1 );
-
-            pluralResources.Add ( name, formatStrings );
+            resources.Add ( name, pluralFormatString );
         }
 
-        public FormatString SelectPluralResource ( string name, params object [ ] args )
+        public void Remove ( string name )
         {
-            if ( ! pluralResources.TryGetValue ( name, out var pluralResource ) )
+            resources.Remove ( name );
+        }
+
+        public void Clear ( )
+        {
+            resources.Clear ( );
+        }
+
+        public FormatString GetFormat ( string name, params object [ ] args )
+        {
+            if ( ! resources.TryGet ( name, out var pluralFormatString ) )
                 return null;
 
-            var defaultFormatString = pluralResource [ 0 ];
-
-            var pluralForms = pluralRules.SelectPluralForms ( defaultFormatString, args );
-
-            ApplyPluralRangeRules ( defaultFormatString.Arguments, pluralForms );
-
-            for ( var index = 1; index < pluralResource.Length; index++ )
-            {
-                var candidateFormatString = pluralResource [ index ];
-                if ( Matches ( candidateFormatString, pluralForms ) )
-                    return candidateFormatString;
-            }
-
-            return defaultFormatString;
-        }
-
-        private void ApplyPluralRangeRules ( FormatString.Argument [ ] arguments, PluralForm [ ] pluralForms )
-        {
-            for ( var index = 0; index < arguments.Length; index++ )
-            {
-                var argument = arguments [ index ];
-                if ( argument.PluralRangeForm == null )
-                    continue;
-
-                var start     = pluralForms [ index ];
-                var end       = pluralForms [ index + 1 ];
-                var rangeForm = pluralRules.PluralFormRange.SelectPluralForm ( start, end );
-
-                pluralForms [ index++ ] = PluralForm.Other;
-                pluralForms [ index   ] = rangeForm;
-            }
-        }
-
-        private static bool Matches ( FormatString formatString, PluralForm [ ] pluralForms )
-        {
-            var arguments = formatString.Arguments;
-
-            for ( var index = 0; index < pluralForms.Length; index++ )
-            {
-                var availablePluralForms = PluralForm.Other;
-                if ( index < arguments.Length )
-                    availablePluralForms = arguments [ index ].AvailablePluralForms;
-
-                if ( ! Matches ( availablePluralForms, pluralForms [ index ] ) )
-                    return false;
-            }
-
-            return true;
-        }
-
-        private static bool Matches ( PluralForm availablePluralForms, PluralForm pluralForm )
-        {
-            if ( pluralForm == PluralForm.Other )
-                return availablePluralForms == PluralForm.Other;
-
-            return availablePluralForms.HasBitMask ( pluralForm );
+            return pluralFormatString.ApplyPluralRules ( pluralRules, args );
         }
     }
 }

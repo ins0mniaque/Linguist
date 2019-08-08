@@ -119,7 +119,7 @@ namespace Linguist.Generator
 
             var support = GenerateClass ( ).AddTo ( codeNamespace );
 
-            GenerateClassMembers ( out var localizationProvider ).AddRangeTo ( support );
+            GenerateClassMembers ( out var localizer ).AddRangeTo ( support );
 
             foreach ( var entry in validResources )
                 GenerateProperty ( entry.Key, entry.Name, entry.Resource ).AddTo ( support );
@@ -133,7 +133,7 @@ namespace Linguist.Generator
                 var methodName = entry.Key + FormatMethodSuffix;
                 var isUnique   = ! support.Members.Contains ( methodName );
                 if ( isUnique && CodeDomProvider.IsValidIdentifier ( methodName ) )
-                    GenerateFormatMethod ( localizationProvider, methodName, entry.Key, entry.Name, resource, entry.NumberOfArguments ).AddTo ( support );
+                    GenerateFormatMethod ( localizer, methodName, entry.Key, entry.Name, resource, entry.NumberOfArguments ).AddTo ( support );
                 else
                     resource.ErrorText = Format ( CannotCreateFormatMethod, methodName, entry.Name );
             }
@@ -161,8 +161,8 @@ namespace Linguist.Generator
         {
             yield return ResourceManagerPropertyName;
             yield return ResourceManagerFieldName;
-            yield return LocalizationProviderPropertyName;
-            yield return LocalizationProviderFieldName;
+            yield return LocalizerPropertyName;
+            yield return LocalizerFieldName;
             yield return CultureInfoPropertyName;
             yield return CultureInfoFieldName;
             yield return NotifyCultureChangedMethodName;
@@ -195,7 +195,7 @@ namespace Linguist.Generator
                                      Code.Attribute      < SuppressMessageAttribute     > ( "Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces" ) );
         }
 
-        protected virtual IEnumerable < CodeTypeMember > GenerateClassMembers ( out CodeExpression localizationProvider )
+        protected virtual IEnumerable < CodeTypeMember > GenerateClassMembers ( out CodeExpression localizer )
         {
             var editorBrowsable = Code.Attribute < EditorBrowsableAttribute > ( Code.Type < EditorBrowsableState > ( )
                                                                                     .Field ( nameof ( EditorBrowsableState.Advanced ) ) );
@@ -210,10 +210,10 @@ namespace Linguist.Generator
                       .Concat ( new [ ] { cultureField } );
 
             if ( ResourceNamingStrategy != null )
-                members = members.Concat ( GenerateLocalizationProviderSingleton ( resourceManager, out localizationProvider ) )
-                                 .Concat ( new [ ] { GenerateLocalizationProviderProperty  ( localizationProvider ) } );
+                members = members.Concat ( GenerateLocalizerSingleton ( resourceManager, out localizer ) )
+                                 .Concat ( new [ ] { GenerateLocalizerProperty ( localizer ) } );
             else
-                localizationProvider = null;
+                localizer = null;
 
             return members;
         }
@@ -297,23 +297,23 @@ namespace Linguist.Generator
                        .AddSummary     ( ResourceManagerPropertySummary );
         }
 
-        protected virtual IEnumerable < CodeTypeMember > GenerateLocalizationProviderSingleton ( CodeExpression resourceManager, out CodeExpression localizationProvider )
+        protected virtual IEnumerable < CodeTypeMember > GenerateLocalizerSingleton ( CodeExpression resourceManager, out CodeExpression localizer )
         {
-            var type        = ResourceSet.LocalizationProviderType;
-            var initializer = ResourceSet.LocalizationProviderInitializer ( resourceManager, ResourceNamingStrategyInitializer );
+            var type        = ResourceSet.LocalizerType;
+            var initializer = ResourceSet.LocalizerInitializer ( resourceManager, ResourceNamingStrategyInitializer );
 
             return GenerateSingleton ( type,
-                                       LocalizationProviderFieldName,
+                                       LocalizerFieldName,
                                        initializer,
                                        false,
-                                       out localizationProvider );
+                                       out localizer );
         }
 
-        protected virtual CodeMemberProperty GenerateLocalizationProviderProperty ( CodeExpression localizationProvider )
+        protected virtual CodeMemberProperty GenerateLocalizerProperty ( CodeExpression localizer )
         {
-            return Code.CreateProperty ( ResourceSet.LocalizationProviderType, LocalizationProviderPropertyName, AccessModifiers | MemberAttributes.Static, false )
-                       .Get            ( get => get.Return ( localizationProvider ) )
-                       .AddSummary     ( LocalizationProviderPropertySummary );
+            return Code.CreateProperty ( ResourceSet.LocalizerType, LocalizerPropertyName, AccessModifiers | MemberAttributes.Static, false )
+                       .Get            ( get => get.Return ( localizer ) )
+                       .AddSummary     ( LocalizerPropertySummary );
         }
 
         protected virtual IEnumerable < CodeTypeMember > GenerateSingleton ( CodeTypeReference type, string fieldName, CodeExpression initializer, bool isFirst, out CodeExpression singleton )
@@ -365,7 +365,7 @@ namespace Linguist.Generator
                        .AddSummary     ( summary + FormatResourceComment ( resource.Comment ) );
         }
 
-        protected virtual CodeMemberMethod GenerateFormatMethod ( CodeExpression localizationProvider, string methodName, string propertyName, string resourceName, StringResource resource, int numberOfArguments )
+        protected virtual CodeMemberMethod GenerateFormatMethod ( CodeExpression localizer, string methodName, string propertyName, string resourceName, StringResource resource, int numberOfArguments )
         {
             if ( resource == null )
                 throw new ArgumentNullException ( nameof ( resource ) );
@@ -381,22 +381,22 @@ namespace Linguist.Generator
             var format           = Code.Type < string > ( ).Method ( nameof ( string.Format ) );
             var formatExpression = (CodeExpression) Code.Access ( AccessModifiers ).Property ( propertyName );
 
-            if ( localizationProvider != null )
+            if ( localizer != null )
             {
-                format           = localizationProvider.Method ( nameof ( ILocalizationProvider.Format ) );
+                format           = localizer.Method ( nameof ( ILocalizer.Format ) );
                 formatExpression = Code.Constant ( resourceName );
             }
 
             if ( numberOfArguments > 3 )
                 formatMethod.Attributed ( Code.Attribute < SuppressMessageAttribute > ( "Microsoft.Design", "CA1025:ReplaceRepetitiveArgumentsWithParamsArray" ) );
 
-            var initialArguments = localizationProvider != null ? 3 : 2;
+            var initialArguments = localizer != null ? 3 : 2;
 
             var parameters = new CodeExpression [ initialArguments + numberOfArguments ];
 
             parameters [ 0 ] = Code.Access ( AccessModifiers ).Field ( CultureInfoFieldName );
 
-            if ( localizationProvider != null )
+            if ( localizer != null )
             {
                 parameters [ 1 ] = Code.Access ( AccessModifiers ).Field ( CultureInfoFieldName );
                 parameters [ 2 ] = formatExpression;
@@ -518,8 +518,8 @@ namespace Linguist.Generator
                 .Set   ( (set, value) => set.Add    ( Code.Assign ( Code.This ( ).Field ( "_type" ), value ) ) )
                 .AddTo ( type );
 
-            Code.CreateProperty ( Code.TypeRef < ILocalizationProvider > ( ), "Provider", MemberAttributes.Family | MemberAttributes.Override, false )
-                .Get   ( get => get.Return ( Code.Type ( ClassName, default ).Property ( LocalizationProviderPropertyName ) ) )
+            Code.CreateProperty ( Code.TypeRef < ILocalizer > ( ), "Localizer", MemberAttributes.Family | MemberAttributes.Override, false )
+                .Get   ( get => get.Return ( Code.Type ( ClassName, default ).Property ( LocalizerPropertyName ) ) )
                 .AddTo ( type );
 
             var translator  = Code.CreateField < string [ ] > ( ResourceKeyTranslatorFieldName, MemberAttributes.Private | MemberAttributes.Static )

@@ -19,8 +19,8 @@ namespace Linguist.Xamarin.Forms
         public abstract BindingBase KeyPath { get; set; }
         public abstract Type        Type    { get; set; }
 
-        protected abstract ILocalizationProvider Provider  { get; }
-        protected abstract string                KeyToName ( TKey key );
+        protected abstract ILocalizer Localizer { get; }
+        protected abstract string     KeyToName ( TKey key );
 
         protected override void SetupBinding ( Binding binding, IServiceProvider serviceProvider )
         {
@@ -55,7 +55,7 @@ namespace Linguist.Xamarin.Forms
             else if ( parameter is TKey key )
                 parameter = KeyToName ( key );
 
-            return Localize.ProvideResource ( Provider, culture, parameter?.ToString ( ), values, Type ?? targetType );
+            return Localize.ProvideResource ( Localizer, culture, parameter?.ToString ( ), values, Type ?? targetType );
         }
 
         private static bool TryParseKey ( object keyPath, out TKey key )

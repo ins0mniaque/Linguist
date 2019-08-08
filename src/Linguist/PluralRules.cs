@@ -59,5 +59,36 @@ namespace Linguist
         public PluralFormSelector      CardinalForm    { get; }
         public PluralFormSelector      OrdinalForm     { get; }
         public PluralFormRangeSelector PluralFormRange { get; }
+
+        public PluralForm [ ] SelectPluralForms ( FormatString formatString, object [ ] arguments )
+        {
+            return SelectPluralForms ( null, formatString, arguments );
+        }
+
+        public PluralForm [ ] SelectPluralForms ( IFormatProvider provider, FormatString formatString, object [ ] arguments )
+        {
+            var selection = new PluralForm [ arguments.Length ];
+            var length    = Math.Min ( formatString.Arguments.Length,
+                                       arguments.Length );
+
+            for ( var index = 0; index < length; index++ )
+            {
+                var argument = formatString.Arguments [ index ];
+                if ( argument.NumberArgumentHole == null )
+                    continue;
+
+                var number = FormattedNumber.Parse ( provider ?? Culture, argument.NumberArgumentHole, arguments [ index ] );
+                if ( number == null )
+                    continue;
+
+                var numberForm = CardinalForm;
+                if ( argument.NumberForm == NumberForm.Ordinal )
+                    numberForm = OrdinalForm;
+
+                selection [ index ] = numberForm.SelectPluralForm ( number.Value, argument.AvailablePluralForms );
+            }
+
+            return selection;
+        }
     }
 }

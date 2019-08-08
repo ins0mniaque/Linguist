@@ -9,20 +9,20 @@ namespace Linguist.Xamarin.Forms
 
     public partial class Localize
     {
-        [ TypeConverter ( typeof ( LocalizationProviderTypeConverter ) ) ]
-        public static ILocalizationProvider GetProvider ( BindableObject element )
+        [ TypeConverter ( typeof ( LocalizerTypeConverter ) ) ]
+        public static ILocalizer GetLocalizer ( BindableObject element )
         {
-            return (ILocalizationProvider) element.GetValue ( ProviderProperty );
+            return (ILocalizer) element.GetValue ( LocalizerProperty );
         }
 
-        public static void SetProvider ( BindableObject element, ILocalizationProvider provider )
+        public static void SetLocalizer ( BindableObject element, ILocalizer localizer )
         {
-            element.SetValue ( ProviderProperty, provider );
+            element.SetValue ( LocalizerProperty, localizer );
         }
 
-        public static readonly BindableProperty ProviderProperty =
-            BindableProperty.CreateAttached ( "Provider",
-                                              typeof ( ILocalizationProvider ),
+        public static readonly BindableProperty LocalizerProperty =
+            BindableProperty.CreateAttached ( "Localizer",
+                                              typeof ( ILocalizer ),
                                               typeof ( Localize ),
                                               null );
 
@@ -58,14 +58,14 @@ namespace Linguist.Xamarin.Forms
                                               typeof ( Localize ),
                                               null );
 
-        internal static object ProvideResource ( ILocalizationProvider provider, CultureInfo culture, string key, object [ ] values, Type targetType )
+        internal static object ProvideResource ( ILocalizer localizer, CultureInfo culture, string key, object [ ] values, Type targetType )
         {
             var start = 0;
 
-            if ( values.Length > start && provider == null )
-                provider = values [ start++ ] as ILocalizationProvider;
+            if ( values.Length > start && localizer == null )
+                localizer = values [ start++ ] as ILocalizer;
 
-            if ( provider == null )
+            if ( localizer == null )
                 return null;
 
             if ( values.Length > start && values [ start ] is CultureInfo cultureOverride )
@@ -83,13 +83,13 @@ namespace Linguist.Xamarin.Forms
             {
                 var arguments = new object [ values.Length - start ];
                 Array.Copy ( values, start, arguments, 0, arguments.Length );
-                return provider.Format ( culture, culture, name, arguments ) ?? Fallback.String ( name );
+                return localizer.Format ( culture, culture, name, arguments ) ?? Fallback.String ( name );
             }
 
             if ( targetType.IsAssignableFrom ( typeof ( string ) ) )
-                return provider.GetString ( culture, name ) ?? Fallback.String ( name );
+                return localizer.GetString ( culture, name ) ?? Fallback.String ( name );
 
-            var resource = provider.GetObject ( culture, name );
+            var resource = localizer.GetObject ( culture, name );
             if ( resource == null )
                 return Fallback.Object ( name, targetType );
 

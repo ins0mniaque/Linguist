@@ -4,24 +4,24 @@ using System.CodeDom;
 
 namespace Linguist.Generator
 {
-    public delegate CodeExpression ResourceManagerInitializer      ( string resourcesBaseName, string className );
-    public delegate CodeExpression LocalizationProviderInitializer ( CodeExpression resourceManager, CodeExpression resourceNamingStrategy );
+    public delegate CodeExpression ResourceManagerInitializer ( string resourcesBaseName, string className );
+    public delegate CodeExpression LocalizerInitializer       ( CodeExpression resourceManager, CodeExpression resourceNamingStrategy );
 
     public class ResourceSet
     {
-        public ResourceSet ( CodeTypeReference resourceManagerType, ResourceManagerInitializer resourceManagerInitializer, CodeTypeReference localizationProviderType, LocalizationProviderInitializer localizationProviderInitializer, IDictionary < string, Resource > resources )
+        public ResourceSet ( CodeTypeReference resourceManagerType, ResourceManagerInitializer resourceManagerInitializer, CodeTypeReference localizerType, LocalizerInitializer localizerInitializer, IDictionary < string, Resource > resources )
         {
-            ResourceManagerType             = resourceManagerType;
-            ResourceManagerInitializer      = resourceManagerInitializer;
-            LocalizationProviderType        = localizationProviderType;
-            LocalizationProviderInitializer = localizationProviderInitializer;
-            Resources                       = new ReadOnlyDictionary < string, Resource > ( resources );
+            ResourceManagerType        = resourceManagerType;
+            ResourceManagerInitializer = resourceManagerInitializer;
+            LocalizerType              = localizerType;
+            LocalizerInitializer       = localizerInitializer;
+            Resources                  = new ReadOnlyDictionary < string, Resource > ( resources );
         }
 
-        public CodeTypeReference               ResourceManagerType             { get; }
-        public ResourceManagerInitializer      ResourceManagerInitializer      { get; }
-        public CodeTypeReference               LocalizationProviderType        { get; }
-        public LocalizationProviderInitializer LocalizationProviderInitializer { get; }
+        public CodeTypeReference          ResourceManagerType        { get; }
+        public ResourceManagerInitializer ResourceManagerInitializer { get; }
+        public CodeTypeReference          LocalizerType              { get; }
+        public LocalizerInitializer       LocalizerInitializer       { get; }
 
         public ReadOnlyDictionary < string, Resource > Resources { get; }
     }

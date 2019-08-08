@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace Linguist
 {
-    public interface ILocalizationProvider
+    public interface ILocalizer
     {
         object GetObject ( CultureInfo culture, string name );
         string GetString ( CultureInfo culture, string name );

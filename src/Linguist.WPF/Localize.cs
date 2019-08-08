@@ -9,20 +9,20 @@ namespace Linguist.WPF
 {
     public static class Localize
     {
-        [ TypeConverter ( typeof ( LocalizationProviderTypeConverter ) ) ]
-        public static ILocalizationProvider GetProvider ( DependencyObject element )
+        [ TypeConverter ( typeof ( LocalizerTypeConverter ) ) ]
+        public static ILocalizer GetLocalizer ( DependencyObject element )
         {
-            return (ILocalizationProvider) element.GetValue ( ProviderProperty );
+            return (ILocalizer) element.GetValue ( LocalizerProperty );
         }
 
-        public static void SetProvider ( DependencyObject element, ILocalizationProvider provider )
+        public static void SetLocalizer ( DependencyObject element, ILocalizer localizer )
         {
-            element.SetValue ( ProviderProperty, provider );
+            element.SetValue ( LocalizerProperty, localizer );
         }
 
-        public static readonly DependencyProperty ProviderProperty =
-            DependencyProperty.RegisterAttached ( "Provider",
-                                                  typeof ( ILocalizationProvider ),
+        public static readonly DependencyProperty LocalizerProperty =
+            DependencyProperty.RegisterAttached ( "Localizer",
+                                                  typeof ( ILocalizer ),
                                                   typeof ( Localize ),
                                                   new FrameworkPropertyMetadata ( null, FrameworkPropertyMetadataOptions.Inherits ) );
 
@@ -58,14 +58,14 @@ namespace Linguist.WPF
                                                   typeof ( Localize ),
                                                   new FrameworkPropertyMetadata ( null ) );
 
-        internal static object ProvideResource ( ILocalizationProvider provider, CultureInfo culture, object key, object [ ] values, Type targetType )
+        internal static object ProvideResource ( ILocalizer localizer, CultureInfo culture, object key, object [ ] values, Type targetType )
         {
             var start = 0;
 
-            if ( provider == null )
-                provider = values [ start++ ] as ILocalizationProvider;
+            if ( localizer == null )
+                localizer = values [ start++ ] as ILocalizer;
 
-            if ( provider == null )
+            if ( localizer == null )
                 return Binding.DoNothing;
 
             // NOTE: Skipping language property, value is reflected through provided culture.
@@ -84,13 +84,13 @@ namespace Linguist.WPF
             {
                 var arguments = new object [ values.Length - start ];
                 Array.Copy ( values, start, arguments, 0, arguments.Length );
-                return provider.Format ( culture, culture, name, arguments ) ?? Fallback.String ( name );
+                return localizer.Format ( culture, culture, name, arguments ) ?? Fallback.String ( name );
             }
 
             if ( targetType.IsAssignableFrom ( typeof ( string ) ) )
-                return provider.GetString ( culture, name ) ?? Fallback.String ( name );
+                return localizer.GetString ( culture, name ) ?? Fallback.String ( name );
 
-            var resource = provider.GetObject ( culture, name );
+            var resource = localizer.GetObject ( culture, name );
             if ( resource == null )
                 return Fallback.Object ( name, targetType );
 

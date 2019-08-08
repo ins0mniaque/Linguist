@@ -7,6 +7,7 @@ using System.Xml;
 using System.Xml.Linq;
 
 using Linguist.CodeDom;
+using Linguist.Resources;
 
 namespace Linguist.Generator
 {
@@ -46,8 +47,8 @@ namespace Linguist.Generator
                 resources.Add ( name, resource );
             }
 
-            return new ResourceSet ( Code.TypeRef < ResourceManager >                     ( ), ManagerInitializer,
-                                     Code.TypeRef < ResourceManagerLocalizationProvider > ( ), ProviderInitializer,
+            return new ResourceSet ( Code.TypeRef < ResourceManager >          ( ), ManagerInitializer,
+                                     Code.TypeRef < ResourceManagerLocalizer > ( ), LocalizerInitializer,
                                      resources );
         }
 
@@ -81,13 +82,14 @@ namespace Linguist.Generator
                                         .Property ( nameof ( Type.Assembly ) ) );
         }
 
-        private static CodeExpression ProviderInitializer ( CodeExpression resourceManager, CodeExpression resourceNamingStrategy )
+        private static CodeExpression LocalizerInitializer ( CodeExpression resourceManager, CodeExpression resourceNamingStrategy )
         {
-            var initializer = Code.TypeRef < ResourceManagerLocalizationProvider > ( )
+            var initializer = Code.TypeRef < ResourceManagerLocalizer > ( )
                                   .Construct ( resourceManager );
 
             if ( resourceNamingStrategy != null )
-                initializer.Parameters.Add ( resourceNamingStrategy );
+                initializer.Parameters.Add ( Code.TypeRef < ResourceManagerPluralizer > ( )
+                                                 .Construct ( resourceManager, resourceNamingStrategy ) );
 
             return initializer;
         }

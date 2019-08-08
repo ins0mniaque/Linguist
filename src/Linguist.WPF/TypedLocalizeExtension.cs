@@ -20,8 +20,8 @@ namespace Linguist.WPF
         public abstract BindingBase KeyPath { get; set; }
         public abstract Type        Type    { get; set; }
 
-        protected abstract ILocalizationProvider Provider  { get; }
-        protected abstract string                KeyToName ( TKey key );
+        protected abstract ILocalizer Localizer { get; }
+        protected abstract string     KeyToName ( TKey key );
 
         public override void SetupBinding ( MultiBinding binding, IServiceProvider serviceProvider )
         {
@@ -54,7 +54,7 @@ namespace Linguist.WPF
             else if ( parameter is TKey key )
                 parameter = KeyToName ( key );
 
-            return Localize.ProvideResource ( Provider, culture, parameter, values, Type ?? targetType );
+            return Localize.ProvideResource ( Localizer, culture, parameter, values, Type ?? targetType );
         }
 
         private static bool TryParseKey ( object keyPath, out TKey key )

@@ -4,7 +4,7 @@
 
              x:Class="Linguist.Xamarin.Forms.Demo.MainPage"
 
-             Localize.Provider="Linguist.Xamarin.Forms.Demo/Resources">
+             Localize.Localizer="Linguist.Xamarin.Forms.Demo/Resources">
 
     <StackLayout HorizontalOptions="Center"
                  VerticalOptions="CenterAndExpand">

@@ -10,7 +10,7 @@ namespace Linguist.Xamarin.Forms
 {
     internal static class Auto
     {
-        public static string GenerateKey ( IServiceProvider serviceProvider, out ILocalizationProvider provider )
+        public static string GenerateKey ( IServiceProvider serviceProvider, out ILocalizer localizer )
         {
             var pvt = (IProvideValueTarget) serviceProvider.GetService ( typeof ( IProvideValueTarget ) );
 
@@ -18,7 +18,7 @@ namespace Linguist.Xamarin.Forms
             var property = pvt.TargetProperty as BindableProperty;
             var ancestry = GetParentObjects ( pvt );
 
-            provider = GetProvider ( ancestry );
+            localizer = GetLocalizer ( ancestry );
 
             var component = GetComponent ( ancestry, out var componentElement );
 
@@ -35,23 +35,23 @@ namespace Linguist.Xamarin.Forms
             return string.Join ( ".", Array.FindAll ( parts, part => ! string.IsNullOrEmpty ( part ) ) );
         }
 
-        public static ILocalizationProvider GetProvider ( IServiceProvider serviceProvider )
+        public static ILocalizer GetLocalizer ( IServiceProvider serviceProvider )
         {
             var pvt = (IProvideValueTarget) serviceProvider.GetService ( typeof ( IProvideValueTarget ) );
 
-            return GetProvider ( GetParentObjects ( pvt ) );
+            return GetLocalizer ( GetParentObjects ( pvt ) );
         }
 
-        private static ILocalizationProvider GetProvider ( IEnumerable<object> ancestry )
+        private static ILocalizer GetLocalizer ( IEnumerable<object> ancestry )
         {
             foreach ( var ancestor in ancestry )
             {
                 if ( ! ( ancestor is BindableObject element ) )
                     continue;
 
-                var provider = Localize.GetProvider ( element );
-                if ( provider != null )
-                    return provider;
+                var localizer = Localize.GetLocalizer ( element );
+                if ( localizer != null )
+                    return localizer;
             }
 
             return null;
