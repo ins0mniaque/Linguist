@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-namespace Linguist.Resources
+namespace Linguist.Resources.Naming
 {
     public abstract class ResourceNamingStrategy : IResourceNamingStrategy
     {

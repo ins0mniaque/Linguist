@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Linguist.Resources
+namespace Linguist.Resources.Naming
 {
     public class SuffixedResourceNamingStrategy : ResourceNamingStrategy
     {

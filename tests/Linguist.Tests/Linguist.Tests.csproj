@@ -12,4 +12,13 @@
     <ProjectReference Include="..\..\src\Linguist\Linguist.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
+    <PackageReference Include="System.Drawing.Common" Version="4.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Resources\ResX\Data\**" />
+    <EmbeddedResource Remove="Resources\ResX\Data\Resources.resx" />
+  </ItemGroup>
+
 </Project>

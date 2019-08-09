@@ -1,4 +1,4 @@
-﻿namespace Linguist.Resources
+﻿namespace Linguist.Resources.Naming
 {
     /// <summary>
     /// Defines a strategy to encode format string arguments inside a resource name.

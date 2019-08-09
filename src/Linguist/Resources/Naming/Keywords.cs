@@ -1,4 +1,4 @@
-﻿namespace Linguist.Resources
+﻿namespace Linguist.Resources.Naming
 {
     public static class Keywords
     {

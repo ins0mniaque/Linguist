@@ -2,7 +2,7 @@
 
 using Xunit;
 
-namespace Linguist.Resources.Tests
+namespace Linguist.Resources.Naming.Tests
 {
     public class DefaultResourceNamingStrategyTests
     {

@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Resources;
 
+using Linguist.Resources.Naming;
+
 namespace Linguist.Resources
 {
     public class ResourceManagerPluralizer : ResourcePluralizer

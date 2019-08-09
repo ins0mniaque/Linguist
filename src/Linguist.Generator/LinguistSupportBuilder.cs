@@ -13,7 +13,7 @@ using System.Security;
 using System.Text;
 
 using Linguist.CodeDom;
-using Linguist.Resources;
+using Linguist.Resources.Naming;
 
 namespace Linguist.Generator
 {
@@ -95,7 +95,7 @@ namespace Linguist.Generator
         protected TypeAttributes   TypeAttributes     { get; }
         protected Type             CustomToolType     { get; }
 
-        public IResourceNamingStrategy ResourceNamingStrategy            { get; } = Resources.ResourceNamingStrategy.Default;
+        public IResourceNamingStrategy ResourceNamingStrategy            { get; } = Resources.Naming.ResourceNamingStrategy.Default;
         public CodeExpression          ResourceNamingStrategyInitializer { get; }
 
         public bool GenerateWPFSupport          { get; set; }
