@@ -241,7 +241,7 @@ namespace Linguist
                     // Is it a closing brace?
                     if ( character == '}' )
                     {
-                        // Check next character (if there is one) to see if it is escaped. eg }}
+                        // Check next character (if there is one) to see if it is escaped. e.g. }}
                         if ( cursor < length && format [ cursor ] == '}' )
                         {
                             cursor++;
