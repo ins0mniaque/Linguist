@@ -6,8 +6,10 @@ namespace Linguist.Resources.Dictionary
 {
     public class DelegateResourceManager : ResourceManager
     {
-        public delegate IDictionary LoadResourceSet    ( string cultureName );
-        public delegate IDictionary NeutralResourceSet ( );
+        private readonly Cache < string, ResourceSet > cache = new Cache < string, ResourceSet > ( );
+
+        public delegate IDictionary LoadResourceSet    ( string cultureName, bool createIfNotExists );
+        public delegate IDictionary NeutralResourceSet ( bool createIfNotExists );
 
         private readonly LoadResourceSet    loadResourceSet;
         private readonly NeutralResourceSet neutralResourceSet;
@@ -20,22 +22,35 @@ namespace Linguist.Resources.Dictionary
 
         protected override ResourceSet InternalGetResourceSet ( CultureInfo culture, bool createIfNotExists, bool tryParents )
         {
-            var resourceSet = loadResourceSet ( culture.Name );
+            if ( cache.TryGet ( culture.Name, out var resourceSet ) )
+                return resourceSet;
 
-            if ( resourceSet == null && tryParents )
+            var fallback  = culture.Name;
+            var resources = loadResourceSet ( fallback, createIfNotExists );
+
+            if ( resources == null && tryParents )
             {
-                var parent = culture.Parent;
-                if ( parent.Name != culture.Name )
-                    resourceSet = loadResourceSet ( parent.Name );
+                fallback = culture.Parent.Name;
+                if ( fallback != culture.Name )
+                    resources = loadResourceSet ( fallback, createIfNotExists );
             }
 
-            if ( resourceSet == null && createIfNotExists )
-                resourceSet = neutralResourceSet ( );
+            if ( resources == null && neutralResourceSet != null )
+            {
+                fallback  = CultureInfo.InvariantCulture.Name;
+                resources = neutralResourceSet ( createIfNotExists );
+            }
 
-            if ( resourceSet != null )
-                return new ResourceSet ( new DictionaryResourceReader ( resourceSet ) );
+            if ( resources == null )
+                return null;
 
-            return null;
+            resourceSet = new ResourceSet ( new DictionaryResourceReader ( resources ) );
+
+            cache.Add ( culture.Name, resourceSet );
+            if ( fallback != culture.Name )
+                cache.Add ( fallback, resourceSet );
+
+            return resourceSet;
         }
     }
 }

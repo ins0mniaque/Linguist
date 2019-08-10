@@ -6,7 +6,7 @@ namespace Linguist.Resources.Dictionary
 {
     public class DictionaryResourceManager : ResourceManager
     {
-        private readonly Cache < string, IDictionary > resourceSets = new Cache < string, IDictionary > ( );
+        private readonly Cache < string, IDictionary > cache = new Cache < string, IDictionary > ( );
 
         public DictionaryResourceManager ( string neutralCultureName = null )
         {
@@ -17,24 +17,24 @@ namespace Linguist.Resources.Dictionary
 
         public void Add ( string cultureName, IDictionary dictionary )
         {
-            resourceSets.Add ( cultureName, dictionary );
+            cache.Add ( cultureName, dictionary );
         }
 
         public void Remove ( string cultureName )
         {
-            resourceSets.Remove ( cultureName );
+            cache.Remove ( cultureName );
         }
 
         public void Clear ( )
         {
-            resourceSets.Clear ( );
+            cache.Clear ( );
         }
 
         public IDictionary this [ string cultureName ]
         {
             get
             {
-                if ( resourceSets.TryGet ( cultureName, out var resourceSet ) )
+                if ( cache.TryGet ( cultureName, out var resourceSet ) )
                     return resourceSet;
 
                 return null;
@@ -52,7 +52,7 @@ namespace Linguist.Resources.Dictionary
                     resourceSet = this [ parent.Name ];
             }
 
-            if ( resourceSet == null && createIfNotExists && NeutralCultureName != null )
+            if ( resourceSet == null && NeutralCultureName != null )
                 resourceSet = this [ NeutralCultureName ];
 
             if ( resourceSet != null )
