@@ -23,7 +23,7 @@ namespace Linguist.VisualStudio
                                                     "HierSingleSelectionName:.resw$" } ) ]
     public sealed class LinguistPackage : AsyncPackage
     {
-        public const string Version    = "0.9.1.0";
+        public const string Version    = "0.9.1.1";
         public const bool   Preview    = true;
         public const string GuidString = "97313391-C7DF-45DB-817D-BE297DE8BD35";
 
