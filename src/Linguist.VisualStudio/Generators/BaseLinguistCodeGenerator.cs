@@ -47,14 +47,16 @@ namespace Linguist.VisualStudio
             builder.GenerateXamarinFormsSupport = Project.HasReference ( "Linguist.Xamarin.Forms" );
 
             var code      = builder.Build ( );
+            var errors    = builder.GetErrors ( );
             var source    = new StringBuilder ( );
             var generator = new ExtendedCodeGenerator ( CodeDomProvider );
 
             using ( var writer = new StringWriter ( source ) )
                 generator.GenerateCodeFromCompileUnit ( code, writer, null );
 
-            foreach ( var error in builder.GetErrors ( ) )
-                GeneratorErrorCallback ( error.IsWarning, default, error.ErrorText, error.Line, error.Column );
+            if ( errors != null )
+                foreach ( var error in errors )
+                    GeneratorErrorCallback ( error.IsWarning, default, error.ErrorText, error.Line, error.Column );
 
             using ( var stream = new MemoryStream ( ) )
             {
