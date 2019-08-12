@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization;
 
@@ -59,8 +60,7 @@ namespace Linguist
         {
             switch ( assembly.GetName ( ).Name )
             {
-                case "System.Drawing" : return Assembly.Load    ( "System.Drawing.Common" )
-                                                      ?.GetType ( name, false, ignore );
+                case "System.Drawing" : return Type.GetType ( name + ", " + "System.Drawing.Common", false, ignore );
                 default               : return null;
             }
         }
@@ -81,7 +81,19 @@ namespace Linguist
             return null;
         }
 
-        public class Binder : SerializationBinder
+        private static SerializationBinder binder;
+        public  static SerializationBinder Binder
+        {
+            get
+            {
+                if ( binder == null )
+                    binder = new TypeBinder ( );
+
+                return binder;
+            }
+        }
+
+        private class TypeBinder : SerializationBinder
         {
             public override Type BindToType ( string assemblyName, string typeName )
             {
@@ -112,6 +124,100 @@ namespace Linguist
                 base.BindToName ( serializedType, out assemblyName, out typeName );
             }
             #endif
+        }
+
+        private static bool              surrogateSelectorInitialized;
+        private static SurrogateSelector surrogateSelector;
+        public  static SurrogateSelector SurrogateSelector
+        {
+            get
+            {
+                if ( surrogateSelectorInitialized )
+                    return surrogateSelector;
+
+                surrogateSelectorInitialized = true;
+
+                return surrogateSelector = GetSurrogateSelector ( );
+            }
+        }
+
+        private static SurrogateSelector GetSurrogateSelector ( )
+        {
+            var bitmap = Type.GetType ( "System.Drawing.Bitmap, System.Drawing.Common" );
+            if ( bitmap == null )
+                return null;
+
+            var icon = Type.GetType ( "System.Drawing.Icon, System.Drawing.Common" );
+
+            var selector = new SurrogateSelector ( );
+            var context  = new StreamingContext ( StreamingContextStates.All );
+
+            selector.AddSurrogate ( bitmap, context, new BitmapSurrogate ( bitmap ) );
+            selector.AddSurrogate ( icon,   context, new IconSurrogate   ( icon   ) );
+
+            return selector;
+        }
+
+        private class BitmapSurrogate : ISerializationSurrogate
+        {
+            private readonly Type       type;
+            private readonly MethodInfo save;
+
+            public BitmapSurrogate ( Type bitmapType )
+            {
+                type = bitmapType;
+                save = bitmapType.GetMethod ( "Save", new [ ] { typeof ( Stream ) } );
+            }
+
+            public void GetObjectData ( object bitmap, SerializationInfo info, StreamingContext context )
+            {
+                using ( var stream = new MemoryStream ( ) )
+                {
+                    save.Invoke ( bitmap, new object [ ] { stream } );
+
+                    info.AddValue ( "Data", stream.ToArray ( ), typeof ( byte [ ] ) );
+                }
+            }
+
+            public object SetObjectData ( object bitmap, SerializationInfo info, StreamingContext context, ISurrogateSelector selector )
+            {
+                var buffer = (byte [ ]) info.GetValue ( "Data", typeof ( byte [ ] ) );
+
+                return Activator.CreateInstance ( type, new MemoryStream ( buffer ) );
+            }
+        }
+
+        private class IconSurrogate : ISerializationSurrogate
+        {
+            private readonly Type         type;
+            private readonly MethodInfo   save;
+            private readonly PropertyInfo size;
+
+            public IconSurrogate ( Type iconType )
+            {
+                type = iconType;
+                save = iconType.GetMethod   ( "Save", new [ ] { typeof ( Stream ) } );
+                size = iconType.GetProperty ( "Size" );
+            }
+
+            public void GetObjectData ( object icon, SerializationInfo info, StreamingContext context )
+            {
+                using ( var stream = new MemoryStream ( ) )
+                {
+                    save.Invoke ( icon, new object [ ] { stream } );
+
+                    info.AddValue ( "IconData", stream.ToArray ( ), typeof ( byte [ ] ) );
+                    info.AddValue ( "IconSize", size.GetValue ( icon, null ), typeof ( System.Drawing.Size ) );
+                }
+            }
+
+            public object SetObjectData ( object icon, SerializationInfo info, StreamingContext context, ISurrogateSelector selector )
+            {
+                var buffer = (byte [ ]) info.GetValue ( "IconData", typeof ( byte [ ] ) );
+                var size   =            info.GetValue ( "IconSize", typeof ( System.Drawing.Size ) );
+
+                return Activator.CreateInstance ( type, new MemoryStream ( buffer ), size );
+            }
         }
     }
 }

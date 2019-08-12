@@ -19,7 +19,7 @@ namespace Linguist.Resources.ResX
         protected override IEnumerable < IResource > Extract ( Stream stream )
         {
             var document = XDoc.Load ( stream );
-            var source   = GetStreamPath ( stream );
+            var source   = GetStreamSource ( stream );
             var aliases  = new Dictionary < string, string > ( );
 
             foreach ( var data in document.Descendants ( "assembly" ) )
@@ -153,7 +153,8 @@ namespace Linguist.Resources.ResX
             get
             {
                 if ( binaryFormatter == null )
-                    binaryFormatter = new BinaryFormatter ( ) { Binder = new TypeResolver.Binder ( ) };
+                    binaryFormatter = new BinaryFormatter ( ) { Binder            = TypeResolver.Binder,
+                                                                SurrogateSelector = TypeResolver.SurrogateSelector };
 
                 return binaryFormatter;
             }

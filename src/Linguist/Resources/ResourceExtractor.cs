@@ -45,11 +45,11 @@ namespace Linguist.Resources
                 yield return new DictionaryEntry ( resource.Name, resource.Value );
         }
 
-        protected static string GetStreamPath ( Stream stream )
+        public static string GetStreamSource ( Stream stream )
         {
             if ( stream is FileStream file ) return file.Name;
 
-            return null;
+            return stream?.GetType ( ).Name;
         }
 
         public void Close ( )
