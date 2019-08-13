@@ -39,7 +39,7 @@ namespace Linguist.VisualStudio
                                                                    inputFileName,
                                                                    inputFileContent,
                                                                    FileNamespace,
-                                                                   GetResourcesNamespace ( ),
+                                                                   GetDefaultNamespace ( ),
                                                                    AccessModifier,
                                                                    GetType ( ) );
 
@@ -105,8 +105,10 @@ namespace Linguist.VisualStudio
             }
         }
 
-        protected string GetResourcesNamespace ( )
+        protected string GetDefaultNamespace ( )
         {
+            const int VSHPROPID_DefaultNamespace = -2049;
+
             ThreadHelper.ThrowIfNotOnUIThread ( );
 
             try
@@ -125,7 +127,7 @@ namespace Linguist.VisualStudio
                 if ( vsHierarchy == null )
                     return null;
 
-                vsHierarchy.GetProperty ( itemId, -2049, out var propertyValue );
+                vsHierarchy.GetProperty ( itemId, VSHPROPID_DefaultNamespace, out var propertyValue );
                 var propertyText = propertyValue as string;
                 if ( propertyText == null )
                     return null;
