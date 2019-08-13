@@ -6,22 +6,23 @@ namespace Linguist.Resources
 {
     public class ResourceManagerLocalizer : ILocalizer
     {
-        private readonly ResourceManager resourceManager;
-        private readonly IPluralizer     pluralizer;
+        private readonly IPluralizer pluralizer;
 
         public ResourceManagerLocalizer ( ResourceManager resourceManager, IPluralizer pluralizer = null )
         {
-            this.resourceManager = resourceManager;
-            this.pluralizer      = pluralizer ?? new ResourceManagerPluralizer ( resourceManager );
+            ResourceManager = resourceManager;
+            this.pluralizer = pluralizer ?? new ResourceManagerPluralizer ( resourceManager );
         }
 
-        public object GetObject ( CultureInfo culture, string name ) => resourceManager.GetObject ( name, culture );
-        public string GetString ( CultureInfo culture, string name ) => resourceManager.GetString ( name, culture );
+        public ResourceManager ResourceManager { get; }
+
+        public object GetObject ( CultureInfo culture, string name ) => ResourceManager.GetObject ( name, culture );
+        public string GetString ( CultureInfo culture, string name ) => ResourceManager.GetString ( name, culture );
 
         public string Format ( CultureInfo culture, IFormatProvider provider, string name, params object [ ] args )
         {
-            var format = pluralizer.GetFormat ( culture, name, args ) ??
-                         GetString ( culture, name );
+            var format = pluralizer     .GetFormat ( culture, name, args ) ??
+                         ResourceManager.GetString ( name, culture );
 
             return format != null ? string.Format ( provider, format, args ) : null;
         }
