@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.0;net35;net45</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Linguist\Linguist.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
+    <PackageReference Include="System.Drawing.Common" Version="4.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Data\Assets\**" />
+    <EmbeddedResource Update="Data\Resources.resx" DependentUpon="-">
+      <Generator>InternalLinguistCodeGenerator</Generator>
+      <LastGenOutput>Resources.cs</LastGenOutput>
+    </EmbeddedResource>
+    <Compile Update="Data\Resources.cs" DependentUpon="Resources.resx">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
+
+</Project>
