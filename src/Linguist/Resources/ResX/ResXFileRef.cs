@@ -27,10 +27,10 @@ namespace Linguist.Resources.ResX
             return resxFileRef;
         }
 
-        public static object Load ( IExternalResource resource )
+        public static object Load ( ILoadableResource resource )
         {
             return Load ( Path.GetDirectoryName ( resource.Source ),
-                          resource.Reference?.ToString ( ) );
+                          resource.Data?.ToString ( ) );
         }
 
         public static object Load ( string baseDirectory, string resxFileRef )
@@ -83,7 +83,7 @@ namespace Linguist.Resources.ResX
             return CreateInstance ( type, memoryStream );
         }
 
-        private static void Parse ( string resxFileRef, out string fileName, out string typeName, out string encodingName )
+        public static void Parse ( string resxFileRef, out string fileName, out string typeName, out string encodingName )
         {
             fileName     = null;
             typeName     = null;

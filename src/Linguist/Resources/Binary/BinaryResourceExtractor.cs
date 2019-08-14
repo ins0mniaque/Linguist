@@ -535,7 +535,7 @@ namespace Linguist.Resources.Binary
                 case ResourceTypeCode.TimeSpan : return new TimeSpan ( store.ReadInt64 ( ) );
 
                 // Special types
-                case ResourceTypeCode.ByteArray:
+                case ResourceTypeCode.ByteArray :
                 {
                     var length = store.ReadInt32 ( );
                     if ( length < 0 )
@@ -560,7 +560,7 @@ namespace Linguist.Resources.Binary
                     return store.ReadBytes ( length );
                 }
 
-                case ResourceTypeCode.Stream:
+                case ResourceTypeCode.Stream :
                 {
                     var length = store.ReadInt32 ( );
                     if ( length < 0 )

@@ -38,25 +38,11 @@ namespace Linguist.Resources.ResX
                 if ( name == null )
                     continue;
 
-                var resource = (ResourceMetadata) null;
-                var type     = ParseType ( data, out var externalResource );
-
-                if ( externalResource == null )
-                {
-                    var value = ParseValue ( data, aliases );
-                    if ( type == null )
-                        type = value?.GetType ( ).FullName;
-
-                    resource = new Resource ( ) { Value = value };
-                }
-                else
-                    resource = externalResource;
+                var resource = ParseResource ( data, aliases );
 
                 resource.Name    = name;
-                resource.Type    = type;
                 resource.Comment = data.Element ( "comment" )?.Value;
-
-                resource.Source = source;
+                resource.Source  = source;
 
                 if ( data is IXmlLineInfo info && info.HasLineInfo ( ) )
                 {
@@ -64,45 +50,20 @@ namespace Linguist.Resources.ResX
                     resource.Column = info.LinePosition;
                 }
 
-                yield return (IResource) resource;
+                yield return resource;
             }
         }
 
-        private static string ParseType ( XElement data, out ExternalResource externalResource )
-        {
-            externalResource = null;
-
-            var type = data.Attribute ( "type" )?.Value;
-
-            if ( type?.Split ( ',' ) [ 0 ] == "System.Resources.ResXFileRef" )
-            {
-                var value = data.Element ( "value" )?.Value;
-                if ( value == null )
-                    throw new Exception ( "ResXFileRef missing value" );
-
-                var parts    = value.Split ( ';' );
-                var typeName = parts [ parts.Length - 1 ];
-
-                externalResource = new ExternalResource ( ResXFileRef.Load ) { Reference = value };
-
-                return typeName;
-            }
-
-            return type;
-        }
-
-        private object ParseValue ( XElement data, IDictionary < string, string > aliases )
+        private Resource ParseResource ( XElement data, IDictionary < string, string > aliases )
         {
             var value = data.Element ( "value" )?.Value;
             if ( value == null )
-                return null;
+                return new Resource ( );
 
             var mimetype = data.Attribute ( "mimetype" )?.Value;
             var type     = data.Attribute ( "type"     )?.Value;
             if ( type == null && mimetype == null )
-                return value;
-
-            var resolvedType = (Type) null;
+                return new Resource ( ) { Value = value };
 
             if ( type != null )
             {
@@ -111,40 +72,46 @@ namespace Linguist.Resources.ResX
                 var typeName = type.Substring ( 0, comma );
 
                 if ( typeName == "System.Resources.ResXNullRef" )
-                    return null;
+                    return new Resource ( );
+
+                if ( typeName == "System.Resources.ResXFileRef" )
+                {
+                    ResXFileRef.Parse ( value, out _, out var refType, out _ );
+
+                    return new LoadableResource ( ResXFileRef.Load ) { Type = refType,
+                                                                       Data = value };
+                }
+
+                if ( typeName == typeof ( byte [ ] ).FullName )
+                    return new Resource ( ) { Value = FromBase64 ( value ) };
 
                 if ( ! aliases.TryGetValue ( alias, out var assemblyName ) )
                     assemblyName = alias;
 
-                resolvedType = TypeResolver.ResolveType ( typeName + ", " + assemblyName );
+                type = typeName + ", " + assemblyName;
             }
 
             switch ( mimetype )
             {
                 case "application/x-microsoft.net.object.binary.base64" :
-                    return FromBinaryBase64 ( value );
+                    return new LoadableResource ( DeserializeBinary ) { Data = FromBase64 ( value ) };
 
                 case "application/x-microsoft.net.object.soap.base64" :
                     throw new NotSupportedException ( "SoapFormatter is not supported" );
 
                 case "application/x-microsoft.net.object.bytearray.base64" :
-                    return FromByteArrayBase64 ( resolvedType, value );
+                    return new LoadableResource ( ConvertFrom < byte [ ] > ) { Type = type ?? throw new Exception ( "Missing type for serialized resource" ),
+                                                                               Data = FromBase64 ( value ) };
 
                 case null : break;
                 default   : throw new NotSupportedException ( "Unsupported mimetype " + mimetype );
             }
 
-            if ( resolvedType == typeof ( byte [ ] ) )
-                return FromBase64 ( value );
+            if ( type != null )
+                return new LoadableResource ( ConvertFromString ) { Type = type ?? throw new Exception ( "Missing type for serialized resource" ),
+                                                                    Data = value };
 
-            if ( resolvedType != null )
-            {
-                var converter = TypeDescriptor.GetConverter ( resolvedType );
-                if ( converter.CanConvertFrom ( typeof ( string ) ) )
-                    return converter.ConvertFromInvariantString ( value );
-            }
-
-            return value;
+            return new Resource ( ) { Value = value };
         }
 
         private   BinaryFormatter binaryFormatter;
@@ -160,30 +127,39 @@ namespace Linguist.Resources.ResX
             }
         }
 
-        private object FromBinaryBase64 ( string value )
+        private object DeserializeBinary ( ILoadableResource resource )
         {
-            var buffer = FromBase64 ( value );
+            var buffer = resource.Data as byte [ ];
             if ( buffer == null || buffer.Length == 0 )
                 return null;
 
-            var resource = BinaryFormatter.Deserialize ( new MemoryStream ( buffer ) );
-            if ( resource?.GetType ( ).FullName == "System.Resources.ResXNullRef" )
+            var value = BinaryFormatter.Deserialize ( new MemoryStream ( buffer ) );
+            if ( value?.GetType ( ).FullName == "System.Resources.ResXNullRef" )
                 return null;
 
             return resource;
         }
 
-        private static object FromByteArrayBase64 ( Type type, string value )
+        private static object ConvertFrom < T > ( ILoadableResource resource )
         {
-            var converter = TypeDescriptor.GetConverter ( type ?? throw new Exception ( "Missing type for byte array object" ) );
-            if ( ! converter.CanConvertFrom ( typeof ( byte [ ] ) ) )
-                return null;
+            var resolvedType = TypeResolver  .ResolveType  ( resource.Type ?? throw new Exception ( "Missing type for serialized resource" ) );
+            var converter    = TypeDescriptor.GetConverter ( resolvedType );
 
-            var buffer = FromBase64 ( value );
-            if ( buffer == null )
-                return null;
+            if ( converter.CanConvertFrom ( typeof ( T ) ) && resource.Data is T data )
+                return converter.ConvertFrom ( data );
 
-            return converter.ConvertFrom ( buffer );
+            return null;
+        }
+
+        private static object ConvertFromString ( ILoadableResource resource )
+        {
+            var resolvedType = TypeResolver  .ResolveType  ( resource.Type ?? throw new Exception ( "Missing type for serialized resource" ) );
+            var converter    = TypeDescriptor.GetConverter ( resolvedType );
+
+            if ( converter.CanConvertFrom ( typeof ( string ) ) && resource.Data is string data )
+                return converter.ConvertFromInvariantString ( data );
+
+            return null;
         }
 
         private const           char     Base64WhitespaceA = '\n';
