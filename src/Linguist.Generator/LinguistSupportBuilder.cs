@@ -594,7 +594,7 @@ namespace Linguist.Generator
                 }
 
                 var isBaseName = ResourceNamingStrategy == null ||
-                                 ResourceNamingStrategy.ParseArguments ( PluralRules.Invariant, name, out var _ ) == name;
+                                 ResourceNamingStrategy.ParseArguments ( PluralRules.Invariant, name, out _ ) == name;
                 if ( ! isBaseName )
                     continue;
 

@@ -24,7 +24,7 @@ namespace Linguist.CLDR.Tests
         [ InlineData ( "1",     Rule5, PluralForm.ExplicitOne  ) ]
         public static void ParseReturnsTheCorrectPluralForm ( string count, string rule, PluralForm expectedPluralForm )
         {
-            Assert.Equal ( expectedPluralForm, PluralRule.Parse ( count, rule, out var _ ).PluralForm );
+            Assert.Equal ( expectedPluralForm, PluralRule.Parse ( count, rule, out _ ).PluralForm );
         }
 
         [ Theory ]
@@ -36,7 +36,7 @@ namespace Linguist.CLDR.Tests
         [ InlineData ( "others", Rule5 ) ]
         public static void ParseThrowsOnInvalidPluralForm ( string count, string rule )
         {
-            Assert.Throws < FormatException > ( ( ) => PluralRule.Parse ( count, rule, out var _ ) );
+            Assert.Throws < FormatException > ( ( ) => PluralRule.Parse ( count, rule, out _ ) );
         }
 
         [ Theory ]
@@ -48,7 +48,7 @@ namespace Linguist.CLDR.Tests
         [ InlineData ( "other", Rule5, "v == 0m && i.equals ( 1m, 2m, 3m ) || v == 0m && ! ( i % 10m ).equals ( 4m, 6m, 9m ) || v != 0m && ! ( f % 10m ).equals ( 4m, 6m, 9m )" ) ]
         public static void ParseReturnsTheCorrectRule ( string count, string rule, string expectedExpression )
         {
-            Assert.Equal ( expectedExpression, PluralRule.Parse ( count, rule, out var _ ).Rule?.ToString ( ) );
+            Assert.Equal ( expectedExpression, PluralRule.Parse ( count, rule, out _ ).Rule?.ToString ( ) );
         }
 
         [ Theory ]
@@ -74,7 +74,7 @@ namespace Linguist.CLDR.Tests
         [ InlineData ( "other", Rule5, "v = 0 and i = 1,2,3 or v = 0 and i % 10 != 4,6,9 or v != 0 and f % 10 != 4,6,9" ) ]
         public static void ParseReturnsTheCorrectRuleCode ( string count, string rule, string expectedRuleCode )
         {
-            Assert.Equal ( expectedRuleCode, PluralRule.Parse ( count, rule, out var _ ).RuleCode );
+            Assert.Equal ( expectedRuleCode, PluralRule.Parse ( count, rule, out _ ).RuleCode );
         }
 
         [ Theory ]
@@ -86,7 +86,7 @@ namespace Linguist.CLDR.Tests
         [ InlineData ( "other", Rule5, "0~3", "5", "7", "8", "10~13", "15", "17", "18", "20", "21", "100", "1000", "10000", "100000", "1000000", "…" ) ]
         public static void ParseReturnsTheCorrectIntegerSamples ( string count, string rule, params string [ ] expectedSamples )
         {
-            Assert.Equal ( expectedSamples, PluralRule.Parse ( count, rule, out var _ ).IntegerSamples );
+            Assert.Equal ( expectedSamples, PluralRule.Parse ( count, rule, out _ ).IntegerSamples );
         }
 
         [ Theory ]
@@ -98,7 +98,7 @@ namespace Linguist.CLDR.Tests
         [ InlineData ( "other", Rule5, "0.0~0.3", "0.5", "0.7", "0.8", "1.0~1.3", "1.5", "1.7", "1.8", "2.0", "2.1", "10.0", "100.0", "1000.0", "10000.0", "100000.0", "1000000.0", "…" ) ]
         public static void ParseReturnsTheCorrectDecimalSamples ( string count, string rule, params string [ ] expectedSamples )
         {
-            Assert.Equal ( expectedSamples, PluralRule.Parse ( count, rule, out var _ ).DecimalSamples );
+            Assert.Equal ( expectedSamples, PluralRule.Parse ( count, rule, out _ ).DecimalSamples );
         }
     }
 }

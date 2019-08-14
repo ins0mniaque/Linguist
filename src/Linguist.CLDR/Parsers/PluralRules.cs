@@ -7,7 +7,7 @@ namespace Linguist.CLDR
 {
     public class PluralRules : IRuleSet
     {
-        private static readonly PluralRule DefaultPluralRule = PluralRule.Parse ( "other", "", out var _ );
+        private static readonly PluralRule DefaultPluralRule = PluralRule.Parse ( "other", "", out _ );
 
         private PluralRules ( ) { }
 

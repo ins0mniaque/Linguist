@@ -60,7 +60,7 @@ namespace Linguist
             return int.TryParse ( format.Substring ( 1, format.Length - 1 ),
                                   NumberStyles.None,
                                   CultureInfo.InvariantCulture,
-                                  out var _ );
+                                  out _ );
         }
     }
 }
