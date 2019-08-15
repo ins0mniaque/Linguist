@@ -46,35 +46,6 @@
                 return path.Replace ( SeparatorChar,    '.' )
                            .Replace ( AltSeparatorChar, '.' );
             }
-
-            public static string GetExtension ( string path )
-            {
-                if ( path == null )
-                    return null;
-
-                var length = path.Length;
-                var cursor = length;
-
-                while ( --cursor >= 0 )
-                {
-                    var character = path [ cursor ];
-
-                    if ( character == '.' )
-                    {
-                        if ( cursor != length - 1 )
-                            return path.Substring ( cursor, length - cursor );
-
-                        return string.Empty;
-                    }
-
-                    if ( character == SeparatorChar    ||
-                         character == AltSeparatorChar ||
-                         character == ProtocolChar )
-                        break;
-                }
-
-                return string.Empty;
-            }
         }
     }
 }

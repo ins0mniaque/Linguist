@@ -90,7 +90,6 @@ namespace Linguist.Resources.Binary
                 var position = enumerator.Position;
 
                 yield return new Resource ( ) { Name   = (string) entry.Key,
-                                                Type   = entry.Value?.GetType ( ).FullName,
                                                 Value  = entry.Value,
                                                 Source = source,
                                                 Column = position };

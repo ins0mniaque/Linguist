@@ -13,7 +13,7 @@ using System.Security;
 using System.Text;
 
 using Linguist.CodeDom;
-using Linguist.Resources.Naming;
+using Linguist.Resources;
 
 namespace Linguist.Generator
 {
@@ -26,23 +26,23 @@ namespace Linguist.Generator
     {
         public static LinguistSupportBuilder GenerateBuilder ( CodeDomProvider codeDomProvider, string inputFileName, string inputFileContent, string fileNamespace, string resourcesNamespace, MemberAttributes accessModifiers, Type customToolType )
         {
-            var baseName  = Path.GetFileNameWithoutExtension ( inputFileName );
-            var extension = Path.GetExtension     ( inputFileName )
-                                .ToLowerInvariant ( );
+            var extractorType = AutoDetect.ResourceExtractorType ( inputFileName );
+            if ( extractorType == null )
+                throw new ArgumentException ( Format ( UnknownResourceFileFormat, Path.GetFileName ( inputFileName ) ), nameof ( inputFileName ) );
 
-            var resourceSet = (ResourceSet) null;
+            var extractor   = (IResourceExtractor) Activator.CreateInstance ( extractorType, new MemoryStream ( Encoding.UTF8.GetBytes ( inputFileContent ) ) );
+            var resourceSet = extractor.Extract ( ).ToList ( );
+            var settings    = new LinguistSupportBuilderSettings ( );
+            var baseName    = Path.GetFileNameWithoutExtension ( inputFileName );
 
-            switch ( extension )
-            {
-                case ".resx" :
-                case ".resw" :
-                    resourceSet = ResXParser.ExtractResourceSet ( inputFileName, inputFileContent );
-                    break;
-                default :
-                    throw new ArgumentException ( Format ( UnknownResourceFileFormat, Path.GetFileName ( inputFileName ) ), nameof ( inputFileName ) );
-            }
+            settings.BaseName           = baseName ?? throw new ArgumentNullException ( nameof ( baseName ) );
+            settings.Namespace          = IsNullOrEmpty ( fileNamespace      ) ? null : codeDomProvider.ValidateIdentifier ( fileNamespace, true );
+            settings.ResourcesNamespace = IsNullOrEmpty ( resourcesNamespace ) ? null : resourcesNamespace;
+            settings.ResourceSetType    = AutoDetect.ResourceSetType ( inputFileName ).FullName;
+            settings.AccessModifiers    = codeDomProvider.ValidateAccessModifiers ( accessModifiers );
+            settings.CustomToolType     = customToolType;
 
-            return new LinguistSupportBuilder ( codeDomProvider, baseName, resourceSet, fileNamespace, resourcesNamespace, accessModifiers, customToolType );
+            return new LinguistSupportBuilder ( codeDomProvider, resourceSet, settings );
         }
 
         public static CodeCompileUnit GenerateCode ( CodeDomProvider codeDomProvider, string inputFileName, string inputFileContent, string fileNamespace, string resourcesNamespace, MemberAttributes accessModifiers, Type customToolType, out CompilerError [ ] errors )
@@ -66,81 +66,86 @@ namespace Linguist.Generator
             return source.ToString ( );
         }
 
-        protected LinguistSupportBuilder ( CodeDomProvider codeDomProvider, string baseName, ResourceSet resourceSet, string @namespace, string resourcesNamespace, MemberAttributes accessModifiers, Type customToolType )
+        protected LinguistSupportBuilder ( CodeDomProvider codeDomProvider, IList < IResource > resourceSet, LinguistSupportBuilderSettings settings )
         {
-            CodeDomProvider    = codeDomProvider ?? throw new ArgumentNullException ( nameof ( codeDomProvider ) );
-            BaseName           = baseName        ?? throw new ArgumentNullException ( nameof ( baseName        ) );
-            ResourceSet        = resourceSet     ?? throw new ArgumentNullException ( nameof ( resourceSet     ) );
-            Namespace          = IsNullOrEmpty ( @namespace         ) ? null : codeDomProvider.ValidateIdentifier ( @namespace, true );
-            ResourcesNamespace = IsNullOrEmpty ( resourcesNamespace ) ? null : resourcesNamespace;
-            ResourcesBaseName  = ResourcesNamespace != null ? ResourcesNamespace + '.' + baseName :
-                                 Namespace          != null ? Namespace          + '.' + baseName :
-                                                              baseName;
-            ClassName          = codeDomProvider.ValidateBaseName        ( baseName );
-            AccessModifiers    = codeDomProvider.ValidateAccessModifiers ( accessModifiers );
-            TypeAttributes     = AccessModifiers.HasBitMask ( MemberAttributes.Public ) ? TypeAttributes.Public :
-                                                                                          TypeAttributes.AutoLayout;
-            CustomToolType     = customToolType;
+            CodeDomProvider = codeDomProvider ?? throw new ArgumentNullException ( nameof ( codeDomProvider ) );
+            ResourceSet     = resourceSet     ?? throw new ArgumentNullException ( nameof ( resourceSet     ) );
+            Settings        = settings        ?? throw new ArgumentNullException ( nameof ( settings        ) );
         }
 
-        protected CodeDomProvider  CodeDomProvider    { get; }
-        protected string           BaseName           { get; }
-        protected ResourceSet      ResourceSet        { get; }
-        protected string           Namespace          { get; }
-        protected string           ResourcesNamespace { get; }
-        protected string           ResourcesBaseName  { get; }
-        protected string           ClassName          { get; }
-        protected string           ClassFullName      { get; }
-        protected MemberAttributes AccessModifiers    { get; }
-        protected TypeAttributes   TypeAttributes     { get; }
-        protected Type             CustomToolType     { get; }
+        public CodeDomProvider                CodeDomProvider { get; }
+        public IList < IResource >            ResourceSet     { get; }
+        public LinguistSupportBuilderSettings Settings        { get; }
 
-        public IResourceNamingStrategy ResourceNamingStrategy            { get; } = Resources.Naming.ResourceNamingStrategy.Default;
-        public CodeExpression          ResourceNamingStrategyInitializer { get; }
-
-        public bool GenerateWPFSupport          { get; set; }
-        public bool GenerateXamarinFormsSupport { get; set; }
+        protected Dictionary < IResource, CompilerError > Errors { get; } = new Dictionary < IResource, CompilerError > ( );
 
         public CompilerError [ ] GetErrors ( )
         {
-            var errors = ResourceSet.Resources.Values.Where ( resource => ! IsNullOrEmpty ( resource.ErrorText ) ).ToArray ( );
-            if ( errors.Length == 0 )
-                errors = null;
+            foreach ( var entry in Errors )
+            {
+                entry.Value.FileName = entry.Key.Source;
+                entry.Value.Line     = entry.Key.Line   ?? 0;
+                entry.Value.Column   = entry.Key.Column ?? 0;
+            }
 
-            return errors;
+            return Errors.Values.ToArray ( );
         }
+
+        protected void AddError   ( IResource resource, string error   ) => AddError ( resource, null, error,   false );
+        protected void AddWarning ( IResource resource, string warning ) => AddError ( resource, null, warning, true  );
+
+        private void AddError ( IResource resource, string number, string message, bool isWarning )
+        {
+            if ( Errors.TryGetValue ( resource, out var error ) )
+            {
+                error.ErrorNumber = error.ErrorNumber ?? number;
+
+                if ( ! error.ErrorText.Contains ( message ) )
+                    error.ErrorText += "\n" + message;
+
+                if ( ! isWarning )
+                    error.IsWarning = false;
+            }
+            else
+                Errors.Add ( resource, new CompilerError ( ) { ErrorNumber = number,
+                                                               ErrorText   = message,
+                                                               IsWarning   = isWarning } );
+        }
+
+        protected LinguistSupportBuilderSettings settings;
 
         public virtual CodeCompileUnit Build ( )
         {
+            settings = Settings.Setup ( CodeDomProvider );
+
             var validResources  = ValidateResourceNames    ( );
             var codeCompileUnit = ConfigureCodeCompileUnit ( new CodeCompileUnit ( ) );
-            var codeNamespace   = Code.CreateNamespace ( Namespace ?? ResourcesNamespace, "System" )
+            var codeNamespace   = Code.CreateNamespace ( settings.Namespace ?? settings.ResourcesNamespace, "System" )
                                       .AddTo ( codeCompileUnit );
 
             var support = GenerateClass ( ).AddTo ( codeNamespace );
 
-            GenerateClassMembers ( out var localizer ).AddRangeTo ( support );
+            GenerateClassMembers ( ).AddRangeTo ( support );
 
             foreach ( var entry in validResources )
-                GenerateProperty ( entry.Key, entry.Name, entry.Resource ).AddTo ( support );
+                GenerateProperty ( entry.Key, entry.Resource ).AddTo ( support );
 
             foreach ( var entry in validResources )
             {
                 if ( entry.NumberOfArguments <= 0 )
                     continue;
 
-                var resource   = entry.Resource as StringResource;
                 var methodName = entry.Key + FormatMethodSuffix;
                 var isUnique   = ! support.Members.Contains ( methodName );
                 if ( isUnique && CodeDomProvider.IsValidIdentifier ( methodName ) )
-                    GenerateFormatMethod ( localizer, methodName, entry.Key, entry.Name, resource, entry.NumberOfArguments ).AddTo ( support );
+                    GenerateFormatMethod ( methodName, entry.Key, entry.Resource, entry.NumberOfArguments ).AddTo ( support );
                 else
-                    resource.ErrorText = Format ( CannotCreateFormatMethod, methodName, entry.Name );
+                    AddError ( entry.Resource, Format ( CannotCreateFormatMethod, methodName, entry.Resource.Name ) );
             }
 
-            if ( GenerateWPFSupport )
+            if ( settings.GenerateWPFSupport )
                 GenerateWPFTypedLocalizeExtension ( validResources )?.AddTo ( codeNamespace );
-            else if ( GenerateXamarinFormsSupport )
+            else if ( settings.GenerateXamarinFormsSupport )
                 GenerateXamarinFormsTypedLocalizeExtension ( validResources )?.AddTo ( codeNamespace );
 
             CodeGenerator.ValidateIdentifiers ( codeCompileUnit );
@@ -167,7 +172,7 @@ namespace Linguist.Generator
             yield return CultureInfoFieldName;
             yield return NotifyCultureChangedMethodName;
 
-            if ( AccessModifiers.HasBitMask ( MemberAttributes.Static ) )
+            if ( settings.AccessModifiers.HasBitMask ( MemberAttributes.Static ) )
                 yield return "Static" + nameof ( INotifyPropertyChanged.PropertyChanged );
             else
                 yield return nameof ( INotifyPropertyChanged.PropertyChanged );
@@ -177,16 +182,16 @@ namespace Linguist.Generator
         {
             var generator = typeof ( LinguistSupportBuilder );
             var version   = generator.Assembly.GetName ( ).Version;
-            var type      = Code.CreateClass ( ClassName,
-                                               AccessModifiers,
+            var type      = Code.CreateClass ( settings.ClassName,
+                                               settings.AccessModifiers,
                                                CodeDomProvider.Supports ( GeneratorSupport.PartialTypes ) )
                                 .AddSummary ( ClassSummary );
 
-            if ( ! AccessModifiers.HasBitMask ( MemberAttributes.Static ) )
+            if ( ! settings.AccessModifiers.HasBitMask ( MemberAttributes.Static ) )
                 type.BaseTypes.Add ( Code.TypeRef < INotifyPropertyChanged > ( ) );
 
-            if ( CustomToolType != null ) type.AddRemarks ( ClassRemarksFormat,         generator.Name, CustomToolType.Name );
-            else                          type.AddRemarks ( ClassRemarksToollessFormat, generator.Name );
+            if ( settings.CustomToolType != null ) type.AddRemarks ( ClassRemarksFormat,         generator.Name, settings.CustomToolType.Name );
+            else                                   type.AddRemarks ( ClassRemarksToollessFormat, generator.Name );
 
             return type.Attributed ( Code.Attribute      < GeneratedCodeAttribute       > ( generator.FullName, version.ToString ( ) ),
                                      Code.Attribute      < DebuggerNonUserCodeAttribute > ( ),
@@ -195,7 +200,7 @@ namespace Linguist.Generator
                                      Code.Attribute      < SuppressMessageAttribute     > ( "Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces" ) );
         }
 
-        protected virtual IEnumerable < CodeTypeMember > GenerateClassMembers ( out CodeExpression localizer )
+        protected virtual IEnumerable < CodeTypeMember > GenerateClassMembers ( )
         {
             var editorBrowsable = Code.Attribute < EditorBrowsableAttribute > ( Code.Type < EditorBrowsableState > ( )
                                                                                     .Field ( nameof ( EditorBrowsableState.Advanced ) ) );
@@ -209,11 +214,9 @@ namespace Linguist.Generator
                       .Concat ( new [ ] { GenerateCultureProperty ( notifyCultureChanged, out var cultureField ).Attributed ( editorBrowsable ) } )
                       .Concat ( new [ ] { cultureField } );
 
-            if ( ResourceNamingStrategy != null )
-                members = members.Concat ( GenerateLocalizerSingleton ( resourceManager, out localizer ) )
+            if ( settings.LocalizerType != null )
+                members = members.Concat ( GenerateLocalizerSingleton ( resourceManager, out var localizer ) )
                                  .Concat ( new [ ] { GenerateLocalizerProperty ( localizer ) } );
-            else
-                localizer = null;
 
             return members;
         }
@@ -222,11 +225,11 @@ namespace Linguist.Generator
         {
             var ctor = new CodeConstructor ( )
             {
-                Attributes = AccessModifiers.HasBitMask ( MemberAttributes.Static ) ? MemberAttributes.Private :
-                                                                                      AccessModifiers & ~MemberAttributes.Static
+                Attributes = settings.AccessModifiers.HasBitMask ( MemberAttributes.Static ) ? MemberAttributes.Private :
+                                                                                               settings.AccessModifiers & ~MemberAttributes.Static
             };
 
-            return ctor.AddSummary ( ConstructorSummaryFormat, ClassName )
+            return ctor.AddSummary ( ConstructorSummaryFormat, settings.ClassName )
                        .Attributed ( Code.Attribute < SuppressMessageAttribute > ( "Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode" ) );
         }
 
@@ -236,27 +239,27 @@ namespace Linguist.Generator
             {
                 Name       = nameof ( INotifyPropertyChanged.PropertyChanged ),
                 Type       = Code.TypeRef < PropertyChangedEventHandler > ( ),
-                Attributes = MemberAttributes.Public | AccessModifiers & MemberAttributes.Static
+                Attributes = MemberAttributes.Public | settings.AccessModifiers & MemberAttributes.Static
             };
 
-            if ( AccessModifiers.HasBitMask ( MemberAttributes.Static ) )
+            if ( settings.AccessModifiers.HasBitMask ( MemberAttributes.Static ) )
                 propertyChangedEvent.Name = "Static" + propertyChangedEvent.Name;
             else
                 propertyChangedEvent.ImplementationTypes.Add ( Code.TypeRef < INotifyPropertyChanged > ( ) );
 
-            var propertyChanged = new CodeEventReferenceExpression ( Code.Access ( AccessModifiers ), propertyChangedEvent.Name );
-            var notify          = Code.CreateMethod ( typeof ( void ), NotifyCultureChangedMethodName, AccessModifiers );
+            var propertyChanged = new CodeEventReferenceExpression ( Code.Access ( settings.AccessModifiers ), propertyChangedEvent.Name );
+            var notify          = Code.CreateMethod ( typeof ( void ), NotifyCultureChangedMethodName, settings.AccessModifiers );
 
             notify.Statements.Add ( Code.Declare < PropertyChangedEventHandler > ( NotifyCultureChangedVariableName )
                                         .Initialize ( propertyChanged ) );
             notify.Statements.Add ( Code.If   ( Code.Variable ( NotifyCultureChangedVariableName ).ValueEquals ( Code.Null ) )
                                         .Then ( Code.Return   ( ) ) );
             notify.Statements.Add ( Code.Variable ( NotifyCultureChangedVariableName )
-                                        .InvokeDelegate ( Code.Access ( AccessModifiers ) ?? Code.Null,
+                                        .InvokeDelegate ( Code.Access ( settings.AccessModifiers ) ?? Code.Null,
                                                           Code.TypeRef < PropertyChangedEventArgs > ( )
                                                               .Construct ( Code.Null ) ) );
 
-            notifyCultureChanged = Code.Access ( AccessModifiers )
+            notifyCultureChanged = Code.Access ( settings.AccessModifiers )
                                        .Method ( NotifyCultureChangedMethodName )
                                        .Invoke ( );
 
@@ -265,11 +268,11 @@ namespace Linguist.Generator
 
         protected virtual CodeMemberProperty GenerateCultureProperty ( CodeExpression notifyCultureChanged, out CodeMemberField cultureField )
         {
-            cultureField = Code.CreateField < CultureInfo > ( CultureInfoFieldName, MemberAttributes.Private | AccessModifiers & MemberAttributes.Static );
+            cultureField = Code.CreateField < CultureInfo > ( CultureInfoFieldName, MemberAttributes.Private | settings.AccessModifiers & MemberAttributes.Static );
 
-            var field = Code.Access ( AccessModifiers ).Field ( CultureInfoFieldName );
+            var field = Code.Access ( settings.AccessModifiers ).Field ( CultureInfoFieldName );
 
-            return Code.CreateProperty < CultureInfo > ( CultureInfoPropertyName, AccessModifiers )
+            return Code.CreateProperty < CultureInfo > ( CultureInfoPropertyName, settings.AccessModifiers )
                        .Get ( get          => get.Return ( field ) )
                        .Set ( (set, value) =>
                               {
@@ -283,24 +286,24 @@ namespace Linguist.Generator
 
         protected virtual IEnumerable < CodeTypeMember > GenerateResourceManagerSingleton ( out CodeExpression singleton )
         {
-            return GenerateSingleton ( ResourceSet.ResourceManagerType,
+            return GenerateSingleton ( settings.ResourceManagerType,
                                        ResourceManagerFieldName,
-                                       ResourceSet.ResourceManagerInitializer ( ResourcesBaseName, ClassName ),
+                                       settings.ResourceManagerInitializer,
                                        true,
                                        out singleton );
         }
 
         protected virtual CodeMemberProperty GenerateResourceManagerProperty ( CodeExpression resourceManager )
         {
-            return Code.CreateProperty ( ResourceSet.ResourceManagerType, ResourceManagerPropertyName, AccessModifiers | MemberAttributes.Static, false )
+            return Code.CreateProperty ( settings.ResourceManagerType, ResourceManagerPropertyName, settings.AccessModifiers | MemberAttributes.Static, false )
                        .Get            ( get => get.Return ( resourceManager ) )
                        .AddSummary     ( ResourceManagerPropertySummary );
         }
 
         protected virtual IEnumerable < CodeTypeMember > GenerateLocalizerSingleton ( CodeExpression resourceManager, out CodeExpression localizer )
         {
-            var type        = ResourceSet.LocalizerType;
-            var initializer = ResourceSet.LocalizerInitializer ( resourceManager, ResourceNamingStrategyInitializer );
+            var type        = settings.LocalizerType;
+            var initializer = settings.LocalizerInitializer;
 
             return GenerateSingleton ( type,
                                        LocalizerFieldName,
@@ -311,7 +314,7 @@ namespace Linguist.Generator
 
         protected virtual CodeMemberProperty GenerateLocalizerProperty ( CodeExpression localizer )
         {
-            return Code.CreateProperty ( ResourceSet.LocalizerType, LocalizerPropertyName, AccessModifiers | MemberAttributes.Static, false )
+            return Code.CreateProperty ( settings.LocalizerType, LocalizerPropertyName, settings.AccessModifiers | MemberAttributes.Static, false )
                        .Get            ( get => get.Return ( localizer ) )
                        .AddSummary     ( LocalizerPropertySummary );
         }
@@ -351,21 +354,55 @@ namespace Linguist.Generator
             return new [ ] { field };
         }
 
-        protected virtual CodeMemberProperty GenerateProperty ( string propertyName, string resourceName, Resource resource )
+        protected virtual CodeMemberProperty GenerateProperty ( string propertyName, IResource resource )
         {
-            var resourceType    = resource.Type ?? Code.TypeRef < object > ( );
-            var resourceManager = Code.Static ( ).Property ( ResourceManagerPropertyName );
-            var culture         = Code.Access ( AccessModifiers ).Field ( CultureInfoFieldName );
-            var summary         = resource is StringResource stringResource ?
-                                  Format ( StringPropertySummary,    GeneratePreview ( stringResource.Value ) ) :
-                                  Format ( NonStringPropertySummary, resourceName );
+            var resourceType = resource.Type != null ? Code.TypeRef ( resource.Type, default ) : Code.TypeRef < object > ( );
+            var summary      = resource.Type == typeof ( string ).FullName ?
+                               Format ( StringPropertySummary,    GeneratePreview ( (string) resource.Value ) ) :
+                               Format ( NonStringPropertySummary, resource.Name );
 
-            return Code.CreateProperty ( resourceType, propertyName, AccessModifiers, false )
-                       .Get            ( get => get.Return ( resource.Getter ( resourceManager, resourceName, culture ) ) )
+            return Code.CreateProperty ( resourceType, propertyName, settings.AccessModifiers, false )
+                       .Get            ( get => get.Return ( GenerateResourceGetter ( resource ) ) )
                        .AddSummary     ( summary + FormatResourceComment ( resource.Comment ) );
         }
 
-        protected virtual CodeMemberMethod GenerateFormatMethod ( CodeExpression localizer, string methodName, string propertyName, string resourceName, StringResource resource, int numberOfArguments )
+        protected virtual CodeExpression GenerateResourceGetter ( IResource resource )
+        {
+            var culture = Code.Access ( settings.AccessModifiers ).Field ( CultureInfoFieldName );
+
+            if ( settings.LocalizerType != null )
+            {
+                var localizer = Code.Static ( ).Property ( LocalizerPropertyName );
+
+                if ( resource.Type == typeof ( string ).FullName )
+                    return localizer.Method ( "GetString" )
+                                    .Invoke ( culture, Code.Constant ( resource.Name ) );
+
+                return localizer.Method ( "GetObject" )
+                                .Invoke ( culture, Code.Constant ( resource.Name ) )
+                                .Cast   ( Code.TypeRef ( resource.Type, default ) );
+            }
+            else
+            {
+                var resourceManager = Code.Static ( ).Property ( ResourceManagerPropertyName );
+
+                if ( resource.Type == typeof ( string ).FullName )
+                    return resourceManager.Method ( "GetString" )
+                                          .Invoke ( Code.Constant ( resource.Name ), culture );
+
+                if ( resource.Type == typeof ( Stream                ).FullName ||
+                     resource.Type == typeof ( MemoryStream          ).FullName ||
+                     resource.Type == typeof ( UnmanagedMemoryStream ).FullName )
+                    return resourceManager.Method ( "GetStream" )
+                                          .Invoke ( Code.Constant ( resource.Name ), culture );
+
+                return resourceManager.Method ( "GetObject" )
+                                      .Invoke ( Code.Constant ( resource.Name ), culture )
+                                      .Cast   ( Code.TypeRef ( resource.Type, default ) );
+            }
+        }
+
+        protected virtual CodeMemberMethod GenerateFormatMethod ( string methodName, string propertyName, IResource resource, int numberOfArguments )
         {
             if ( resource == null )
                 throw new ArgumentNullException ( nameof ( resource ) );
@@ -373,18 +410,22 @@ namespace Linguist.Generator
             if ( numberOfArguments <= 0 )
                 throw new ArgumentOutOfRangeException ( nameof ( numberOfArguments ), numberOfArguments, "Number of argument must be greater than zero" );
 
+            var localizer = (CodeExpression) null;
+            if ( settings.LocalizerType != null )
+                localizer = Code.Static ( ).Property ( LocalizerPropertyName );
+
             var objectType   = Code.TypeRef < object > ( );
-            var summary      = Format ( FormatMethodSummary, GeneratePreview ( resource.Value ) );
-            var formatMethod = Code.CreateMethod ( typeof ( string ), methodName, AccessModifiers )
+            var summary      = Format ( FormatMethodSummary, GeneratePreview ( (string) resource.Value ) );
+            var formatMethod = Code.CreateMethod ( typeof ( string ), methodName, settings.AccessModifiers )
                                    .AddSummary   ( summary + FormatResourceComment ( resource.Comment ) );
 
             var format           = Code.Type < string > ( ).Method ( nameof ( string.Format ) );
-            var formatExpression = (CodeExpression) Code.Access ( AccessModifiers ).Property ( propertyName );
+            var formatExpression = (CodeExpression) Code.Access ( settings.AccessModifiers ).Property ( propertyName );
 
             if ( localizer != null )
             {
                 format           = localizer.Method ( nameof ( ILocalizer.Format ) );
-                formatExpression = Code.Constant ( resourceName );
+                formatExpression = Code.Constant ( resource.Name );
             }
 
             if ( numberOfArguments > 3 )
@@ -394,11 +435,11 @@ namespace Linguist.Generator
 
             var parameters = new CodeExpression [ initialArguments + numberOfArguments ];
 
-            parameters [ 0 ] = Code.Access ( AccessModifiers ).Field ( CultureInfoFieldName );
+            parameters [ 0 ] = Code.Access ( settings.AccessModifiers ).Field ( CultureInfoFieldName );
 
             if ( localizer != null )
             {
-                parameters [ 1 ] = Code.Access ( AccessModifiers ).Field ( CultureInfoFieldName );
+                parameters [ 1 ] = Code.Access ( settings.AccessModifiers ).Field ( CultureInfoFieldName );
                 parameters [ 2 ] = formatExpression;
             }
             else
@@ -465,7 +506,7 @@ namespace Linguist.Generator
             if ( ! CodeDomProvider.Supports ( GeneratorSupport.NestedTypes ) )
                 return null;
 
-            var type           = Code.CreateClass      ( ClassName + "Extension", MemberAttributes.Public );
+            var type           = Code.CreateClass      ( settings.ClassName + "Extension", MemberAttributes.Public );
             var keyEnum        = Code.CreateNestedEnum ( ResourceKeyEnumName, MemberAttributes.Public )
                                      .AddSummary       ( ResourceKeyEnumNameSummary )
                                      .AddTo            ( type );
@@ -519,7 +560,7 @@ namespace Linguist.Generator
                 .AddTo ( type );
 
             Code.CreateProperty ( Code.TypeRef < ILocalizer > ( ), "Localizer", MemberAttributes.Family | MemberAttributes.Override, false )
-                .Get   ( get => get.Return ( Code.Type ( ClassName, default ).Property ( LocalizerPropertyName ) ) )
+                .Get   ( get => get.Return ( Code.Type ( settings.ClassName, default ).Property ( LocalizerPropertyName ) ) )
                 .AddTo ( type );
 
             var translator  = Code.CreateField < string [ ] > ( ResourceKeyTranslatorFieldName, MemberAttributes.Private | MemberAttributes.Static )
@@ -532,12 +573,12 @@ namespace Linguist.Generator
 
             foreach ( var entry in entries )
             {
-                Code.CreateField ( keyEnumTypeRef, entry.Key, MemberAttributes.Const | AccessModifiers & ~MemberAttributes.Static )
+                Code.CreateField ( keyEnumTypeRef, entry.Key, MemberAttributes.Const | settings.AccessModifiers & ~MemberAttributes.Static )
                     .Initialize  ( Code.Constant ( index++ ) )
-                    .AddSummary  ( ResourceKeyFieldSummaryFormat, entry.Name )
+                    .AddSummary  ( ResourceKeyFieldSummaryFormat, entry.Resource.Name )
                     .AddTo       ( keyEnum );
 
-                translation.Initializers.Add ( Code.Constant ( entry.Name ) );
+                translation.Initializers.Add ( Code.Constant ( entry.Resource.Name ) );
             }
 
             var translate = Code.CreateMethod ( typeof ( string ),
@@ -562,24 +603,23 @@ namespace Linguist.Generator
 
         protected virtual IList < Entry > ValidateResourceNames ( )
         {
-            var classProperties = new HashSet < string > ( GetClassMemberNames ( ) );
-            var entries         = new SortedList < string, Entry > ( ResourceSet.Resources.Count, StringComparer.InvariantCultureIgnoreCase );
+            var classProperties = new HashSet    < string > ( GetClassMemberNames ( ) );
+            var entries         = new SortedList < string, Entry > ( ResourceSet.Count, StringComparer.InvariantCultureIgnoreCase );
 
-            foreach ( var entry in ResourceSet.Resources )
+            foreach ( var resource in ResourceSet )
             {
-                var name     = entry.Key;
-                var key      = name;
-                var resource = entry.Value;
+                var name = resource.Name;
+                var key  = name;
 
                 if ( classProperties.Contains ( name ) )
                 {
-                    resource.ErrorText = Format ( PropertyAlreadyExists, name );
+                    AddError ( resource, Format ( PropertyAlreadyExists, name ) );
                     continue;
                 }
 
-                if ( typeof ( void ).FullName == resource.Type?.BaseType )
+                if ( typeof ( void ).FullName == resource.Type )
                 {
-                    resource.ErrorText = Format ( InvalidPropertyType, resource.Type, name );
+                    AddError ( resource, Format ( InvalidPropertyType, resource.Type, name ) );
                     continue;
                 }
 
@@ -588,13 +628,12 @@ namespace Linguist.Generator
                                                                        name [ 1 ] == '>';
                 if ( isWinFormsLocalizableResource )
                 {
-                    resource.IsWarning = true;
-                    resource.ErrorText = Format ( SkippingWinFormsResource, name );
+                    AddWarning ( resource, Format ( SkippingWinFormsResource, name ) );
                     continue;
                 }
 
-                var isBaseName = ResourceNamingStrategy == null ||
-                                 ResourceNamingStrategy.ParseArguments ( PluralRules.Invariant, name, out _ ) == name;
+                var isBaseName = settings.ResourceNamingStrategy == null ||
+                                 settings.ResourceNamingStrategy.ParseArguments ( PluralRules.Invariant, name, out _ ) == name;
                 if ( ! isBaseName )
                     continue;
 
@@ -604,65 +643,62 @@ namespace Linguist.Generator
 
                     if ( key == null )
                     {
-                        resource.ErrorText = Format ( CannotCreateResourceProperty, name );
+                        AddError ( resource, Format ( CannotCreateResourceProperty, name ) );
                         continue;
                     }
                 }
 
                 if ( entries.TryGetValue ( key, out var duplicate ) )
                 {
-                    if ( IsNullOrEmpty ( duplicate.Resource.ErrorText ) )
-                        duplicate.Resource.ErrorText = Format ( CannotCreateResourceProperty, duplicate.Name );
+                    AddError ( duplicate.Resource, Format ( CannotCreateResourceProperty, duplicate.Resource.Name ) );
 
                     entries.Remove ( key );
 
-                    resource.ErrorText = Format ( CannotCreateResourceProperty, name );
+                    AddError ( resource, Format ( CannotCreateResourceProperty, name ) );
 
                     continue;
                 }
 
-                entries.Add ( key, new Entry ( name, key, resource ) );
+                entries.Add ( key, new Entry ( key, resource, GetNumberOfArguments ( resource ) ) );
             }
 
             return entries.Values.ToList ( );
         }
 
+        private int GetNumberOfArguments ( IResource resource )
+        {
+            if ( resource.Type != typeof ( string ).FullName )
+                return 0;
+
+            try
+            {
+                var formatString      = FormatString.Parse ( (string) resource.Value );
+                var numberOfArguments = formatString.ArgumentHoles
+                                                    .Select ( argumentHole => argumentHole.Index )
+                                                    .DefaultIfEmpty ( -1 )
+                                                    .Max ( ) + 1;
+                return numberOfArguments;
+            }
+            catch ( FormatException exception )
+            {
+                AddError ( resource, Format ( ErrorInStringResourceFormat, exception.Message, resource.Name ) );
+            }
+
+            return 0;
+        }
+
         protected class Entry
         {
-            public Entry ( string name, string key, Resource resource )
+            public Entry ( string key, IResource resource, int numberOfArguments )
             {
-                Name              = name;
                 Key               = key;
                 Resource          = resource;
-                NumberOfArguments = GetNumberOfArguments ( name, resource );
+                NumberOfArguments = numberOfArguments;
             }
 
-            public string   Name              { get; }
-            public string   Key               { get; }
-            public Resource Resource          { get; }
-            public int      NumberOfArguments { get; }
-
-            private static int GetNumberOfArguments ( string resourceName, Resource resource )
-            {
-                if ( ! ( resource is StringResource stringResource ) )
-                    return 0;
-
-                try
-                {
-                    var formatString      = FormatString.Parse ( stringResource.Value );
-                    var numberOfArguments = formatString.ArgumentHoles
-                                                        .Select ( argumentHole => argumentHole.Index )
-                                                        .DefaultIfEmpty ( -1 )
-                                                        .Max ( ) + 1;
-                    return numberOfArguments;
-                }
-                catch ( FormatException exception )
-                {
-                    resource.ErrorText = Format ( ErrorInStringResourceFormat, exception.Message, resourceName );
-                }
-
-                return 0;
-            }
+            public string    Key               { get; }
+            public IResource Resource          { get; }
+            public int       NumberOfArguments { get; }
         }
     }
 }

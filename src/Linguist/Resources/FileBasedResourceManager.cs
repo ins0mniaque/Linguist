@@ -173,7 +173,7 @@ namespace Linguist.Resources
 
         protected virtual ResourceSet LoadResourceSet ( string resourceFileName )
         {
-            return (ResourceSet) Activator.CreateInstance ( ResourceSetType,
+            return (ResourceSet) Activator.CreateInstance ( ResourceSetType ?? typeof ( ResourceReader ),
                                                             BindingFlags.Instance | BindingFlags.Public | BindingFlags.CreateInstance,
                                                             null,
                                                             new object [ ] { resourceFileName },
@@ -245,12 +245,11 @@ namespace Linguist.Resources
             return path;
         }
 
-        private static readonly char [ ] PathFormatTemplateCharacters        = new [ ] { '{', '}' };
-        private const           string   PathFormatInNeutralCultureNameError = "Path format passed as neutral culture name argument. Make sure to specify the neutralCultureName, or null to default to a file without a culture identifier.";
+        private const string PathFormatInNeutralCultureNameError = "Path format passed as neutral culture name argument. Make sure to specify the neutralCultureName, or null to default to a file without a culture identifier.";
 
         private static string ValidateNeutralCultureName ( string neutralCultureName )
         {
-            if ( neutralCultureName?.IndexOfAny ( PathFormatTemplateCharacters ) >= 0 )
+            if ( TemplateEngine.HasArguments ( neutralCultureName ) )
                 throw new ArgumentException ( PathFormatInNeutralCultureNameError, nameof ( neutralCultureName ) );
 
             return neutralCultureName;

@@ -43,8 +43,9 @@ namespace Linguist.VisualStudio
                                                                    AccessModifier,
                                                                    GetType ( ) );
 
-            builder.GenerateWPFSupport          = Project.HasReference ( "Linguist.WPF" );
-            builder.GenerateXamarinFormsSupport = Project.HasReference ( "Linguist.Xamarin.Forms" );
+            builder.Settings.GenerateLocalizerSupport    = Project.HasReference ( "Linguist" );
+            builder.Settings.GenerateWPFSupport          = Project.HasReference ( "Linguist.WPF" );
+            builder.Settings.GenerateXamarinFormsSupport = Project.HasReference ( "Linguist.Xamarin.Forms" );
 
             var code      = builder.Build ( );
             var errors    = builder.GetErrors ( );

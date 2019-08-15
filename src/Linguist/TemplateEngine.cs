@@ -8,6 +8,11 @@ namespace Linguist
     {
         private static readonly Regex engine = new Regex ( @"\{(.+?)\}", RegexOptions.Compiled );
 
+        public static bool HasArguments ( string template )
+        {
+            return ! string.IsNullOrEmpty ( template ) && engine.IsMatch ( template );
+        }
+
         public TemplateEngine ( string template ) : base ( StringComparer.InvariantCultureIgnoreCase )
         {
             Template = template;

@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Resources;
 
 namespace Linguist.Resources
@@ -21,23 +19,11 @@ namespace Linguist.Resources
             if ( type == Localizer.Path.Type.ManifestResource )
                 return new ResourceManager ( Localizer.Path.GetManifestResourceName ( path ),
                                              Assembly.Load ( Localizer.Path.GetManifestResourceAssembly ( path ) ),
-                                             GetResourceSetType ( path ) );
+                                             AutoDetect.ResourceSetType ( path ) );
 
-            return ResourceManager.CreateFileBasedResourceManager ( Path.GetFileName      ( path ),
-                                                                    Path.GetDirectoryName ( path ),
-                                                                    GetResourceSetType    ( path ) );
-        }
-
-        private static Type GetResourceSetType ( string path )
-        {
-            var extension = Localizer.Path.GetExtension ( path )?.ToLowerInvariant ( );
-
-            switch ( extension )
-            {
-                case "resx" :
-                case "resw" :
-                default     : return null;
-            }
+            return new FileBasedResourceManager ( AutoDetect.PathFormat ( path, out var neutralCultureName ),
+                                                  neutralCultureName,
+                                                  AutoDetect.ResourceSetType ( path ) );
         }
     }
 }

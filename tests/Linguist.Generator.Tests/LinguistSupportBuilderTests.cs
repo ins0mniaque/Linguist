@@ -43,6 +43,8 @@ namespace Linguist.Generator.Tests
                                              accessModifiers,
                                              customToolType );
 
+            builder.Settings.GenerateLocalizerSupport = true;
+
             #if NET461
             var compiler    = new CSharpCodeProvider ( new XunitCompilerSettings ( Language.CSharp ) );
             var parameters  = GenerateCompilerParameters ( "System.dll",
@@ -78,7 +80,7 @@ namespace Linguist.Generator.Tests
                                              accessModifiers,
                                              customToolType );
 
-            builder.GenerateWPFSupport = true;
+            builder.Settings.GenerateWPFSupport = true;
 
             #if NET461
             var compiler    = new CSharpCodeProvider ( new XunitCompilerSettings ( Language.CSharp ) );
@@ -120,7 +122,7 @@ namespace Linguist.Generator.Tests
                                              accessModifiers,
                                              customToolType );
 
-            builder.GenerateXamarinFormsSupport = true;
+            builder.Settings.GenerateXamarinFormsSupport = true;
 
             #if NET461
             var compiler    = new CSharpCodeProvider ( new XunitCompilerSettings ( Language.CSharp ) );
@@ -130,6 +132,40 @@ namespace Linguist.Generator.Tests
                                                            "Xamarin.Forms.Core.dll",
                                                            "Linguist.dll",
                                                            "Linguist.Xamarin.Forms.dll" );
+            var compilation = GenerateCodeThenCompile ( builder,
+                                                        provider,
+                                                        compiler,
+                                                        parameters );
+
+            Assert.Empty ( compilation.Errors );
+            #else
+            Assert.NotEmpty ( GenerateCode ( builder, provider ) );
+            #endif
+        }
+
+        [ Theory ]
+        [ InlineData ( "Data/Resources.resx", "Namespace", "ResourceNamespace", Public   | Static, null ) ]
+        [ InlineData ( "Data/Resources.resx", "Namespace", "ResourceNamespace", Assembly | Static, null ) ]
+        [ InlineData ( "Data/Resources.resx", "Namespace", "ResourceNamespace", Public,            null ) ]
+        [ InlineData ( "Data/Resources.resx", "Namespace", "ResourceNamespace", Assembly,          null ) ]
+        #if NET461
+        public void GeneratesCSharpCodeWithoutLocalizerThatCompilesWithoutErrors ( string file, string fileNamespace, string resourceNamespace, MemberAttributes accessModifiers, Type customToolType )
+        #else
+        public void GeneratesCSharpCodeWithoutLocalizer                          ( string file, string fileNamespace, string resourceNamespace, MemberAttributes accessModifiers, Type customToolType )
+        #endif
+        {
+            var provider = new Microsoft.CSharp.CSharpCodeProvider ( );
+            var builder  = GenerateBuilder ( provider,
+                                             file,
+                                             fileNamespace,
+                                             resourceNamespace,
+                                             accessModifiers,
+                                             customToolType );
+
+            #if NET461
+            var compiler    = new CSharpCodeProvider ( new XunitCompilerSettings ( Language.CSharp ) );
+            var parameters  = GenerateCompilerParameters ( "System.dll",
+                                                           "System.Drawing.dll" );
             var compilation = GenerateCodeThenCompile ( builder,
                                                         provider,
                                                         compiler,
@@ -159,6 +195,8 @@ namespace Linguist.Generator.Tests
                                              resourceNamespace,
                                              accessModifiers,
                                              customToolType );
+
+            builder.Settings.GenerateLocalizerSupport = true;
 
             #if NET461
             var compiler    = new VBCodeProvider ( new XunitCompilerSettings ( Language.VisualBasic ) );
@@ -196,7 +234,7 @@ namespace Linguist.Generator.Tests
                                              accessModifiers,
                                              customToolType );
 
-            builder.GenerateWPFSupport = true;
+            builder.Settings.GenerateWPFSupport = true;
 
             #if NET461
             var compiler    = new VBCodeProvider ( new XunitCompilerSettings ( Language.VisualBasic ) );
@@ -239,7 +277,7 @@ namespace Linguist.Generator.Tests
                                              accessModifiers,
                                              customToolType );
 
-            builder.GenerateXamarinFormsSupport = true;
+            builder.Settings.GenerateXamarinFormsSupport = true;
 
             #if NET461
             var compiler    = new VBCodeProvider ( new XunitCompilerSettings ( Language.VisualBasic ) );
@@ -250,6 +288,41 @@ namespace Linguist.Generator.Tests
                                                            "Xamarin.Forms.Core.dll",
                                                            "Linguist.dll",
                                                            "Linguist.Xamarin.Forms.dll" );
+            var compilation = GenerateCodeThenCompile ( builder,
+                                                        provider,
+                                                        compiler,
+                                                        parameters );
+
+            Assert.Empty ( compilation.Errors );
+            #else
+            Assert.NotEmpty ( GenerateCode ( builder, provider ) );
+            #endif
+        }
+
+        [ Theory ]
+        [ InlineData ( "Data/Resources.resx", "Namespace", "ResourceNamespace", Public   | Static, null ) ]
+        [ InlineData ( "Data/Resources.resx", "Namespace", "ResourceNamespace", Assembly | Static, null ) ]
+        [ InlineData ( "Data/Resources.resx", "Namespace", "ResourceNamespace", Public,            null ) ]
+        [ InlineData ( "Data/Resources.resx", "Namespace", "ResourceNamespace", Assembly,          null ) ]
+        #if NET461
+        public void GeneratesVBCodeWithoutLocalizerThatCompilesWithoutErrors ( string file, string fileNamespace, string resourceNamespace, MemberAttributes accessModifiers, Type customToolType )
+        #else
+        public void GeneratesVBCodeWithoutLocalizer                          ( string file, string fileNamespace, string resourceNamespace, MemberAttributes accessModifiers, Type customToolType )
+        #endif
+        {
+            var provider = new Microsoft.VisualBasic.VBCodeProvider ( );
+            var builder  = GenerateBuilder ( provider,
+                                             file,
+                                             fileNamespace,
+                                             resourceNamespace,
+                                             accessModifiers,
+                                             customToolType );
+
+            #if NET461
+            var compiler    = new VBCodeProvider ( new XunitCompilerSettings ( Language.VisualBasic ) );
+            var parameters  = GenerateCompilerParameters ( "System.dll",
+                                                           "System.Drawing.dll",
+                                                           "System.Web.dll" );
             var compilation = GenerateCodeThenCompile ( builder,
                                                         provider,
                                                         compiler,
