@@ -43,7 +43,7 @@ namespace Linguist.Generator.Tests
                                              accessModifiers,
                                              customToolType );
 
-            builder.Settings.GenerateLocalizerSupport = true;
+            builder.Settings.ConfigureResourceManager ( resourceNamespace + '.' + builder.Settings.ClassName );
 
             #if NET461
             var compiler    = new CSharpCodeProvider ( new XunitCompilerSettings ( Language.CSharp ) );
@@ -80,6 +80,7 @@ namespace Linguist.Generator.Tests
                                              accessModifiers,
                                              customToolType );
 
+            builder.Settings.ConfigureResourceManager ( resourceNamespace + '.' + builder.Settings.ClassName );
             builder.Settings.GenerateWPFSupport = true;
 
             #if NET461
@@ -122,6 +123,7 @@ namespace Linguist.Generator.Tests
                                              accessModifiers,
                                              customToolType );
 
+            builder.Settings.ConfigureResourceManager ( resourceNamespace + '.' + builder.Settings.ClassName );
             builder.Settings.GenerateXamarinFormsSupport = true;
 
             #if NET461
@@ -162,6 +164,8 @@ namespace Linguist.Generator.Tests
                                              accessModifiers,
                                              customToolType );
 
+            builder.Settings.ConfigureWithoutLocalizer ( resourceNamespace + '.' + builder.Settings.ClassName );
+
             #if NET461
             var compiler    = new CSharpCodeProvider ( new XunitCompilerSettings ( Language.CSharp ) );
             var parameters  = GenerateCompilerParameters ( "System.dll",
@@ -196,7 +200,7 @@ namespace Linguist.Generator.Tests
                                              accessModifiers,
                                              customToolType );
 
-            builder.Settings.GenerateLocalizerSupport = true;
+            builder.Settings.ConfigureResourceManager ( resourceNamespace + '.' + builder.Settings.ClassName );
 
             #if NET461
             var compiler    = new VBCodeProvider ( new XunitCompilerSettings ( Language.VisualBasic ) );
@@ -234,6 +238,7 @@ namespace Linguist.Generator.Tests
                                              accessModifiers,
                                              customToolType );
 
+            builder.Settings.ConfigureResourceManager ( resourceNamespace + '.' + builder.Settings.ClassName );
             builder.Settings.GenerateWPFSupport = true;
 
             #if NET461
@@ -277,6 +282,7 @@ namespace Linguist.Generator.Tests
                                              accessModifiers,
                                              customToolType );
 
+            builder.Settings.ConfigureResourceManager ( resourceNamespace + '.' + Path.GetFileNameWithoutExtension ( file ) );
             builder.Settings.GenerateXamarinFormsSupport = true;
 
             #if NET461
@@ -318,6 +324,8 @@ namespace Linguist.Generator.Tests
                                              accessModifiers,
                                              customToolType );
 
+            builder.Settings.ConfigureWithoutLocalizer ( resourceNamespace + '.' + builder.Settings.ClassName );
+
             #if NET461
             var compiler    = new VBCodeProvider ( new XunitCompilerSettings ( Language.VisualBasic ) );
             var parameters  = GenerateCompilerParameters ( "System.dll",
@@ -336,13 +344,16 @@ namespace Linguist.Generator.Tests
 
         private static LinguistSupportBuilder GenerateBuilder ( CodeDomProvider provider, string file, string fileNamespace, string resourceNamespace, MemberAttributes accessModifiers, Type customToolType )
         {
-            return LinguistSupportBuilder.GenerateBuilder ( provider,
-                                                            GetFullPath ( file ),
-                                                            ReadFile    ( file ),
-                                                            fileNamespace,
-                                                            resourceNamespace,
-                                                            accessModifiers,
-                                                            customToolType );
+            var resourceSet  = ResourceExtractor.ExtractResources ( GetFullPath ( file ), ReadFile ( file ) );
+            var settings     = new LinguistSupportBuilderSettings ( );
+            var baseName     = Path.GetFileNameWithoutExtension ( file );
+
+            settings.ClassName       = baseName;
+            settings.Namespace       = fileNamespace ?? resourceNamespace;
+            settings.AccessModifiers = accessModifiers;
+            settings.CustomToolType  = customToolType;
+
+            return new LinguistSupportBuilder ( provider, resourceSet, settings );
         }
 
         private static string GenerateCode ( LinguistSupportBuilder builder, CodeDomProvider provider )

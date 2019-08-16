@@ -115,6 +115,28 @@ namespace Linguist.CodeDom.Fluent
             return type;
         }
 
+        public static CodeConstructor Constructor ( )
+        {
+            return new CodeConstructor ( ) { Attributes = MemberAttributes.Public };
+        }
+
+        public static CodeTypeConstructor Static ( this CodeConstructor ctor )
+        {
+            var cctor = new CodeTypeConstructor ( ) { Attributes       = MemberAttributes.Static,
+                                                      CustomAttributes = ctor.CustomAttributes,
+                                                      LinePragma       = ctor.LinePragma };
+
+            cctor.StartDirectives.AddRange ( ctor.StartDirectives );
+            cctor.Comments       .AddRange ( ctor.Comments        );
+            cctor.Statements     .AddRange ( ctor.Statements      );
+            cctor.EndDirectives  .AddRange ( ctor.EndDirectives   );
+
+            foreach ( System.Collections.DictionaryEntry entry in ctor.UserData )
+                cctor.UserData.Add ( entry.Key, entry.Value );
+
+            return cctor;
+        }
+
         public static CodeMemberEvent Event ( CodeTypeReference handlerType, string name )
         {
             return new CodeMemberEvent ( ) { Name = name, Type = handlerType, Attributes = MemberAttributes.Public };

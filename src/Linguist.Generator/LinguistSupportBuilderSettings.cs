@@ -1,7 +1,6 @@
 ﻿using System;
 using System.CodeDom;
 using System.CodeDom.Compiler;
-using System.Reflection;
 using System.Resources;
 
 using Linguist.CodeDom;
@@ -17,115 +16,111 @@ namespace Linguist.Generator
 
     public class LinguistSupportBuilderSettings
     {
-        public string           BaseName           { get; set; }
-        public string           Path               { get; set; }
-        public string           Namespace          { get; set; }
-        public string           ResourcesNamespace { get; set; }
-        public string           ResourceSetType    { get; set; }
-        public MemberAttributes AccessModifiers    { get; set; }
-        public Type             CustomToolType     { get; set; }
+        public string           ClassName       { get; set; }
+        public string           Namespace       { get; set; }
+        public MemberAttributes AccessModifiers { get; set; } = MemberAttributes.Assembly | MemberAttributes.Static;
+        public Type             CustomToolType  { get; set; }
 
-        public IResourceNamingStrategy ResourceNamingStrategy            { get; set; } = Resources.Naming.ResourceNamingStrategy.Default;
-        public CodeExpression          ResourceNamingStrategyInitializer { get; set; }
-
-        public bool GenerateLocalizerSupport    { get; set; }
         public bool GenerateWPFSupport          { get; set; }
         public bool GenerateXamarinFormsSupport { get; set; }
 
-        internal string         ClassName         { get; private set; }
-        internal string         ResourcesBaseName { get; private set; }
-        internal TypeAttributes TypeAttributes    { get; private set; }
+        public IResourceNamingStrategy ResourceNamingStrategy            { get; set; } = Resources.Naming.ResourceNamingStrategy.Default;
+        public CodeExpression          ResourceNamingStrategyInitializer { get; set; }
+        public CodeTypeReference       ResourceManagerType               { get; set; }
+        public CodeExpression          ResourceManagerInitializer        { get; set; }
+        public CodeTypeReference       LocalizerType                     { get; set; }
+        public CodeExpression          LocalizerInitializer              { get; set; }
 
-        internal CodeTypeReference  ResourceManagerType        { get; private set; }
-        internal CodeExpression     ResourceManagerInitializer { get; private set; }
-        internal CodeTypeReference  LocalizerType              { get; private set; }
-        internal CodeExpression     LocalizerInitializer       { get; private set; }
-
-        // TODO: Clone settings
-        //       CodeDomProvider.Supports ( GeneratorSupport.* ) ) checks
-        internal LinguistSupportBuilderSettings Setup ( CodeDomProvider codeDomProvider )
+        public void ConfigureWithoutLocalizer ( string manifestResourceBaseName, string resourceSetType = null )
         {
-            codeDomProvider = codeDomProvider ?? throw new ArgumentNullException ( nameof ( codeDomProvider ) );
-
-            BaseName           = BaseName        ?? throw new ArgumentNullException ( nameof ( BaseName        ) );
-            Namespace          = IsNullOrEmpty ( Namespace         ) ? null : codeDomProvider.ValidateIdentifier ( Namespace, true );
-            ResourcesNamespace = IsNullOrEmpty ( ResourcesNamespace ) ? null : ResourcesNamespace;
-            ResourcesBaseName  = ResourcesNamespace != null ? ResourcesNamespace + '.' + BaseName :
-                                 Namespace          != null ? Namespace          + '.' + BaseName :
-                                                              BaseName;
-            ClassName          = codeDomProvider.ValidateBaseName        ( BaseName );
-            AccessModifiers    = codeDomProvider.ValidateAccessModifiers ( AccessModifiers );
-            TypeAttributes     = AccessModifiers.HasBitMask ( MemberAttributes.Public ) ? TypeAttributes.Public :
-                                                                                          TypeAttributes.AutoLayout;
-
-            GenerateLocalizerSupport = GenerateLocalizerSupport | GenerateWPFSupport | GenerateXamarinFormsSupport;
-
-            if ( IsNullOrEmpty ( Path ) )
-            {
-                var binaryResourceSetType = GenerateLocalizerSupport ? typeof ( BinaryResourceSet ).FullName : null;
-
-                ResourceManagerType        = Code.Type < ResourceManager > ( );
-                ResourceManagerInitializer = DefaultManagerInitializer ( ResourcesBaseName, ClassName, binaryResourceSetType );
-            }
-            else
-            {
-                var format = AutoDetect.PathFormat ( Path, out var neutralCultureName );
-
-                ResourceManagerType        = Code.Type < FileBasedResourceManager > ( );
-                ResourceManagerInitializer = FileBasedManagerInitializer ( ResourcesBaseName, format, neutralCultureName, ResourceSetType );
-            }
-
-            if ( GenerateLocalizerSupport )
-            {
-                LocalizerType        = Code.Type < ResourceManagerLocalizer > ( );
-                LocalizerInitializer = DefaultLocalizerInitializer ( ResourceNamingStrategyInitializer );
-            }
-
-            return this;
+            ResourceManagerType        = Code.Type < ResourceManager > ( );
+            ResourceManagerInitializer = ConstructResourceManager ( manifestResourceBaseName, resourceSetType );
         }
 
-        private static CodeExpression DefaultManagerInitializer ( string baseName, string className, string resourceSetType )
+        public void ConfigureResourceManager ( string manifestResourceBaseName, string resourceSetType = null )
         {
-            var initializer = Code.Type < ResourceManager > ( )
-                                  .Construct ( Code.Constant ( baseName ),
-                                               Code.Type     ( className ).Local ( )
-                                                   .TypeOf   ( )
-                                                   .Property ( nameof ( Type.Assembly ) ) );
+            resourceSetType = resourceSetType ?? typeof ( BinaryResourceSet ).FullName;
+
+            ResourceManagerType        = Code.Type < ResourceManager > ( );
+            ResourceManagerInitializer = ConstructResourceManager ( manifestResourceBaseName, resourceSetType );
+
+            LocalizerType        = Code.Type < ResourceManagerLocalizer > ( );
+            LocalizerInitializer = ConstructLocalizer ( ResourceNamingStrategyInitializer );
+        }
+
+        public void ConfigureFileBasedResourceManager ( string baseName, string path, string resourceSetType = null )
+        {
+            resourceSetType = resourceSetType ?? AutoDetect.ResourceSetType ( path ).FullName;
+
+            var pathFormat = AutoDetect.PathFormat ( path, out var neutralCultureName );
+
+            ResourceManagerType        = Code.Type < FileBasedResourceManager > ( );
+            ResourceManagerInitializer = ResourceManagerType.Construct ( Code.Constant ( baseName ),
+                                                                         Code.Constant ( pathFormat ),
+                                                                         Code.Constant ( neutralCultureName ),
+                                                                         Code.TypeOf   ( Code.Type ( resourceSetType ) ) );
+
+            LocalizerType        = Code.Type < ResourceManagerLocalizer > ( );
+            LocalizerInitializer = ConstructLocalizer ( ResourceNamingStrategyInitializer );
+        }
+
+        private CodeObjectCreateExpression ConstructResourceManager ( string manifestResourceBaseName, string resourceSetType = null )
+        {
+            var resourceManager = Code.Type < ResourceManager > ( )
+                                      .Construct ( Code.Constant ( manifestResourceBaseName ),
+                                                   Code.Type     ( ClassName ).Local ( )
+                                                       .TypeOf   ( )
+                                                       .Property ( nameof ( Type.Assembly ) ) );
 
             if ( ! IsNullOrEmpty ( resourceSetType ) )
-                initializer.Parameters.Add ( Code.TypeOf ( Code.Type ( resourceSetType ) ) );
+                resourceManager.Parameters.Add ( Code.TypeOf ( Code.Type ( resourceSetType ) ) );
 
-            return initializer;
+            return resourceManager;
         }
 
-        private static CodeExpression FileBasedManagerInitializer ( string baseName, string pathFormat, string neutralCultureName, string resourceSetType )
+        private static CodeExpression ConstructLocalizer ( CodeExpression resourceNamingStrategy )
         {
-            var initializer = Code.Type < FileBasedResourceManager > ( )
-                                  .Construct ( Code.Constant ( baseName ),
-                                               Code.Constant ( pathFormat ),
-                                               Code.Constant ( neutralCultureName ) );
-
-            if ( ! IsNullOrEmpty ( resourceSetType ) )
-                initializer.Parameters.Add ( Code.TypeOf ( Code.Type ( resourceSetType ) ) );
-
-            return initializer;
-        }
-
-        private static CodeExpression DefaultLocalizerInitializer ( CodeExpression resourceNamingStrategy )
-        {
-            return DefaultLocalizerInitializer ( Code.Static ( ).Property ( ResourceManagerPropertyName ), resourceNamingStrategy );
-        }
-
-        private static CodeExpression DefaultLocalizerInitializer ( CodeExpression resourceManager, CodeExpression resourceNamingStrategy )
-        {
-            var initializer = Code.Type < ResourceManagerLocalizer > ( )
-                                  .Construct ( resourceManager );
+            var resourceManager = Code.Static ( ).Property ( ResourceManagerPropertyName );
+            var initializer     = Code.Type < ResourceManagerLocalizer > ( )
+                                      .Construct ( resourceManager );
 
             if ( resourceNamingStrategy != null )
                 initializer.Parameters.Add ( Code.Type < ResourceManagerPluralizer > ( )
                                                  .Construct ( resourceManager, resourceNamingStrategy ) );
 
             return initializer;
+        }
+
+        public LinguistSupportBuilderSettings Validate ( CodeDomProvider codeDomProvider )
+        {
+            var settings = Clone ( );
+
+            settings.ClassName       = codeDomProvider.ValidateIdentifier      ( settings.ClassName );
+            settings.Namespace       = codeDomProvider.ValidateIdentifier      ( settings.Namespace, true );
+            settings.AccessModifiers = codeDomProvider.ValidateAccessModifiers ( settings.AccessModifiers );
+
+            return settings;
+        }
+
+        public LinguistSupportBuilderSettings Clone ( )
+        {
+            return new LinguistSupportBuilderSettings ( )
+            {
+                ClassName       = ClassName,
+                Namespace       = Namespace,
+                AccessModifiers = AccessModifiers,
+                CustomToolType  = CustomToolType,
+
+                GenerateWPFSupport          = GenerateWPFSupport,
+                GenerateXamarinFormsSupport = GenerateXamarinFormsSupport,
+
+                ResourceNamingStrategy            = ResourceNamingStrategy,
+                ResourceNamingStrategyInitializer = ResourceNamingStrategyInitializer,
+                ResourceManagerType               = ResourceManagerType,
+                ResourceManagerInitializer        = ResourceManagerInitializer,
+                LocalizerType                     = LocalizerType,
+                LocalizerInitializer              = LocalizerInitializer
+            };
         }
     }
 }

@@ -35,18 +35,31 @@ namespace Linguist.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread ( );
 
-            var builder = LinguistSupportBuilder.GenerateBuilder ( CodeDomProvider,
-                                                                   inputFileName,
-                                                                   inputFileContent,
-                                                                   FileNamespace,
-                                                                   GetDefaultNamespace ( ),
-                                                                   AccessModifier,
-                                                                   GetType ( ) );
+            var fileBased               = ProjectItem.Properties.Item ( "ItemType" ).Value?.ToString ( ) != "EmbeddedResource";
+            var hasLinguist             = Project.HasReference ( "Linguist" );
+            var hasLinguistWPF          = Project.HasReference ( "Linguist.WPF" );
+            var hasLinguistXamarinForms = Project.HasReference ( "Linguist.Xamarin.Forms" );
 
-            builder.Settings.GenerateLocalizerSupport    = Project.HasReference ( "Linguist" );
-            builder.Settings.GenerateWPFSupport          = Project.HasReference ( "Linguist.WPF" );
-            builder.Settings.GenerateXamarinFormsSupport = Project.HasReference ( "Linguist.Xamarin.Forms" );
+            hasLinguist = hasLinguist || hasLinguistWPF || hasLinguistXamarinForms;
 
+            var resourceSet  = ResourceExtractor.ExtractResources ( inputFileName, inputFileContent );
+            var settings     = new LinguistSupportBuilderSettings ( );
+            var baseName     = Path.GetFileNameWithoutExtension ( inputFileName );
+            var manifestPath = GetDefaultNamespace ( );
+            var relativePath = Path.Combine ( Project.Name, Path.Combine ( manifestPath.Substring ( Project.Name.Length ).Split ( '.' ) ) );
+
+            settings.ClassName                   = baseName;
+            settings.Namespace                   = FileNamespace ?? manifestPath;
+            settings.AccessModifiers             = AccessModifier;
+            settings.CustomToolType              = GetType ( );
+            settings.GenerateWPFSupport          = hasLinguistWPF;
+            settings.GenerateXamarinFormsSupport = hasLinguistXamarinForms;
+
+            if      ( fileBased   ) settings.ConfigureFileBasedResourceManager ( baseName, Path.Combine ( relativePath, Path.GetFileName ( inputFileName ) ) );
+            else if ( hasLinguist ) settings.ConfigureResourceManager          ( manifestPath + '.' + baseName );
+            else                    settings.ConfigureWithoutLocalizer         ( manifestPath + '.' + baseName );
+
+            var builder   = new LinguistSupportBuilder ( CodeDomProvider, resourceSet, settings );
             var code      = builder.Build ( );
             var errors    = builder.GetErrors ( );
             var source    = new StringBuilder ( );

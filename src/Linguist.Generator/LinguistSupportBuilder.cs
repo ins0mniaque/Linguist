@@ -10,7 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security;
-using System.Text;
 
 using Linguist.CodeDom;
 using Linguist.CodeDom.Fluent;
@@ -25,49 +24,7 @@ namespace Linguist.Generator
 
     public class LinguistSupportBuilder
     {
-        public static LinguistSupportBuilder GenerateBuilder ( CodeDomProvider codeDomProvider, string inputFileName, string inputFileContent, string fileNamespace, string resourcesNamespace, MemberAttributes accessModifiers, Type customToolType )
-        {
-            var extractorType = AutoDetect.ResourceExtractorType ( inputFileName );
-            if ( extractorType == null )
-                throw new ArgumentException ( Format ( UnknownResourceFileFormat, Path.GetFileName ( inputFileName ) ), nameof ( inputFileName ) );
-
-            var extractor   = (IResourceExtractor) Activator.CreateInstance ( extractorType, new MemoryStream ( Encoding.UTF8.GetBytes ( inputFileContent ) ) );
-            var resourceSet = extractor.Extract ( ).ToList ( );
-            var settings    = new LinguistSupportBuilderSettings ( );
-            var baseName    = Path.GetFileNameWithoutExtension ( inputFileName );
-
-            settings.BaseName           = baseName ?? throw new ArgumentNullException ( nameof ( baseName ) );
-            settings.Namespace          = IsNullOrEmpty ( fileNamespace      ) ? null : codeDomProvider.ValidateIdentifier ( fileNamespace, true );
-            settings.ResourcesNamespace = IsNullOrEmpty ( resourcesNamespace ) ? null : resourcesNamespace;
-            settings.ResourceSetType    = AutoDetect.ResourceSetType ( inputFileName ).FullName;
-            settings.AccessModifiers    = codeDomProvider.ValidateAccessModifiers ( accessModifiers );
-            settings.CustomToolType     = customToolType;
-
-            return new LinguistSupportBuilder ( codeDomProvider, resourceSet, settings );
-        }
-
-        public static CodeCompileUnit GenerateCode ( CodeDomProvider codeDomProvider, string inputFileName, string inputFileContent, string fileNamespace, string resourcesNamespace, MemberAttributes accessModifiers, Type customToolType, out CompilerError [ ] errors )
-        {
-            var builder = GenerateBuilder ( codeDomProvider, inputFileName, inputFileContent, fileNamespace, resourcesNamespace, accessModifiers, customToolType );
-            var code    = builder.Build ( );
-
-            errors = builder.GetErrors ( );
-
-            return code;
-        }
-
-        public static string GenerateSource ( CodeDomProvider codeDomProvider, string inputFileName, string inputFileContent, string fileNamespace, string resourcesNamespace, MemberAttributes accessModifiers, Type customToolType, out CompilerError [ ] errors )
-        {
-            var code      = GenerateCode ( codeDomProvider, inputFileName, inputFileContent, fileNamespace, resourcesNamespace, accessModifiers, customToolType, out errors );
-            var source    = new StringBuilder ( );
-            var generator = new ExtendedCodeGenerator ( codeDomProvider );
-            using ( var writer = new StringWriter ( source ) )
-                generator.GenerateCodeFromCompileUnit ( code, writer, null );
-
-            return source.ToString ( );
-        }
-
-        protected LinguistSupportBuilder ( CodeDomProvider codeDomProvider, IList < IResource > resourceSet, LinguistSupportBuilderSettings settings )
+        public LinguistSupportBuilder ( CodeDomProvider codeDomProvider, IList < IResource > resourceSet, LinguistSupportBuilderSettings settings )
         {
             CodeDomProvider = codeDomProvider ?? throw new ArgumentNullException ( nameof ( codeDomProvider ) );
             ResourceSet     = resourceSet     ?? throw new ArgumentNullException ( nameof ( resourceSet     ) );
@@ -117,16 +74,21 @@ namespace Linguist.Generator
 
         public virtual CodeCompileUnit Build ( )
         {
-            settings = Settings.Setup ( CodeDomProvider );
+            settings = Settings.Validate ( CodeDomProvider );
 
-            var codeCompileUnit = ConfigureCodeCompileUnit ( new CodeCompileUnit ( ) );
-            var codeNamespace   = codeCompileUnit.Namespaces.Add ( settings.Namespace ?? settings.ResourcesNamespace, "System" );
+            var codeCompileUnit = new CodeCompileUnit ( );
+
+            codeCompileUnit.ReferencedAssemblies.Add ( "System.dll" );
+            codeCompileUnit.UserData.Add ( "AllowLateBound", false );
+            codeCompileUnit.UserData.Add ( "RequireVariableDeclaration", true );
+
+            var codeNamespace = codeCompileUnit.Namespaces.Add ( settings.Namespace, "System" );
 
             var support = GenerateClass ( codeNamespace );
 
             GenerateClassMembers ( support );
 
-            var validResources  = ValidateResourceNames ( support );
+            var validResources = ValidateResourceNames ( support );
 
             foreach ( var entry in validResources )
                 GenerateProperty ( entry.Key, entry.Resource ).AddTo ( support );
@@ -158,16 +120,7 @@ namespace Linguist.Generator
             return codeCompileUnit;
         }
 
-        protected virtual CodeCompileUnit ConfigureCodeCompileUnit ( CodeCompileUnit codeCompileUnit )
-        {
-            codeCompileUnit.ReferencedAssemblies.Add ( "System.dll" );
-            codeCompileUnit.UserData.Add ( "AllowLateBound", false );
-            codeCompileUnit.UserData.Add ( "RequireVariableDeclaration", true );
-
-            return codeCompileUnit;
-        }
-
-        protected virtual CodeTypeDeclaration GenerateClass ( CodeNamespace @namespace )
+        protected CodeTypeDeclaration GenerateClass ( CodeNamespace @namespace )
         {
             var generator = typeof ( LinguistSupportBuilder );
             var version   = generator.Assembly.GetName ( ).Version;
@@ -188,42 +141,72 @@ namespace Linguist.Generator
                                      Declare.Attribute < SuppressMessageAttribute     > ( "Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces" ) );
         }
 
-        protected virtual void GenerateClassMembers ( CodeTypeDeclaration support )
+        protected void GenerateClassMembers ( CodeTypeDeclaration support )
         {
             var editorBrowsable      = Declare.Attribute < EditorBrowsableAttribute > ( Code.Constant ( EditorBrowsableState.Advanced ) );
             var notifyCultureChanged = (CodeExpression) null;
 
-            GenerateConstructor ( support );
+            var ctor = Declare.Constructor ( )
+                              .AddSummary  ( ConstructorSummaryFormat, settings.ClassName )
+                              .Attributed  ( Declare.Attribute < SuppressMessageAttribute > ( "Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode" ) )
+                              .AddTo       ( support );
+
+            if ( settings.AccessModifiers.HasBitMask ( MemberAttributes.Static ) )
+                ctor.Private ( );
+            else
+                ctor.Modifiers ( settings.AccessModifiers );
 
             GenerateCultureChangedEvent ( support, out notifyCultureChanged );
 
-            var resourceManager = GenerateResourceManagerSingleton ( support );
+            var resourceManager = GenerateSingleton ( support,
+                                                      settings.ResourceManagerType,
+                                                      ResourceManagerFieldName,
+                                                      settings.ResourceManagerInitializer );
 
             if ( settings.LocalizerType != null )
             {
-                var localizer = GenerateLocalizerSingleton ( support, resourceManager );
+                var localizer = GenerateSingleton ( support,
+                                                    settings.LocalizerType,
+                                                    LocalizerFieldName,
+                                                    settings.LocalizerInitializer );
 
-                GenerateLocalizerProperty ( support, localizer );
+                Declare.Property   ( settings.LocalizerType, LocalizerPropertyName ).Static ( )
+                       .Modifiers  ( settings.AccessModifiers )
+                       .Get        ( get => get.Return ( localizer ) )
+                       .AddSummary ( LocalizerPropertySummary )
+                       .AddTo      ( support );
             }
 
-            GenerateResourceManagerProperty ( support, resourceManager ).Attributed ( editorBrowsable );
+            Declare.Property   ( settings.ResourceManagerType, ResourceManagerPropertyName ).Static ( )
+                   .Modifiers  ( settings.AccessModifiers )
+                   .Get        ( get => get.Return ( resourceManager ) )
+                   .AddSummary ( ResourceManagerPropertySummary )
+                   .Attributed ( editorBrowsable )
+                   .AddTo      ( support );
 
-            GenerateCultureProperty ( support, notifyCultureChanged ).Attributed ( editorBrowsable );
+            var cultureField = Declare.Field < CultureInfo > ( CultureInfoFieldName )
+                                      .Modifiers ( settings.AccessModifiers & MemberAttributes.Static )
+                                      .AddTo ( support );
+
+            var field = support.Instance ( ).Field ( CultureInfoFieldName );
+
+            Declare.Property < CultureInfo > ( CultureInfoPropertyName )
+                   .Modifiers ( settings.AccessModifiers )
+                   .Get ( get          => get.Return ( field ) )
+                   .Set ( (set, value) =>
+                          {
+                              set.Add ( Code.If   ( field.ObjectEquals ( value ) )
+                                            .Then ( Code.Return ( ) ) );
+                              set.Add ( field.Assign ( value ) );
+                              if ( notifyCultureChanged != null )
+                                  set.Add ( notifyCultureChanged );
+                          } )
+                   .AddSummary ( CultureInfoPropertySummary )
+                   .Attributed ( editorBrowsable )
+                   .AddTo      ( support );
         }
 
-        protected virtual CodeConstructor GenerateConstructor ( CodeTypeDeclaration support )
-        {
-            var ctor = new CodeConstructor ( )
-            {
-                Attributes = settings.AccessModifiers.HasBitMask ( MemberAttributes.Static ) ? MemberAttributes.Private :
-                                                                                               settings.AccessModifiers & ~MemberAttributes.Static
-            };
-
-            return ctor.AddSummary ( ConstructorSummaryFormat, settings.ClassName )
-                       .Attributed ( Declare.Attribute < SuppressMessageAttribute > ( "Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode" ) );
-        }
-
-        protected virtual CodeMemberEvent GenerateCultureChangedEvent ( CodeTypeDeclaration support, out CodeExpression notifyCultureChanged )
+        protected CodeMemberEvent GenerateCultureChangedEvent ( CodeTypeDeclaration support, out CodeExpression notifyCultureChanged )
         {
             var propertyChangedEvent = Declare.Event < PropertyChangedEventHandler > ( nameof ( INotifyPropertyChanged.PropertyChanged ) )
                                               .AddTo ( support );
@@ -258,66 +241,10 @@ namespace Linguist.Generator
             return propertyChangedEvent;
         }
 
-        protected virtual CodeMemberProperty GenerateCultureProperty ( CodeTypeDeclaration support, CodeExpression notifyCultureChanged )
+        protected CodeExpression GenerateSingleton ( CodeTypeDeclaration support, CodeTypeReference type, string fieldName, CodeExpression initializer )
         {
-            var cultureField = Declare.Field < CultureInfo > ( CultureInfoFieldName )
-                                      .Modifiers ( settings.AccessModifiers & MemberAttributes.Static )
-                                      .AddTo ( support );
-
-            var field = support.Instance ( ).Field ( CultureInfoFieldName );
-
-            return Declare.Property < CultureInfo > ( CultureInfoPropertyName )
-                          .Modifiers ( settings.AccessModifiers )
-                          .Get ( get          => get.Return ( field ) )
-                          .Set ( (set, value) =>
-                                 {
-                                     set.Add ( Code.If   ( field.ObjectEquals ( value ) )
-                                                   .Then ( Code.Return ( ) ) );
-                                     set.Add ( field.Assign ( value ) );
-                                     if ( notifyCultureChanged != null )
-                                         set.Add ( notifyCultureChanged );
-                                 } )
-                          .AddSummary ( CultureInfoPropertySummary )
-                          .AddTo ( support );
-        }
-
-        protected virtual CodeExpression GenerateResourceManagerSingleton ( CodeTypeDeclaration support )
-        {
-            return GenerateSingleton ( support,
-                                       settings.ResourceManagerType,
-                                       ResourceManagerFieldName,
-                                       settings.ResourceManagerInitializer );
-        }
-
-        protected virtual CodeMemberProperty GenerateResourceManagerProperty ( CodeTypeDeclaration support, CodeExpression resourceManager )
-        {
-            return Declare.Property   ( settings.ResourceManagerType, ResourceManagerPropertyName ).Static ( )
-                          .Modifiers  ( settings.AccessModifiers )
-                          .Get        ( get => get.Return ( resourceManager ) )
-                          .AddSummary ( ResourceManagerPropertySummary )
-                          .AddTo      ( support );
-        }
-
-        protected virtual CodeExpression GenerateLocalizerSingleton ( CodeTypeDeclaration support, CodeExpression resourceManager )
-        {
-            return GenerateSingleton ( support,
-                                       settings.LocalizerType,
-                                       LocalizerFieldName,
-                                       settings.LocalizerInitializer );
-        }
-
-        protected virtual CodeMemberProperty GenerateLocalizerProperty ( CodeTypeDeclaration support, CodeExpression localizer )
-        {
-            return Declare.Property   ( settings.LocalizerType, LocalizerPropertyName ).Static ( )
-                          .Modifiers  ( settings.AccessModifiers )
-                          .Get        ( get => get.Return ( localizer ) )
-                          .AddSummary ( LocalizerPropertySummary )
-                          .AddTo      ( support );
-        }
-
-        protected virtual CodeExpression GenerateSingleton ( CodeTypeDeclaration support, CodeTypeReference type, string fieldName, CodeExpression initializer )
-        {
-            var cctor = (CodeTypeMember) new CodeTypeConstructor ( ).AddComment ( SingletonBeforeFieldInitComment );
+            var cctor = Declare.Constructor ( ).Static ( )
+                               .AddComment  ( SingletonBeforeFieldInitComment );
 
             if ( CodeDomProvider.Supports ( GeneratorSupport.NestedTypes ) )
             {
@@ -347,7 +274,7 @@ namespace Linguist.Generator
             }
         }
 
-        protected virtual CodeMemberProperty GenerateProperty ( string propertyName, IResource resource )
+        protected CodeMemberProperty GenerateProperty ( string propertyName, IResource resource )
         {
             var resourceType = resource.Type != null ? Code.Type ( resource.Type ).Local ( ) : Code.Type < object > ( );
             var summary      = resource.Type == typeof ( string ).FullName ?
@@ -360,7 +287,7 @@ namespace Linguist.Generator
                           .AddSummary ( summary + FormatResourceComment ( resource.Comment ) );
         }
 
-        protected virtual CodeExpression GenerateResourceGetter ( IResource resource )
+        protected CodeExpression GenerateResourceGetter ( IResource resource )
         {
             var culture = Code.Instance ( settings.AccessModifiers ).Field ( CultureInfoFieldName );
 
@@ -396,7 +323,7 @@ namespace Linguist.Generator
             }
         }
 
-        protected virtual CodeMemberMethod GenerateFormatMethod ( string methodName, string propertyName, IResource resource, int numberOfArguments )
+        protected CodeMemberMethod GenerateFormatMethod ( string methodName, string propertyName, IResource resource, int numberOfArguments )
         {
             if ( resource == null )
                 throw new ArgumentNullException ( nameof ( resource ) );
