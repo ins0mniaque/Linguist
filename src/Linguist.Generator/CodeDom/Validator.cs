@@ -26,7 +26,7 @@ namespace Linguist.CodeDom
         public static string ValidateBaseName ( this CodeDomProvider codeDomProvider, string baseName )
         {
             var validatedBaseName = baseName;
-            if ( !codeDomProvider.IsValidIdentifier ( validatedBaseName ) )
+            if ( ! codeDomProvider.IsValidIdentifier ( validatedBaseName ) )
             {
                 var validBaseName = codeDomProvider.ValidateIdentifier ( validatedBaseName );
                 if ( validBaseName != null )

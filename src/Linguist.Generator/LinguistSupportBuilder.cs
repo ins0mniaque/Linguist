@@ -13,6 +13,7 @@ using System.Security;
 using System.Text;
 
 using Linguist.CodeDom;
+using Linguist.CodeDom.Fluent;
 using Linguist.Resources;
 
 namespace Linguist.Generator
@@ -118,14 +119,14 @@ namespace Linguist.Generator
         {
             settings = Settings.Setup ( CodeDomProvider );
 
-            var validResources  = ValidateResourceNames    ( );
             var codeCompileUnit = ConfigureCodeCompileUnit ( new CodeCompileUnit ( ) );
-            var codeNamespace   = Code.CreateNamespace ( settings.Namespace ?? settings.ResourcesNamespace, "System" )
-                                      .AddTo ( codeCompileUnit );
+            var codeNamespace   = codeCompileUnit.Namespaces.Add ( settings.Namespace ?? settings.ResourcesNamespace, "System" );
 
-            var support = GenerateClass ( ).AddTo ( codeNamespace );
+            var support = GenerateClass ( codeNamespace );
 
-            GenerateClassMembers ( ).AddRangeTo ( support );
+            GenerateClassMembers ( support );
+
+            var validResources  = ValidateResourceNames ( support );
 
             foreach ( var entry in validResources )
                 GenerateProperty ( entry.Key, entry.Resource ).AddTo ( support );
@@ -144,9 +145,13 @@ namespace Linguist.Generator
             }
 
             if ( settings.GenerateWPFSupport )
-                GenerateWPFTypedLocalizeExtension ( validResources )?.AddTo ( codeNamespace );
+                codeNamespace.Types.Add ( TypedLocalizeExtensionBuilder.WPF ( settings.ClassName,
+                                                                              settings.AccessModifiers & ~MemberAttributes.Static,
+                                                                              validResources ) );
             else if ( settings.GenerateXamarinFormsSupport )
-                GenerateXamarinFormsTypedLocalizeExtension ( validResources )?.AddTo ( codeNamespace );
+                codeNamespace.Types.Add ( TypedLocalizeExtensionBuilder.XamarinForms ( settings.ClassName,
+                                                                                       settings.AccessModifiers & ~MemberAttributes.Static,
+                                                                                       validResources ) );
 
             CodeGenerator.ValidateIdentifiers ( codeCompileUnit );
 
@@ -162,66 +167,51 @@ namespace Linguist.Generator
             return codeCompileUnit;
         }
 
-        protected virtual IEnumerable < string > GetClassMemberNames ( )
-        {
-            yield return ResourceManagerPropertyName;
-            yield return ResourceManagerFieldName;
-            yield return LocalizerPropertyName;
-            yield return LocalizerFieldName;
-            yield return CultureInfoPropertyName;
-            yield return CultureInfoFieldName;
-            yield return NotifyCultureChangedMethodName;
-
-            if ( settings.AccessModifiers.HasBitMask ( MemberAttributes.Static ) )
-                yield return "Static" + nameof ( INotifyPropertyChanged.PropertyChanged );
-            else
-                yield return nameof ( INotifyPropertyChanged.PropertyChanged );
-        }
-
-        protected virtual CodeTypeDeclaration GenerateClass ( )
+        protected virtual CodeTypeDeclaration GenerateClass ( CodeNamespace @namespace )
         {
             var generator = typeof ( LinguistSupportBuilder );
             var version   = generator.Assembly.GetName ( ).Version;
-            var type      = Code.CreateClass ( settings.ClassName,
-                                               settings.AccessModifiers,
-                                               CodeDomProvider.Supports ( GeneratorSupport.PartialTypes ) )
-                                .AddSummary ( ClassSummary );
-
-            if ( ! settings.AccessModifiers.HasBitMask ( MemberAttributes.Static ) )
-                type.BaseTypes.Add ( Code.TypeRef < INotifyPropertyChanged > ( ) );
+            var type      = Declare.Class      ( settings.ClassName )
+                                   .Modifiers  ( settings.AccessModifiers )
+                                   .IsPartial  ( CodeDomProvider.Supports ( GeneratorSupport.PartialTypes ) )
+                                   .AddSummary ( ClassSummary )
+                                   .AddTo      ( @namespace );
 
             if ( settings.CustomToolType != null ) type.AddRemarks ( ClassRemarksFormat,         generator.Name, settings.CustomToolType.Name );
             else                                   type.AddRemarks ( ClassRemarksToollessFormat, generator.Name );
 
-            return type.Attributed ( Code.Attribute      < GeneratedCodeAttribute       > ( generator.FullName, version.ToString ( ) ),
-                                     Code.Attribute      < DebuggerNonUserCodeAttribute > ( ),
-                                     Code.NamedAttribute < ObfuscationAttribute         > ( nameof ( ObfuscationAttribute.Exclude        ), true,
-                                                                                            nameof ( ObfuscationAttribute.ApplyToMembers ), true ),
-                                     Code.Attribute      < SuppressMessageAttribute     > ( "Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces" ) );
+            return type.Attributed ( Declare.Attribute < GeneratedCodeAttribute       > ( generator.FullName, version.ToString ( ) ),
+                                     Declare.Attribute < DebuggerNonUserCodeAttribute > ( ),
+                                     Declare.Attribute < ObfuscationAttribute         > ( )
+                                            .WithArgument ( nameof ( ObfuscationAttribute.Exclude        ), true )
+                                            .WithArgument ( nameof ( ObfuscationAttribute.ApplyToMembers ), true ),
+                                     Declare.Attribute < SuppressMessageAttribute     > ( "Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces" ) );
         }
 
-        protected virtual IEnumerable < CodeTypeMember > GenerateClassMembers ( )
+        protected virtual void GenerateClassMembers ( CodeTypeDeclaration support )
         {
-            var editorBrowsable = Code.Attribute < EditorBrowsableAttribute > ( Code.Type < EditorBrowsableState > ( )
-                                                                                    .Field ( nameof ( EditorBrowsableState.Advanced ) ) );
+            var editorBrowsable      = Declare.Attribute < EditorBrowsableAttribute > ( Code.Constant ( EditorBrowsableState.Advanced ) );
+            var notifyCultureChanged = (CodeExpression) null;
 
-            var members =
-            Enumerable.Empty < CodeTypeMember > ( )
-                      .Concat ( new [ ] { GenerateConstructor ( ) } )
-                      .Concat ( GenerateCultureChangedEvent ( out var notifyCultureChanged ) )
-                      .Concat ( GenerateResourceManagerSingleton ( out var resourceManager ) )
-                      .Concat ( new [ ] { GenerateResourceManagerProperty ( resourceManager ).Attributed ( editorBrowsable ) } )
-                      .Concat ( new [ ] { GenerateCultureProperty ( notifyCultureChanged, out var cultureField ).Attributed ( editorBrowsable ) } )
-                      .Concat ( new [ ] { cultureField } );
+            GenerateConstructor ( support );
+
+            GenerateCultureChangedEvent ( support, out notifyCultureChanged );
+
+            var resourceManager = GenerateResourceManagerSingleton ( support );
 
             if ( settings.LocalizerType != null )
-                members = members.Concat ( GenerateLocalizerSingleton ( resourceManager, out var localizer ) )
-                                 .Concat ( new [ ] { GenerateLocalizerProperty ( localizer ) } );
+            {
+                var localizer = GenerateLocalizerSingleton ( support, resourceManager );
 
-            return members;
+                GenerateLocalizerProperty ( support, localizer );
+            }
+
+            GenerateResourceManagerProperty ( support, resourceManager ).Attributed ( editorBrowsable );
+
+            GenerateCultureProperty ( support, notifyCultureChanged ).Attributed ( editorBrowsable );
         }
 
-        protected virtual CodeConstructor GenerateConstructor ( )
+        protected virtual CodeConstructor GenerateConstructor ( CodeTypeDeclaration support )
         {
             var ctor = new CodeConstructor ( )
             {
@@ -230,145 +220,149 @@ namespace Linguist.Generator
             };
 
             return ctor.AddSummary ( ConstructorSummaryFormat, settings.ClassName )
-                       .Attributed ( Code.Attribute < SuppressMessageAttribute > ( "Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode" ) );
+                       .Attributed ( Declare.Attribute < SuppressMessageAttribute > ( "Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode" ) );
         }
 
-        protected virtual IEnumerable < CodeTypeMember > GenerateCultureChangedEvent ( out CodeExpression notifyCultureChanged )
+        protected virtual CodeMemberEvent GenerateCultureChangedEvent ( CodeTypeDeclaration support, out CodeExpression notifyCultureChanged )
         {
-            var propertyChangedEvent = new CodeMemberEvent ( )
+            var propertyChangedEvent = Declare.Event < PropertyChangedEventHandler > ( nameof ( INotifyPropertyChanged.PropertyChanged ) )
+                                              .AddTo ( support );
+
+            if ( ! settings.AccessModifiers.HasBitMask ( MemberAttributes.Static ) )
             {
-                Name       = nameof ( INotifyPropertyChanged.PropertyChanged ),
-                Type       = Code.TypeRef < PropertyChangedEventHandler > ( ),
-                Attributes = MemberAttributes.Public | settings.AccessModifiers & MemberAttributes.Static
-            };
-
-            if ( settings.AccessModifiers.HasBitMask ( MemberAttributes.Static ) )
-                propertyChangedEvent.Name = "Static" + propertyChangedEvent.Name;
+                support             .BaseTypes          .Add ( Code.Type < INotifyPropertyChanged > ( ) );
+                propertyChangedEvent.ImplementationTypes.Add ( Code.Type < INotifyPropertyChanged > ( ) );
+            }
             else
-                propertyChangedEvent.ImplementationTypes.Add ( Code.TypeRef < INotifyPropertyChanged > ( ) );
+                propertyChangedEvent.Static ( ).Name = "Static" + propertyChangedEvent.Name;
 
-            var propertyChanged = new CodeEventReferenceExpression ( Code.Access ( settings.AccessModifiers ), propertyChangedEvent.Name );
-            var notify          = Code.CreateMethod ( typeof ( void ), NotifyCultureChangedMethodName, settings.AccessModifiers );
+            var propertyChanged = Code.Event ( support.Instance ( ), propertyChangedEvent.Name );
+            var notify          = Declare.Method ( NotifyCultureChangedMethodName, settings.AccessModifiers )
+                                         .Define ( method =>
+                                                   {
+                                                       method.Add ( Declare.Variable < PropertyChangedEventHandler > ( NotifyCultureChangedVariableName )
+                                                                           .Initialize ( propertyChanged ) );
+                                                       method.Add ( Code.If   ( Code.Variable ( NotifyCultureChangedVariableName ).ValueEquals ( Code.Null ) )
+                                                                        .Then ( Code.Return   ( ) ) );
+                                                       method.Add ( Code.Variable ( NotifyCultureChangedVariableName )
+                                                                        .InvokeDelegate ( support.Instance ( ) ?? Code.Null,
+                                                                                          Code.Type < PropertyChangedEventArgs > ( )
+                                                                                              .Construct ( Code.Null ) ) );
+                                                   } )
+                                         .AddTo  ( support );
 
-            notify.Statements.Add ( Code.Declare < PropertyChangedEventHandler > ( NotifyCultureChangedVariableName )
-                                        .Initialize ( propertyChanged ) );
-            notify.Statements.Add ( Code.If   ( Code.Variable ( NotifyCultureChangedVariableName ).ValueEquals ( Code.Null ) )
-                                        .Then ( Code.Return   ( ) ) );
-            notify.Statements.Add ( Code.Variable ( NotifyCultureChangedVariableName )
-                                        .InvokeDelegate ( Code.Access ( settings.AccessModifiers ) ?? Code.Null,
-                                                          Code.TypeRef < PropertyChangedEventArgs > ( )
-                                                              .Construct ( Code.Null ) ) );
+            notifyCultureChanged = support.Instance ( )
+                                          .Method ( NotifyCultureChangedMethodName )
+                                          .Invoke ( );
 
-            notifyCultureChanged = Code.Access ( settings.AccessModifiers )
-                                       .Method ( NotifyCultureChangedMethodName )
-                                       .Invoke ( );
-
-            return new CodeTypeMember [ ] { propertyChangedEvent, notify };
+            return propertyChangedEvent;
         }
 
-        protected virtual CodeMemberProperty GenerateCultureProperty ( CodeExpression notifyCultureChanged, out CodeMemberField cultureField )
+        protected virtual CodeMemberProperty GenerateCultureProperty ( CodeTypeDeclaration support, CodeExpression notifyCultureChanged )
         {
-            cultureField = Code.CreateField < CultureInfo > ( CultureInfoFieldName, MemberAttributes.Private | settings.AccessModifiers & MemberAttributes.Static );
+            var cultureField = Declare.Field < CultureInfo > ( CultureInfoFieldName )
+                                      .Modifiers ( settings.AccessModifiers & MemberAttributes.Static )
+                                      .AddTo ( support );
 
-            var field = Code.Access ( settings.AccessModifiers ).Field ( CultureInfoFieldName );
+            var field = support.Instance ( ).Field ( CultureInfoFieldName );
 
-            return Code.CreateProperty < CultureInfo > ( CultureInfoPropertyName, settings.AccessModifiers )
-                       .Get ( get          => get.Return ( field ) )
-                       .Set ( (set, value) =>
-                              {
-                                  set.Add ( Code.If   ( field.ObjectEquals ( value ) )
-                                                .Then ( Code.Return ( ) ) );
-                                  set.Add ( field.Assign ( value ) );
-                                  set.Add ( notifyCultureChanged );
-                              } )
-                       .AddSummary ( CultureInfoPropertySummary );
+            return Declare.Property < CultureInfo > ( CultureInfoPropertyName )
+                          .Modifiers ( settings.AccessModifiers )
+                          .Get ( get          => get.Return ( field ) )
+                          .Set ( (set, value) =>
+                                 {
+                                     set.Add ( Code.If   ( field.ObjectEquals ( value ) )
+                                                   .Then ( Code.Return ( ) ) );
+                                     set.Add ( field.Assign ( value ) );
+                                     if ( notifyCultureChanged != null )
+                                         set.Add ( notifyCultureChanged );
+                                 } )
+                          .AddSummary ( CultureInfoPropertySummary )
+                          .AddTo ( support );
         }
 
-        protected virtual IEnumerable < CodeTypeMember > GenerateResourceManagerSingleton ( out CodeExpression singleton )
+        protected virtual CodeExpression GenerateResourceManagerSingleton ( CodeTypeDeclaration support )
         {
-            return GenerateSingleton ( settings.ResourceManagerType,
+            return GenerateSingleton ( support,
+                                       settings.ResourceManagerType,
                                        ResourceManagerFieldName,
-                                       settings.ResourceManagerInitializer,
-                                       true,
-                                       out singleton );
+                                       settings.ResourceManagerInitializer );
         }
 
-        protected virtual CodeMemberProperty GenerateResourceManagerProperty ( CodeExpression resourceManager )
+        protected virtual CodeMemberProperty GenerateResourceManagerProperty ( CodeTypeDeclaration support, CodeExpression resourceManager )
         {
-            return Code.CreateProperty ( settings.ResourceManagerType, ResourceManagerPropertyName, settings.AccessModifiers | MemberAttributes.Static, false )
-                       .Get            ( get => get.Return ( resourceManager ) )
-                       .AddSummary     ( ResourceManagerPropertySummary );
+            return Declare.Property   ( settings.ResourceManagerType, ResourceManagerPropertyName ).Static ( )
+                          .Modifiers  ( settings.AccessModifiers )
+                          .Get        ( get => get.Return ( resourceManager ) )
+                          .AddSummary ( ResourceManagerPropertySummary )
+                          .AddTo      ( support );
         }
 
-        protected virtual IEnumerable < CodeTypeMember > GenerateLocalizerSingleton ( CodeExpression resourceManager, out CodeExpression localizer )
+        protected virtual CodeExpression GenerateLocalizerSingleton ( CodeTypeDeclaration support, CodeExpression resourceManager )
         {
-            var type        = settings.LocalizerType;
-            var initializer = settings.LocalizerInitializer;
-
-            return GenerateSingleton ( type,
+            return GenerateSingleton ( support,
+                                       settings.LocalizerType,
                                        LocalizerFieldName,
-                                       initializer,
-                                       false,
-                                       out localizer );
+                                       settings.LocalizerInitializer );
         }
 
-        protected virtual CodeMemberProperty GenerateLocalizerProperty ( CodeExpression localizer )
+        protected virtual CodeMemberProperty GenerateLocalizerProperty ( CodeTypeDeclaration support, CodeExpression localizer )
         {
-            return Code.CreateProperty ( settings.LocalizerType, LocalizerPropertyName, settings.AccessModifiers | MemberAttributes.Static, false )
-                       .Get            ( get => get.Return ( localizer ) )
-                       .AddSummary     ( LocalizerPropertySummary );
+            return Declare.Property   ( settings.LocalizerType, LocalizerPropertyName ).Static ( )
+                          .Modifiers  ( settings.AccessModifiers )
+                          .Get        ( get => get.Return ( localizer ) )
+                          .AddSummary ( LocalizerPropertySummary )
+                          .AddTo      ( support );
         }
 
-        protected virtual IEnumerable < CodeTypeMember > GenerateSingleton ( CodeTypeReference type, string fieldName, CodeExpression initializer, bool isFirst, out CodeExpression singleton )
+        protected virtual CodeExpression GenerateSingleton ( CodeTypeDeclaration support, CodeTypeReference type, string fieldName, CodeExpression initializer )
         {
             var cctor = (CodeTypeMember) new CodeTypeConstructor ( ).AddComment ( SingletonBeforeFieldInitComment );
 
             if ( CodeDomProvider.Supports ( GeneratorSupport.NestedTypes ) )
             {
-                var lazyType = Code.CreateNestedClass ( fieldName, MemberAttributes.Private | MemberAttributes.Static );
+                var lazyType = Declare.NestedClass ( fieldName ).Private ( ).Static ( )
+                                      .AddTo       ( support );
 
                 cctor.AddTo ( lazyType );
 
-                Code.CreateField ( type,
-                                   SingletonFieldName,
-                                   MemberAttributes.Assembly | MemberAttributes.Static )
-                    .Initialize  ( initializer )
-                    .AddTo       ( lazyType );
+                Declare.Field      ( type, SingletonFieldName ).Internal ( ).Static ( )
+                       .Initialize ( initializer )
+                       .AddTo      ( lazyType );
 
-                singleton = Code.Type  ( fieldName, default )
-                                .Field ( SingletonFieldName );
-
-                return new [ ] { lazyType };
+                return Code.Type   ( fieldName ).Local ( )
+                           .Static ( )
+                           .Field  ( SingletonFieldName );
             }
+            else
+            {
+                Declare.Field      ( type, fieldName ).Private ( ).Static ( )
+                       .Initialize ( initializer )
+                       .AddTo      ( support );
 
-            singleton = Code.Static ( ).Field ( fieldName );
+                if ( ! support.Members.OfType < CodeTypeConstructor > ( ).Any ( ) )
+                    support.Members.Add ( cctor );
 
-            var field = Code.CreateField ( type,
-                                           fieldName,
-                                           MemberAttributes.Private | MemberAttributes.Static )
-                            .Initialize  ( initializer );
-
-            if ( isFirst )
-                return new [ ] { cctor, field };
-
-            return new [ ] { field };
+                return Code.Static ( ).Field ( fieldName );
+            }
         }
 
         protected virtual CodeMemberProperty GenerateProperty ( string propertyName, IResource resource )
         {
-            var resourceType = resource.Type != null ? Code.TypeRef ( resource.Type, default ) : Code.TypeRef < object > ( );
+            var resourceType = resource.Type != null ? Code.Type ( resource.Type ).Local ( ) : Code.Type < object > ( );
             var summary      = resource.Type == typeof ( string ).FullName ?
                                Format ( StringPropertySummary,    GeneratePreview ( (string) resource.Value ) ) :
                                Format ( NonStringPropertySummary, resource.Name );
 
-            return Code.CreateProperty ( resourceType, propertyName, settings.AccessModifiers, false )
-                       .Get            ( get => get.Return ( GenerateResourceGetter ( resource ) ) )
-                       .AddSummary     ( summary + FormatResourceComment ( resource.Comment ) );
+            return Declare.Property   ( resourceType, propertyName )
+                          .Modifiers  ( settings.AccessModifiers )
+                          .Get        ( get => get.Return ( GenerateResourceGetter ( resource ) ) )
+                          .AddSummary ( summary + FormatResourceComment ( resource.Comment ) );
         }
 
         protected virtual CodeExpression GenerateResourceGetter ( IResource resource )
         {
-            var culture = Code.Access ( settings.AccessModifiers ).Field ( CultureInfoFieldName );
+            var culture = Code.Instance ( settings.AccessModifiers ).Field ( CultureInfoFieldName );
 
             if ( settings.LocalizerType != null )
             {
@@ -380,7 +374,7 @@ namespace Linguist.Generator
 
                 return localizer.Method ( "GetObject" )
                                 .Invoke ( culture, Code.Constant ( resource.Name ) )
-                                .Cast   ( Code.TypeRef ( resource.Type, default ) );
+                                .Cast   ( Code.Type ( resource.Type ).Local ( ) );
             }
             else
             {
@@ -398,7 +392,7 @@ namespace Linguist.Generator
 
                 return resourceManager.Method ( "GetObject" )
                                       .Invoke ( Code.Constant ( resource.Name ), culture )
-                                      .Cast   ( Code.TypeRef ( resource.Type, default ) );
+                                      .Cast   ( Code.Type ( resource.Type ).Local ( ) );
             }
         }
 
@@ -414,13 +408,14 @@ namespace Linguist.Generator
             if ( settings.LocalizerType != null )
                 localizer = Code.Static ( ).Property ( LocalizerPropertyName );
 
-            var objectType   = Code.TypeRef < object > ( );
+            var objectType   = Code.Type < object > ( );
             var summary      = Format ( FormatMethodSummary, GeneratePreview ( (string) resource.Value ) );
-            var formatMethod = Code.CreateMethod ( typeof ( string ), methodName, settings.AccessModifiers )
-                                   .AddSummary   ( summary + FormatResourceComment ( resource.Comment ) );
+            var formatMethod = Declare.Method < string > ( methodName, settings.AccessModifiers )
+                                      .AddSummary        ( summary + FormatResourceComment ( resource.Comment ) )
+                                      .AddReturnComment  ( FormatReturnComment );
 
-            var format           = Code.Type < string > ( ).Method ( nameof ( string.Format ) );
-            var formatExpression = (CodeExpression) Code.Access ( settings.AccessModifiers ).Property ( propertyName );
+            var format           = Code.Type < string > ( ).Static ( ).Method ( nameof ( string.Format ) );
+            var formatExpression = (CodeExpression) Code.Instance ( settings.AccessModifiers ).Property ( propertyName );
 
             if ( localizer != null )
             {
@@ -429,17 +424,17 @@ namespace Linguist.Generator
             }
 
             if ( numberOfArguments > 3 )
-                formatMethod.Attributed ( Code.Attribute < SuppressMessageAttribute > ( "Microsoft.Design", "CA1025:ReplaceRepetitiveArgumentsWithParamsArray" ) );
+                formatMethod.Attributed ( Declare.Attribute < SuppressMessageAttribute > ( "Microsoft.Design", "CA1025:ReplaceRepetitiveArgumentsWithParamsArray" ) );
 
             var initialArguments = localizer != null ? 3 : 2;
 
             var parameters = new CodeExpression [ initialArguments + numberOfArguments ];
 
-            parameters [ 0 ] = Code.Access ( settings.AccessModifiers ).Field ( CultureInfoFieldName );
+            parameters [ 0 ] = Code.Instance ( settings.AccessModifiers ).Field ( CultureInfoFieldName );
 
             if ( localizer != null )
             {
-                parameters [ 1 ] = Code.Access ( settings.AccessModifiers ).Field ( CultureInfoFieldName );
+                parameters [ 1 ] = parameters [ 0 ];
                 parameters [ 2 ] = formatExpression;
             }
             else
@@ -459,10 +454,7 @@ namespace Linguist.Generator
                     formatMethod.AddParameterComment ( parameterName, FormatParameterComment, index );
             }
 
-            formatMethod.AddReturnComment  ( FormatReturnComment )
-                        .Statements.Return ( format.Invoke ( parameters ) );
-
-            return formatMethod;
+            return formatMethod.Define ( method => method.Return ( format.Invoke ( parameters ) ) );
         }
 
         protected string GeneratePreview ( string resourceValue )
@@ -482,129 +474,13 @@ namespace Linguist.Generator
             return null;
         }
 
-        protected virtual CodeTypeDeclaration GenerateWPFTypedLocalizeExtension ( IList < Entry > entries )
+        protected virtual IList < Entry > ValidateResourceNames ( CodeTypeDeclaration support )
         {
-            return GenerateTypedLocalizeExtension ( entries,
-                                                    "Linguist.WPF.TypedLocalizeExtension",
-                                                    true,
-                                                    "System.Windows.Data.BindingBase",
-                                                    Code.Attribute < TypeConverterAttribute > ( Code.TypeOf ( Code.TypeRef ( "Linguist.WPF.BindingSyntax+TypeConverter" ) ) ) );
-        }
+            var classProperties = new HashSet < string > ( );
+            foreach ( CodeTypeMember member in support.Members )
+                classProperties.Add ( member.Name );
 
-        protected virtual CodeTypeDeclaration GenerateXamarinFormsTypedLocalizeExtension ( IList < Entry > entries )
-        {
-            return GenerateTypedLocalizeExtension ( entries,
-                                                    "Linguist.Xamarin.Forms.TypedLocalizeExtension",
-                                                    false,
-                                                    "Xamarin.Forms.BindingBase",
-                                                    Code.Attribute ( Code.TypeRef ( "Xamarin.Forms.TypeConverterAttribute" ),
-                                                                     Code.TypeOf ( Code.TypeRef ( "Linguist.Xamarin.Forms.BindingSyntax+TypeConverter" ) ) ) );
-        }
-
-        protected virtual CodeTypeDeclaration GenerateTypedLocalizeExtension ( IList < Entry > entries, string extensionType, bool generateConstructors, string bindingType, CodeAttributeDeclaration bindingTypeConverter )
-        {
-            if ( ! CodeDomProvider.Supports ( GeneratorSupport.NestedTypes ) )
-                return null;
-
-            var type           = Code.CreateClass      ( settings.ClassName + "Extension", MemberAttributes.Public );
-            var keyEnum        = Code.CreateNestedEnum ( ResourceKeyEnumName, MemberAttributes.Public )
-                                     .AddSummary       ( ResourceKeyEnumNameSummary )
-                                     .AddTo            ( type );
-            var keyEnumTypeRef = Code.TypeRef ( ResourceKeyEnumName, default );
-
-            type.BaseTypes.Add ( Code.TypeRef ( extensionType,
-                                                CodeTypeReferenceOptions.GlobalReference,
-                                                Code.TypeRef ( type.Name + "+" + ResourceKeyEnumName, default ) ) );
-
-            var objectType = Code.TypeRef < object > ( );
-            var distinctNumberOfArguments = entries.Select ( entry => entry.NumberOfArguments )
-                                                   .DefaultIfEmpty ( 0 )
-                                                   .Distinct ( )
-                                                   .OrderBy  ( numberOfArguments => numberOfArguments );
-
-            if ( generateConstructors )
-            {
-                foreach ( var numberOfArguments in distinctNumberOfArguments )
-                {
-                    var ctor = new CodeConstructor ( ) { Attributes = MemberAttributes.Public }.AddTo ( type );
-
-                    for ( var argument = 0; argument < numberOfArguments; argument++ )
-                    {
-                        var parameterName = Format ( CultureInfo.InvariantCulture, FormatMethodParameterName, argument );
-
-                        ctor.Parameters         .Add ( objectType.Parameter ( parameterName ) );
-                        ctor.BaseConstructorArgs.Add ( Code.Variable        ( parameterName ) );
-                    }
-                }
-            }
-
-            Code.CreateField    ( keyEnumTypeRef, "_key", MemberAttributes.Private ).AddTo ( type );
-            Code.CreateProperty ( keyEnumTypeRef, "Key", MemberAttributes.Public | MemberAttributes.Override )
-                .Get   ( get          => get.Return ( Code.This ( ).Field ( "_key" ) ) )
-                .Set   ( (set, value) => set.Add    ( Code.Assign ( Code.This ( ).Field ( "_key" ), value ) ) )
-                .AddTo ( type );
-
-            var bindingTypeRef = Code.TypeRef ( bindingType );
-
-            Code.CreateField    ( bindingTypeRef, "_keyPath", MemberAttributes.Private ).AddTo ( type );
-            Code.CreateProperty ( bindingTypeRef, "KeyPath", MemberAttributes.Public | MemberAttributes.Override )
-                .Get        ( get          => get.Return ( Code.This ( ).Field ( "_keyPath" ) ) )
-                .Set        ( (set, value) => set.Add    ( Code.Assign ( Code.This ( ).Field ( "_keyPath" ), value ) ) )
-                .Attributed ( bindingTypeConverter )
-                .AddTo      ( type );
-
-            Code.CreateField    < Type > ( "_type", MemberAttributes.Private ).AddTo ( type );
-            Code.CreateProperty < Type > ( "Type", MemberAttributes.Public | MemberAttributes.Override )
-                .Get   ( get          => get.Return ( Code.This ( ).Field ( "_type" ) ) )
-                .Set   ( (set, value) => set.Add    ( Code.Assign ( Code.This ( ).Field ( "_type" ), value ) ) )
-                .AddTo ( type );
-
-            Code.CreateProperty ( Code.TypeRef < ILocalizer > ( ), "Localizer", MemberAttributes.Family | MemberAttributes.Override, false )
-                .Get   ( get => get.Return ( Code.Type ( settings.ClassName, default ).Property ( LocalizerPropertyName ) ) )
-                .AddTo ( type );
-
-            var translator  = Code.CreateField < string [ ] > ( ResourceKeyTranslatorFieldName, MemberAttributes.Private | MemberAttributes.Static )
-                                  .AddTo ( type );
-            var translation = new CodeArrayCreateExpression ( Code.TypeRef < string > ( ) );
-
-            translator.InitExpression = translation;
-
-            var index = 0;
-
-            foreach ( var entry in entries )
-            {
-                Code.CreateField ( keyEnumTypeRef, entry.Key, MemberAttributes.Const | settings.AccessModifiers & ~MemberAttributes.Static )
-                    .Initialize  ( Code.Constant ( index++ ) )
-                    .AddSummary  ( ResourceKeyFieldSummaryFormat, entry.Resource.Name )
-                    .AddTo       ( keyEnum );
-
-                translation.Initializers.Add ( Code.Constant ( entry.Resource.Name ) );
-            }
-
-            var translate = Code.CreateMethod ( typeof ( string ),
-                                                "KeyToName",
-                                                MemberAttributes.Family | MemberAttributes.Override )
-                                .AddTo ( type );
-
-            var key   = Code.Variable ( ResourceKeyParameterName );
-            var first = keyEnumTypeRef.ToType ( ).Field ( entries [ 0 ].Key );
-            var last  = keyEnumTypeRef.ToType ( ).Field ( entries [ index - 1 ].Key );
-
-            translate.Parameters.Add    ( keyEnumTypeRef.Parameter ( ResourceKeyParameterName ) );
-            translate.Statements.Add    ( Code.If   ( key.IsLessThan    ( first ).Or (
-                                                      key.IsGreaterThan ( last  ) ) )
-                                              .Then ( Code.Throw < ArgumentOutOfRangeException > ( Code.Constant ( ResourceKeyParameterName ) ) ) );
-            translate.Statements.Return ( Code.Static  ( )
-                                              .Field   ( ResourceKeyTranslatorFieldName )
-                                              .Indexer ( Code.Variable ( ResourceKeyParameterName ).Cast < int > ( ) ) );
-
-            return type;
-        }
-
-        protected virtual IList < Entry > ValidateResourceNames ( )
-        {
-            var classProperties = new HashSet    < string > ( GetClassMemberNames ( ) );
-            var entries         = new SortedList < string, Entry > ( ResourceSet.Count, StringComparer.InvariantCultureIgnoreCase );
+            var entries = new SortedList < string, Entry > ( ResourceSet.Count, StringComparer.InvariantCultureIgnoreCase );
 
             foreach ( var resource in ResourceSet )
             {
@@ -686,19 +562,19 @@ namespace Linguist.Generator
 
             return 0;
         }
+    }
 
-        protected class Entry
+    public class Entry
+    {
+        public Entry ( string key, IResource resource, int numberOfArguments )
         {
-            public Entry ( string key, IResource resource, int numberOfArguments )
-            {
-                Key               = key;
-                Resource          = resource;
-                NumberOfArguments = numberOfArguments;
-            }
-
-            public string    Key               { get; }
-            public IResource Resource          { get; }
-            public int       NumberOfArguments { get; }
+            Key               = key;
+            Resource          = resource;
+            NumberOfArguments = numberOfArguments;
         }
+
+        public string    Key               { get; }
+        public IResource Resource          { get; }
+        public int       NumberOfArguments { get; }
     }
 }
