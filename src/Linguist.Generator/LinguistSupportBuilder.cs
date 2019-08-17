@@ -19,7 +19,6 @@ namespace Linguist.Generator
 {
     using static String;
     using static Comments;
-    using static ErrorMessages;
     using static MemberNames;
 
     public class LinguistSupportBuilder
@@ -35,42 +34,10 @@ namespace Linguist.Generator
         public IList < IResource >            ResourceSet     { get; }
         public LinguistSupportBuilderSettings Settings        { get; }
 
-        protected Dictionary < IResource, CompilerError > Errors { get; } = new Dictionary < IResource, CompilerError > ( );
-
-        public CompilerError [ ] GetErrors ( )
-        {
-            foreach ( var entry in Errors )
-            {
-                entry.Value.FileName = entry.Key.Source;
-                entry.Value.Line     = entry.Key.Line   ?? 0;
-                entry.Value.Column   = entry.Key.Column ?? 0;
-            }
-
-            return Errors.Values.ToArray ( );
-        }
-
-        protected void AddError   ( IResource resource, string error   ) => AddError ( resource, null, error,   false );
-        protected void AddWarning ( IResource resource, string warning ) => AddError ( resource, null, warning, true  );
-
-        private void AddError ( IResource resource, string number, string message, bool isWarning )
-        {
-            if ( Errors.TryGetValue ( resource, out var error ) )
-            {
-                error.ErrorNumber = error.ErrorNumber ?? number;
-
-                if ( ! error.ErrorText.Contains ( message ) )
-                    error.ErrorText += "\n" + message;
-
-                if ( ! isWarning )
-                    error.IsWarning = false;
-            }
-            else
-                Errors.Add ( resource, new CompilerError ( ) { ErrorNumber = number,
-                                                               ErrorText   = message,
-                                                               IsWarning   = isWarning } );
-        }
+        public CompilerError [ ] GetErrors ( ) => mapper?.GetErrors ( );
 
         protected LinguistSupportBuilderSettings settings;
+        protected ResourceMapper                 mapper;
 
         public virtual CodeCompileUnit Build ( )
         {
@@ -88,32 +55,25 @@ namespace Linguist.Generator
 
             GenerateClassMembers ( support );
 
-            var validResources = ValidateResourceNames ( support );
+            mapper = new ResourceMapper ( CodeDomProvider, settings.ResourceNamingStrategy );
 
-            foreach ( var entry in validResources )
-                GenerateProperty ( entry.Key, entry.Resource ).AddTo ( support );
+            var map = mapper.Map ( support, ResourceSet );
 
-            foreach ( var entry in validResources )
-            {
-                if ( entry.NumberOfArguments <= 0 )
-                    continue;
+            foreach ( var mapping in map )
+                GenerateProperty ( mapping ).AddTo ( support );
 
-                var methodName = entry.Key + FormatMethodSuffix;
-                var isUnique   = ! support.Members.Contains ( methodName );
-                if ( isUnique && CodeDomProvider.IsValidIdentifier ( methodName ) )
-                    GenerateFormatMethod ( methodName, entry.Key, entry.Resource, entry.NumberOfArguments ).AddTo ( support );
-                else
-                    AddError ( entry.Resource, Format ( CannotCreateFormatMethod, methodName, entry.Resource.Name ) );
-            }
+            foreach ( var mapping in map )
+                if ( ! IsNullOrEmpty ( mapping.FormatMethod ) )
+                    GenerateFormatMethod ( mapping ).AddTo ( support );
 
             if ( settings.GenerateWPFSupport )
                 codeNamespace.Types.Add ( TypedLocalizeExtensionBuilder.WPF ( settings.ClassName,
                                                                               settings.AccessModifiers & ~MemberAttributes.Static,
-                                                                              validResources ) );
+                                                                              map ) );
             else if ( settings.GenerateXamarinFormsSupport )
                 codeNamespace.Types.Add ( TypedLocalizeExtensionBuilder.XamarinForms ( settings.ClassName,
                                                                                        settings.AccessModifiers & ~MemberAttributes.Static,
-                                                                                       validResources ) );
+                                                                                       map ) );
 
             CodeGenerator.ValidateIdentifiers ( codeCompileUnit );
 
@@ -274,14 +234,15 @@ namespace Linguist.Generator
             }
         }
 
-        protected CodeMemberProperty GenerateProperty ( string propertyName, IResource resource )
+        protected CodeMemberProperty GenerateProperty ( ResourceMapping mapping )
         {
+            var resource     = mapping.Resource;
             var resourceType = resource.Type != null ? Code.Type ( resource.Type ).Local ( ) : Code.Type < object > ( );
             var summary      = resource.Type == typeof ( string ).FullName ?
                                Format ( StringPropertySummary,    GeneratePreview ( (string) resource.Value ) ) :
                                Format ( NonStringPropertySummary, resource.Name );
 
-            return Declare.Property   ( resourceType, propertyName )
+            return Declare.Property   ( resourceType, mapping.Property )
                           .Modifiers  ( settings.AccessModifiers )
                           .Get        ( get => get.Return ( GenerateResourceGetter ( resource ) ) )
                           .AddSummary ( summary + FormatResourceComment ( resource.Comment ) );
@@ -323,11 +284,13 @@ namespace Linguist.Generator
             }
         }
 
-        protected CodeMemberMethod GenerateFormatMethod ( string methodName, string propertyName, IResource resource, int numberOfArguments )
+        protected CodeMemberMethod GenerateFormatMethod ( ResourceMapping mapping )
         {
+            var resource =  mapping.Resource;
             if ( resource == null )
                 throw new ArgumentNullException ( nameof ( resource ) );
 
+            var numberOfArguments =  mapping.NumberOfArguments;
             if ( numberOfArguments <= 0 )
                 throw new ArgumentOutOfRangeException ( nameof ( numberOfArguments ), numberOfArguments, "Number of argument must be greater than zero" );
 
@@ -337,12 +300,12 @@ namespace Linguist.Generator
 
             var objectType   = Code.Type < object > ( );
             var summary      = Format ( FormatMethodSummary, GeneratePreview ( (string) resource.Value ) );
-            var formatMethod = Declare.Method < string > ( methodName, settings.AccessModifiers )
+            var formatMethod = Declare.Method < string > ( mapping.FormatMethod, settings.AccessModifiers )
                                       .AddSummary        ( summary + FormatResourceComment ( resource.Comment ) )
                                       .AddReturnComment  ( FormatReturnComment );
 
             var format           = Code.Type < string > ( ).Static ( ).Method ( nameof ( string.Format ) );
-            var formatExpression = (CodeExpression) Code.Instance ( settings.AccessModifiers ).Property ( propertyName );
+            var formatExpression = (CodeExpression) Code.Instance ( settings.AccessModifiers ).Property ( mapping.Property );
 
             if ( localizer != null )
             {
@@ -400,108 +363,5 @@ namespace Linguist.Generator
 
             return null;
         }
-
-        protected virtual IList < Entry > ValidateResourceNames ( CodeTypeDeclaration support )
-        {
-            var classProperties = new HashSet < string > ( );
-            foreach ( CodeTypeMember member in support.Members )
-                classProperties.Add ( member.Name );
-
-            var entries = new SortedList < string, Entry > ( ResourceSet.Count, StringComparer.InvariantCultureIgnoreCase );
-
-            foreach ( var resource in ResourceSet )
-            {
-                var name = resource.Name;
-                var key  = name;
-
-                if ( classProperties.Contains ( name ) )
-                {
-                    AddError ( resource, Format ( PropertyAlreadyExists, name ) );
-                    continue;
-                }
-
-                if ( typeof ( void ).FullName == resource.Type )
-                {
-                    AddError ( resource, Format ( InvalidPropertyType, resource.Type, name ) );
-                    continue;
-                }
-
-                var isWinFormsLocalizableResource = name.Length > 0 && name [ 0 ] == '$' ||
-                                                    name.Length > 1 && name [ 0 ] == '>' &&
-                                                                       name [ 1 ] == '>';
-                if ( isWinFormsLocalizableResource )
-                {
-                    AddWarning ( resource, Format ( SkippingWinFormsResource, name ) );
-                    continue;
-                }
-
-                var isBaseName = settings.ResourceNamingStrategy == null ||
-                                 settings.ResourceNamingStrategy.ParseArguments ( PluralRules.Invariant, name, out _ ) == name;
-                if ( ! isBaseName )
-                    continue;
-
-                if ( ! CodeDomProvider.IsValidIdentifier ( key ) )
-                {
-                    key = CodeDomProvider.ValidateIdentifier ( key );
-
-                    if ( key == null )
-                    {
-                        AddError ( resource, Format ( CannotCreateResourceProperty, name ) );
-                        continue;
-                    }
-                }
-
-                if ( entries.TryGetValue ( key, out var duplicate ) )
-                {
-                    AddError ( duplicate.Resource, Format ( CannotCreateResourceProperty, duplicate.Resource.Name ) );
-
-                    entries.Remove ( key );
-
-                    AddError ( resource, Format ( CannotCreateResourceProperty, name ) );
-
-                    continue;
-                }
-
-                entries.Add ( key, new Entry ( key, resource, GetNumberOfArguments ( resource ) ) );
-            }
-
-            return entries.Values.ToList ( );
-        }
-
-        private int GetNumberOfArguments ( IResource resource )
-        {
-            if ( resource.Type != typeof ( string ).FullName )
-                return 0;
-
-            try
-            {
-                var formatString      = FormatString.Parse ( (string) resource.Value );
-                var numberOfArguments = formatString.ArgumentHoles
-                                                    .Select ( argumentHole => argumentHole.Index )
-                                                    .DefaultIfEmpty ( -1 )
-                                                    .Max ( ) + 1;
-                return numberOfArguments;
-            }
-            catch ( FormatException exception )
-            {
-                AddError ( resource, Format ( ErrorInStringResourceFormat, exception.Message, resource.Name ) );
-            }
-
-            return 0;
-        }
-    }
-
-    public class Entry
-    {
-        public Entry ( string key, IResource resource, int numberOfArguments )
-        {
-            Key               = key;
-            Resource          = resource;
-            NumberOfArguments = numberOfArguments;
-        }
-
-        public string    Key               { get; }
-        public IResource Resource          { get; }
-        public int       NumberOfArguments { get; }
     }
 }

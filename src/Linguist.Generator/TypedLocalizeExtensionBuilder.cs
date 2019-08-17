@@ -15,22 +15,22 @@ namespace Linguist.Generator
 
     public static class TypedLocalizeExtensionBuilder
     {
-        public static CodeTypeDeclaration WPF ( string className, MemberAttributes memberAttributes, IList < Entry > entries )
+        public static CodeTypeDeclaration WPF ( string className, MemberAttributes memberAttributes, IList < ResourceMapping > map )
         {
             return GenerateTypedLocalizeExtension ( className,
                                                     memberAttributes,
-                                                    entries,
+                                                    map,
                                                     "Linguist.WPF.TypedLocalizeExtension",
                                                     true,
                                                     "System.Windows.Data.BindingBase",
                                                     Declare.Attribute < TypeConverterAttribute > ( Code.TypeOf ( Code.NestedType ( "Linguist.WPF.BindingSyntax", "TypeConverter" ) ) ) );
         }
 
-        public static CodeTypeDeclaration XamarinForms ( string className, MemberAttributes memberAttributes, IList < Entry > entries )
+        public static CodeTypeDeclaration XamarinForms ( string className, MemberAttributes memberAttributes, IList < ResourceMapping > map )
         {
             return GenerateTypedLocalizeExtension ( className,
                                                     memberAttributes,
-                                                    entries,
+                                                    map,
                                                     "Linguist.Xamarin.Forms.TypedLocalizeExtension",
                                                     false,
                                                     "Xamarin.Forms.BindingBase",
@@ -38,7 +38,7 @@ namespace Linguist.Generator
                                                                         Code.TypeOf ( Code.NestedType ( "Linguist.Xamarin.Forms.BindingSyntax", "TypeConverter" ) ) ) );
         }
 
-        private static CodeTypeDeclaration GenerateTypedLocalizeExtension ( string className, MemberAttributes memberAttributes, IList < Entry > entries, string extensionType, bool generateConstructors, string bindingType, CodeAttributeDeclaration bindingTypeConverter )
+        private static CodeTypeDeclaration GenerateTypedLocalizeExtension ( string className, MemberAttributes memberAttributes, IList < ResourceMapping > map, string extensionType, bool generateConstructors, string bindingType, CodeAttributeDeclaration bindingTypeConverter )
         {
             var type        = Declare.Class      ( className + "Extension" )
                                      .Modifiers  ( memberAttributes );
@@ -51,13 +51,13 @@ namespace Linguist.Generator
 
             type.BaseTypes.Add ( Code.Type ( extensionType, Code.NestedType ( type.Name, ResourceKeyEnumName ).Local ( ) ) );
 
-            var distinctNumberOfArguments = entries.Select ( entry => entry.NumberOfArguments )
+            if ( generateConstructors )
+            {
+                var distinctNumberOfArguments = map.Select ( mapping => mapping.NumberOfArguments )
                                                    .DefaultIfEmpty ( 0 )
                                                    .Distinct ( )
                                                    .OrderBy  ( numberOfArguments => numberOfArguments );
 
-            if ( generateConstructors )
-            {
                 foreach ( var numberOfArguments in distinctNumberOfArguments )
                 {
                     var ctor = new CodeConstructor ( ) { Attributes = memberAttributes }.AddTo ( type );
@@ -105,15 +105,15 @@ namespace Linguist.Generator
             var translation = new CodeArrayCreateExpression ( Code.Type < string > ( ) );
             var index       = 0;
 
-            foreach ( var entry in entries )
+            foreach ( var mapping in map )
             {
-                Declare.Field      ( keyEnumType, entry.Key ).Const ( )
+                Declare.Field      ( keyEnumType, mapping.Property ).Const ( )
                        .Modifiers  ( memberAttributes )
                        .Initialize ( Code.Constant ( index++ ) )
-                       .AddSummary ( ResourceKeyFieldSummaryFormat, entry.Resource.Name )
+                       .AddSummary ( ResourceKeyFieldSummaryFormat, mapping.Resource.Name )
                        .AddTo      ( keyEnum );
 
-                translation.Initializers.Add ( Code.Constant ( entry.Resource.Name ) );
+                translation.Initializers.Add ( Code.Constant ( mapping.Resource.Name ) );
             }
 
             var translator = Declare.Field < string [ ] > ( ResourceKeyTranslatorFieldName ).Static ( )
@@ -125,8 +125,8 @@ namespace Linguist.Generator
                                    .AddTo ( type );
 
             var key   = Code.Variable ( ResourceKeyParameterName );
-            var first = keyEnumType.Static ( ).Field ( entries [ 0 ].Key );
-            var last  = keyEnumType.Static ( ).Field ( entries [ index - 1 ].Key );
+            var first = keyEnumType.Static ( ).Field ( map [ 0 ].Property );
+            var last  = keyEnumType.Static ( ).Field ( map [ index - 1 ].Property );
 
             translate.Parameters.Add    ( keyEnumType.Parameter ( ResourceKeyParameterName ) );
             translate.Statements.Add    ( Code.If   ( key.IsLessThan    ( first ).Or (
