@@ -21,22 +21,22 @@ namespace Linguist.Generator
     using static Comments;
     using static MemberNames;
 
-    public class LinguistSupportBuilder
+    public class ResourceTypeBuilder
     {
-        public LinguistSupportBuilder ( CodeDomProvider codeDomProvider, IList < IResource > resourceSet, LinguistSupportBuilderSettings settings )
+        public ResourceTypeBuilder ( CodeDomProvider codeDomProvider, IList < IResource > resourceSet, ResourceTypeSettings settings )
         {
             CodeDomProvider = codeDomProvider ?? throw new ArgumentNullException ( nameof ( codeDomProvider ) );
             ResourceSet     = resourceSet     ?? throw new ArgumentNullException ( nameof ( resourceSet     ) );
             Settings        = settings        ?? throw new ArgumentNullException ( nameof ( settings        ) );
         }
 
-        public CodeDomProvider                CodeDomProvider { get; }
-        public IList < IResource >            ResourceSet     { get; }
-        public LinguistSupportBuilderSettings Settings        { get; }
+        public CodeDomProvider      CodeDomProvider { get; }
+        public IList < IResource >  ResourceSet     { get; }
+        public ResourceTypeSettings Settings        { get; }
 
         public CompilerError [ ] GetErrors ( ) => mapper?.GetErrors ( );
 
-        protected LinguistSupportBuilderSettings settings;
+        protected ResourceTypeSettings settings;
         protected ResourceMapper                 mapper;
 
         public virtual CodeCompileUnit Build ( )
@@ -49,29 +49,28 @@ namespace Linguist.Generator
             codeCompileUnit.UserData.Add ( "AllowLateBound", false );
             codeCompileUnit.UserData.Add ( "RequireVariableDeclaration", true );
 
-            var codeNamespace = codeCompileUnit.Namespaces.Add ( settings.Namespace, "System" );
+            var @namespace = codeCompileUnit.Namespaces.Add ( settings.Namespace, "System" );
+            var @class     = GenerateClass ( @namespace );
 
-            var support = GenerateClass ( codeNamespace );
-
-            GenerateClassMembers ( support );
+            GenerateClassMembers ( @class );
 
             mapper = new ResourceMapper ( CodeDomProvider, settings.ResourceNamingStrategy );
 
-            var map = mapper.Map ( support, ResourceSet );
+            var map = mapper.Map ( @class, ResourceSet );
 
             foreach ( var mapping in map )
-                GenerateProperty ( mapping ).AddTo ( support );
+                GenerateProperty ( mapping ).AddTo ( @class );
 
             foreach ( var mapping in map )
                 if ( ! IsNullOrEmpty ( mapping.FormatMethod ) )
-                    GenerateFormatMethod ( mapping ).AddTo ( support );
+                    GenerateFormatMethod ( mapping ).AddTo ( @class );
 
             if ( settings.GenerateWPFSupport )
-                codeNamespace.Types.Add ( TypedLocalizeExtensionBuilder.WPF ( settings.ClassName,
+                @namespace.Types.Add ( TypedLocalizeExtensionBuilder.WPF ( settings.ClassName,
                                                                               settings.AccessModifiers & ~MemberAttributes.Static,
                                                                               map ) );
             else if ( settings.GenerateXamarinFormsSupport )
-                codeNamespace.Types.Add ( TypedLocalizeExtensionBuilder.XamarinForms ( settings.ClassName,
+                @namespace.Types.Add ( TypedLocalizeExtensionBuilder.XamarinForms ( settings.ClassName,
                                                                                        settings.AccessModifiers & ~MemberAttributes.Static,
                                                                                        map ) );
 
@@ -82,7 +81,7 @@ namespace Linguist.Generator
 
         protected CodeTypeDeclaration GenerateClass ( CodeNamespace @namespace )
         {
-            var generator = typeof ( LinguistSupportBuilder );
+            var generator = typeof ( ResourceTypeBuilder );
             var version   = generator.Assembly.GetName ( ).Version;
             var type      = Declare.Class      ( settings.ClassName )
                                    .Modifiers  ( settings.AccessModifiers )
@@ -90,8 +89,8 @@ namespace Linguist.Generator
                                    .AddSummary ( ClassSummary )
                                    .AddTo      ( @namespace );
 
-            if ( settings.CustomToolType != null ) type.AddRemarks ( ClassRemarksFormat,         generator.Name, settings.CustomToolType.Name );
-            else                                   type.AddRemarks ( ClassRemarksToollessFormat, generator.Name );
+            if ( settings.CustomToolType != null ) type.AddRemarks ( ClassRemarksFormat,         generator.FullName, settings.CustomToolType.Name );
+            else                                   type.AddRemarks ( ClassRemarksToollessFormat, generator.FullName );
 
             return type.Attributed ( Declare.Attribute < GeneratedCodeAttribute       > ( generator.FullName, version.ToString ( ) ),
                                      Declare.Attribute < DebuggerNonUserCodeAttribute > ( ),
@@ -101,7 +100,7 @@ namespace Linguist.Generator
                                      Declare.Attribute < SuppressMessageAttribute     > ( "Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces" ) );
         }
 
-        protected void GenerateClassMembers ( CodeTypeDeclaration support )
+        protected void GenerateClassMembers ( CodeTypeDeclaration @class )
         {
             var editorBrowsable      = Declare.Attribute < EditorBrowsableAttribute > ( Code.Constant ( EditorBrowsableState.Advanced ) );
             var notifyCultureChanged = (CodeExpression) null;
@@ -109,23 +108,23 @@ namespace Linguist.Generator
             var ctor = Declare.Constructor ( )
                               .AddSummary  ( ConstructorSummaryFormat, settings.ClassName )
                               .Attributed  ( Declare.Attribute < SuppressMessageAttribute > ( "Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode" ) )
-                              .AddTo       ( support );
+                              .AddTo       ( @class );
 
             if ( settings.AccessModifiers.HasBitMask ( MemberAttributes.Static ) )
                 ctor.Private ( );
             else
                 ctor.Modifiers ( settings.AccessModifiers );
 
-            GenerateCultureChangedEvent ( support, out notifyCultureChanged );
+            GenerateCultureChangedEvent ( @class, out notifyCultureChanged );
 
-            var resourceManager = GenerateSingleton ( support,
+            var resourceManager = GenerateSingleton ( @class,
                                                       settings.ResourceManagerType,
                                                       ResourceManagerFieldName,
                                                       settings.ResourceManagerInitializer );
 
             if ( settings.LocalizerType != null )
             {
-                var localizer = GenerateSingleton ( support,
+                var localizer = GenerateSingleton ( @class,
                                                     settings.LocalizerType,
                                                     LocalizerFieldName,
                                                     settings.LocalizerInitializer );
@@ -134,7 +133,7 @@ namespace Linguist.Generator
                        .Modifiers  ( settings.AccessModifiers )
                        .Get        ( get => get.Return ( localizer ) )
                        .AddSummary ( LocalizerPropertySummary )
-                       .AddTo      ( support );
+                       .AddTo      ( @class );
             }
 
             Declare.Property   ( settings.ResourceManagerType, ResourceManagerPropertyName ).Static ( )
@@ -142,13 +141,13 @@ namespace Linguist.Generator
                    .Get        ( get => get.Return ( resourceManager ) )
                    .AddSummary ( ResourceManagerPropertySummary )
                    .Attributed ( editorBrowsable )
-                   .AddTo      ( support );
+                   .AddTo      ( @class );
 
             var cultureField = Declare.Field < CultureInfo > ( CultureInfoFieldName )
                                       .Modifiers ( settings.AccessModifiers & MemberAttributes.Static )
-                                      .AddTo ( support );
+                                      .AddTo ( @class );
 
-            var field = support.Instance ( ).Field ( CultureInfoFieldName );
+            var field = @class.Instance ( ).Field ( CultureInfoFieldName );
 
             Declare.Property < CultureInfo > ( CultureInfoPropertyName )
                    .Modifiers ( settings.AccessModifiers )
@@ -163,23 +162,23 @@ namespace Linguist.Generator
                           } )
                    .AddSummary ( CultureInfoPropertySummary )
                    .Attributed ( editorBrowsable )
-                   .AddTo      ( support );
+                   .AddTo      ( @class );
         }
 
-        protected CodeMemberEvent GenerateCultureChangedEvent ( CodeTypeDeclaration support, out CodeExpression notifyCultureChanged )
+        protected CodeMemberEvent GenerateCultureChangedEvent ( CodeTypeDeclaration @class, out CodeExpression notifyCultureChanged )
         {
             var propertyChangedEvent = Declare.Event < PropertyChangedEventHandler > ( nameof ( INotifyPropertyChanged.PropertyChanged ) )
-                                              .AddTo ( support );
+                                              .AddTo ( @class );
 
             if ( ! settings.AccessModifiers.HasBitMask ( MemberAttributes.Static ) )
             {
-                support             .BaseTypes          .Add ( Code.Type < INotifyPropertyChanged > ( ) );
+                @class             .BaseTypes          .Add ( Code.Type < INotifyPropertyChanged > ( ) );
                 propertyChangedEvent.ImplementationTypes.Add ( Code.Type < INotifyPropertyChanged > ( ) );
             }
             else
                 propertyChangedEvent.Static ( ).Name = "Static" + propertyChangedEvent.Name;
 
-            var propertyChanged = Code.Event ( support.Instance ( ), propertyChangedEvent.Name );
+            var propertyChanged = Code.Event ( @class.Instance ( ), propertyChangedEvent.Name );
             var notify          = Declare.Method ( NotifyCultureChangedMethodName, settings.AccessModifiers )
                                          .Define ( method =>
                                                    {
@@ -188,20 +187,20 @@ namespace Linguist.Generator
                                                        method.Add ( Code.If   ( Code.Variable ( NotifyCultureChangedVariableName ).ValueEquals ( Code.Null ) )
                                                                         .Then ( Code.Return   ( ) ) );
                                                        method.Add ( Code.Variable ( NotifyCultureChangedVariableName )
-                                                                        .InvokeDelegate ( support.Instance ( ) ?? Code.Null,
+                                                                        .InvokeDelegate ( @class.Instance ( ) ?? Code.Null,
                                                                                           Code.Type < PropertyChangedEventArgs > ( )
                                                                                               .Construct ( Code.Null ) ) );
                                                    } )
-                                         .AddTo  ( support );
+                                         .AddTo  ( @class );
 
-            notifyCultureChanged = support.Instance ( )
+            notifyCultureChanged = @class.Instance ( )
                                           .Method ( NotifyCultureChangedMethodName )
                                           .Invoke ( );
 
             return propertyChangedEvent;
         }
 
-        protected CodeExpression GenerateSingleton ( CodeTypeDeclaration support, CodeTypeReference type, string fieldName, CodeExpression initializer )
+        protected CodeExpression GenerateSingleton ( CodeTypeDeclaration @class, CodeTypeReference type, string fieldName, CodeExpression initializer )
         {
             var cctor = Declare.Constructor ( ).Static ( )
                                .AddComment  ( SingletonBeforeFieldInitComment );
@@ -209,7 +208,7 @@ namespace Linguist.Generator
             if ( CodeDomProvider.Supports ( GeneratorSupport.NestedTypes ) )
             {
                 var lazyType = Declare.NestedClass ( fieldName ).Private ( ).Static ( )
-                                      .AddTo       ( support );
+                                      .AddTo       ( @class );
 
                 cctor.AddTo ( lazyType );
 
@@ -225,10 +224,10 @@ namespace Linguist.Generator
             {
                 Declare.Field      ( type, fieldName ).Private ( ).Static ( )
                        .Initialize ( initializer )
-                       .AddTo      ( support );
+                       .AddTo      ( @class );
 
-                if ( ! support.Members.OfType < CodeTypeConstructor > ( ).Any ( ) )
-                    support.Members.Add ( cctor );
+                if ( ! @class.Members.OfType < CodeTypeConstructor > ( ).Any ( ) )
+                    @class.Members.Add ( cctor );
 
                 return Code.Static ( ).Field ( fieldName );
             }

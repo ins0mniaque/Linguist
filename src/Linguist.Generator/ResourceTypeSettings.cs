@@ -14,7 +14,7 @@ namespace Linguist.Generator
     using static String;
     using static MemberNames;
 
-    public class LinguistSupportBuilderSettings
+    public class ResourceTypeSettings
     {
         public string           ClassName       { get; set; }
         public string           Namespace       { get; set; }
@@ -91,7 +91,7 @@ namespace Linguist.Generator
             return initializer;
         }
 
-        public LinguistSupportBuilderSettings Validate ( CodeDomProvider codeDomProvider )
+        public ResourceTypeSettings Validate ( CodeDomProvider codeDomProvider )
         {
             var settings = Clone ( );
 
@@ -102,9 +102,9 @@ namespace Linguist.Generator
             return settings;
         }
 
-        public LinguistSupportBuilderSettings Clone ( )
+        public ResourceTypeSettings Clone ( )
         {
-            return new LinguistSupportBuilderSettings ( )
+            return new ResourceTypeSettings ( )
             {
                 ClassName       = ClassName,
                 Namespace       = Namespace,

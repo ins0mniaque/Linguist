@@ -16,7 +16,7 @@ namespace Linguist.Generator.Tests
 {
     using static MemberAttributes;
 
-    public class LinguistSupportBuilderTests
+    public class ResourceTypeBuilderTests
     {
         #if NET461
         private readonly string PresentationCoreDll      = System.Reflection.Assembly.Load ( "PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35"      ).Location;
@@ -342,10 +342,10 @@ namespace Linguist.Generator.Tests
             #endif
         }
 
-        private static LinguistSupportBuilder GenerateBuilder ( CodeDomProvider provider, string file, string fileNamespace, string resourceNamespace, MemberAttributes accessModifiers, Type customToolType )
+        private static ResourceTypeBuilder GenerateBuilder ( CodeDomProvider provider, string file, string fileNamespace, string resourceNamespace, MemberAttributes accessModifiers, Type customToolType )
         {
             var resourceSet  = ResourceExtractor.ExtractResources ( GetFullPath ( file ), ReadFile ( file ) );
-            var settings     = new LinguistSupportBuilderSettings ( );
+            var settings     = new ResourceTypeSettings ( );
             var baseName     = Path.GetFileNameWithoutExtension ( file );
 
             settings.ClassName       = baseName;
@@ -353,10 +353,10 @@ namespace Linguist.Generator.Tests
             settings.AccessModifiers = accessModifiers;
             settings.CustomToolType  = customToolType;
 
-            return new LinguistSupportBuilder ( provider, resourceSet, settings );
+            return new ResourceTypeBuilder ( provider, resourceSet, settings );
         }
 
-        private static string GenerateCode ( LinguistSupportBuilder builder, CodeDomProvider provider )
+        private static string GenerateCode ( ResourceTypeBuilder builder, CodeDomProvider provider )
         {
             var code      = builder.Build ( );
             var source    = new StringBuilder ( );
@@ -368,7 +368,7 @@ namespace Linguist.Generator.Tests
         }
 
         #if NET461
-        private static CompilerResults GenerateCodeThenCompile ( LinguistSupportBuilder builder, CodeDomProvider provider, CodeDomProvider compiler, CompilerParameters compilerParameters )
+        private static CompilerResults GenerateCodeThenCompile ( ResourceTypeBuilder builder, CodeDomProvider provider, CodeDomProvider compiler, CompilerParameters compilerParameters )
         {
             return compiler.CompileAssemblyFromSource ( compilerParameters, GenerateCode ( builder, provider ) );
         }

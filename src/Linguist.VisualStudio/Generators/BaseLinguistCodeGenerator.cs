@@ -43,7 +43,7 @@ namespace Linguist.VisualStudio
             hasLinguist = hasLinguist || hasLinguistWPF || hasLinguistXamarinForms;
 
             var resourceSet  = ResourceExtractor.ExtractResources ( inputFileName, inputFileContent );
-            var settings     = new LinguistSupportBuilderSettings ( );
+            var settings     = new ResourceTypeSettings ( );
             var baseName     = Path.GetFileNameWithoutExtension ( inputFileName );
             var manifestPath = GetDefaultNamespace ( );
             var relativePath = Path.Combine ( Project.Name, Path.Combine ( manifestPath.Substring ( Project.Name.Length ).Split ( '.' ) ) );
@@ -59,7 +59,7 @@ namespace Linguist.VisualStudio
             else if ( hasLinguist ) settings.ConfigureResourceManager          ( manifestPath + '.' + baseName );
             else                    settings.ConfigureWithoutLocalizer         ( manifestPath + '.' + baseName );
 
-            var builder   = new LinguistSupportBuilder ( CodeDomProvider, resourceSet, settings );
+            var builder   = new ResourceTypeBuilder ( CodeDomProvider, resourceSet, settings );
             var code      = builder.Build ( );
             var errors    = builder.GetErrors ( );
             var source    = new StringBuilder ( );
