@@ -34,22 +34,17 @@ namespace Linguist.Generator
         public IList < IResource >  ResourceSet     { get; }
         public ResourceTypeSettings Settings        { get; }
 
-        public CompilerError [ ] GetErrors ( ) => mapper?.GetErrors ( );
+        public virtual CompilerError [ ] GetErrors ( ) => mapper?.GetErrors ( );
 
         protected ResourceTypeSettings settings;
-        protected ResourceMapper                 mapper;
+        protected ResourceMapper       mapper;
 
         public virtual CodeCompileUnit Build ( )
         {
             settings = Settings.Validate ( CodeDomProvider );
 
-            var codeCompileUnit = new CodeCompileUnit ( );
-
-            codeCompileUnit.ReferencedAssemblies.Add ( "System.dll" );
-            codeCompileUnit.UserData.Add ( "AllowLateBound", false );
-            codeCompileUnit.UserData.Add ( "RequireVariableDeclaration", true );
-
-            var @namespace = codeCompileUnit.Namespaces.Add ( settings.Namespace, "System" );
+            var code       = GenerateCodeCompileUnit ( );
+            var @namespace = code.Namespaces.Add ( settings.Namespace, "System" );
             var @class     = GenerateClass ( @namespace );
 
             GenerateClassMembers ( @class );
@@ -65,21 +60,31 @@ namespace Linguist.Generator
                 if ( ! IsNullOrEmpty ( mapping.FormatMethod ) )
                     GenerateFormatMethod ( mapping ).AddTo ( @class );
 
-            if ( settings.GenerateWPFSupport )
-                @namespace.Types.Add ( TypedLocalizeExtensionBuilder.WPF ( settings.ClassName,
-                                                                              settings.AccessModifiers & ~MemberAttributes.Static,
-                                                                              map ) );
-            else if ( settings.GenerateXamarinFormsSupport )
-                @namespace.Types.Add ( TypedLocalizeExtensionBuilder.XamarinForms ( settings.ClassName,
-                                                                                       settings.AccessModifiers & ~MemberAttributes.Static,
-                                                                                       map ) );
+            var extension = TypedLocalizeExtensionBuilder.Build ( settings.Extension,
+                                                                  settings.ClassName,
+                                                                  settings.AccessModifiers & ~MemberAttributes.Static,
+                                                                  map );
+            if ( extension != null )
+                extension.AddTo ( @class );
 
-            CodeGenerator.ValidateIdentifiers ( codeCompileUnit );
+            CodeGenerator.ValidateIdentifiers ( code );
+
+            return code;
+        }
+
+        protected virtual CodeCompileUnit GenerateCodeCompileUnit ( )
+        {
+            var codeCompileUnit = new CodeCompileUnit ( );
+
+            codeCompileUnit.ReferencedAssemblies.Add ( "System.dll" );
+
+            codeCompileUnit.UserData.Add ( "AllowLateBound",             false );
+            codeCompileUnit.UserData.Add ( "RequireVariableDeclaration", true  );
 
             return codeCompileUnit;
         }
 
-        protected CodeTypeDeclaration GenerateClass ( CodeNamespace @namespace )
+        protected virtual CodeTypeDeclaration GenerateClass ( CodeNamespace @namespace )
         {
             var generator = typeof ( ResourceTypeBuilder );
             var version   = generator.Assembly.GetName ( ).Version;
@@ -92,15 +97,17 @@ namespace Linguist.Generator
             if ( settings.CustomToolType != null ) type.AddRemarks ( ClassRemarksFormat,         generator.FullName, settings.CustomToolType.Name );
             else                                   type.AddRemarks ( ClassRemarksToollessFormat, generator.FullName );
 
+            if ( string.Equals ( @namespace.Name.Split ( '.' ).Last ( ), settings.ClassName, StringComparison.OrdinalIgnoreCase ) )
+                type.Attributed ( Declare.Attribute < SuppressMessageAttribute > ( "Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces" ) );
+
             return type.Attributed ( Declare.Attribute < GeneratedCodeAttribute       > ( generator.FullName, version.ToString ( ) ),
                                      Declare.Attribute < DebuggerNonUserCodeAttribute > ( ),
                                      Declare.Attribute < ObfuscationAttribute         > ( )
                                             .WithArgument ( nameof ( ObfuscationAttribute.Exclude        ), true )
-                                            .WithArgument ( nameof ( ObfuscationAttribute.ApplyToMembers ), true ),
-                                     Declare.Attribute < SuppressMessageAttribute     > ( "Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces" ) );
+                                            .WithArgument ( nameof ( ObfuscationAttribute.ApplyToMembers ), true ) );
         }
 
-        protected void GenerateClassMembers ( CodeTypeDeclaration @class )
+        protected virtual void GenerateClassMembers ( CodeTypeDeclaration @class )
         {
             var editorBrowsable      = Declare.Attribute < EditorBrowsableAttribute > ( Code.Constant ( EditorBrowsableState.Advanced ) );
             var notifyCultureChanged = (CodeExpression) null;
@@ -115,7 +122,8 @@ namespace Linguist.Generator
             else
                 ctor.Modifiers ( settings.AccessModifiers );
 
-            GenerateCultureChangedEvent ( @class, out notifyCultureChanged );
+            if ( ( settings.Options & ResourceTypeOptions.CultureChangedEvent ) == ResourceTypeOptions.CultureChangedEvent )
+                GenerateCultureChangedEvent ( @class, out notifyCultureChanged );
 
             var resourceManager = GenerateSingleton ( @class,
                                                       settings.ResourceManagerType,
@@ -165,14 +173,85 @@ namespace Linguist.Generator
                    .AddTo      ( @class );
         }
 
-        protected CodeMemberEvent GenerateCultureChangedEvent ( CodeTypeDeclaration @class, out CodeExpression notifyCultureChanged )
+        protected virtual CodeMemberProperty GenerateProperty ( ResourceMapping mapping )
+        {
+            var resource     = mapping.Resource;
+            var resourceType = resource.Type != null ? Code.Type ( resource.Type ).Local ( ) : Code.Type < object > ( );
+            var summary      = resource.Type == typeof ( string ).FullName ?
+                               Format ( StringPropertySummary,    GeneratePreview ( (string) resource.Value ) ) :
+                               Format ( NonStringPropertySummary, resource.Name );
+
+            return Declare.Property   ( resourceType, mapping.Property )
+                          .Modifiers  ( settings.AccessModifiers )
+                          .Get        ( get => get.Return ( GenerateResourceGetter ( resource ) ) )
+                          .AddSummary ( summary + FormatResourceComment ( resource.Comment ) );
+        }
+
+        protected virtual CodeMemberMethod GenerateFormatMethod ( ResourceMapping mapping )
+        {
+            var resource          = mapping.Resource;
+            var numberOfArguments = mapping.NumberOfArguments;
+            if ( numberOfArguments <= 0 )
+                throw new ArgumentOutOfRangeException ( nameof ( numberOfArguments ), numberOfArguments, "Number of argument must be greater than zero" );
+
+            var localizer = (CodeExpression) null;
+            if ( settings.LocalizerType != null )
+                localizer = Code.Static ( ).Property ( LocalizerPropertyName );
+
+            var format           = Code.Type < string > ( ).Static ( ).Method ( nameof ( string.Format ) );
+            var formatExpression = (CodeExpression) Code.Instance ( settings.AccessModifiers ).Property ( mapping.Property );
+
+            if ( localizer != null )
+            {
+                format           = localizer.Method ( nameof ( ILocalizer.Format ) );
+                formatExpression = Code.Constant ( resource.Name );
+            }
+
+            var summary      = Format ( FormatMethodSummary, GeneratePreview ( (string) resource.Value ) );
+            var formatMethod = Declare.Method < string > ( mapping.FormatMethod, settings.AccessModifiers )
+                                      .AddSummary        ( summary + FormatResourceComment ( resource.Comment ) );
+
+            var objectType = Code.Type < object > ( );
+            var start      = localizer != null ? 3 : 2;
+            var parameters = new CodeExpression [ start + numberOfArguments ];
+
+            parameters [ 0 ] = Code.Instance ( settings.AccessModifiers ).Field ( CultureInfoFieldName );
+            parameters [ 1 ] = formatExpression;
+            if ( localizer != null )
+            {
+                parameters [ 2 ] = parameters [ 1 ];
+                parameters [ 1 ] = parameters [ 0 ];
+            }
+
+            for ( var index = 0; index < numberOfArguments; index++ )
+            {
+                var parameterName = Format ( CultureInfo.InvariantCulture, FormatMethodParameterName, index );
+
+                formatMethod.Parameters.Add ( objectType.Parameter ( parameterName ) );
+
+                parameters [ start + index ] = Code.Variable ( parameterName );
+
+                if ( numberOfArguments > 1 )
+                    formatMethod.AddParameterComment ( parameterName, FormatMultiParameterComment, Ordinals [ Math.Min ( index, Ordinals.Length - 1 ) ] );
+                else
+                    formatMethod.AddParameterComment ( parameterName, FormatParameterComment, index );
+            }
+
+            if ( numberOfArguments > 3 )
+                formatMethod.Attributed ( Declare.Attribute < SuppressMessageAttribute > ( "Microsoft.Design", "CA1025:ReplaceRepetitiveArgumentsWithParamsArray" ) );
+
+            return formatMethod.Define ( method => method.Return ( format.Invoke ( parameters ) ) )
+                               .AddReturnComment ( FormatReturnComment );
+        }
+
+        protected void GenerateCultureChangedEvent ( CodeTypeDeclaration @class, out CodeExpression notifyCultureChanged )
         {
             var propertyChangedEvent = Declare.Event < PropertyChangedEventHandler > ( nameof ( INotifyPropertyChanged.PropertyChanged ) )
                                               .AddTo ( @class );
 
             if ( ! settings.AccessModifiers.HasBitMask ( MemberAttributes.Static ) )
             {
-                @class             .BaseTypes          .Add ( Code.Type < INotifyPropertyChanged > ( ) );
+                @class              .BaseTypes          .Add ( Code.Type < INotifyPropertyChanged > ( ) );
                 propertyChangedEvent.ImplementationTypes.Add ( Code.Type < INotifyPropertyChanged > ( ) );
             }
             else
@@ -194,10 +273,8 @@ namespace Linguist.Generator
                                          .AddTo  ( @class );
 
             notifyCultureChanged = @class.Instance ( )
-                                          .Method ( NotifyCultureChangedMethodName )
-                                          .Invoke ( );
-
-            return propertyChangedEvent;
+                                         .Method ( NotifyCultureChangedMethodName )
+                                         .Invoke ( );
         }
 
         protected CodeExpression GenerateSingleton ( CodeTypeDeclaration @class, CodeTypeReference type, string fieldName, CodeExpression initializer )
@@ -231,20 +308,6 @@ namespace Linguist.Generator
 
                 return Code.Static ( ).Field ( fieldName );
             }
-        }
-
-        protected CodeMemberProperty GenerateProperty ( ResourceMapping mapping )
-        {
-            var resource     = mapping.Resource;
-            var resourceType = resource.Type != null ? Code.Type ( resource.Type ).Local ( ) : Code.Type < object > ( );
-            var summary      = resource.Type == typeof ( string ).FullName ?
-                               Format ( StringPropertySummary,    GeneratePreview ( (string) resource.Value ) ) :
-                               Format ( NonStringPropertySummary, resource.Name );
-
-            return Declare.Property   ( resourceType, mapping.Property )
-                          .Modifiers  ( settings.AccessModifiers )
-                          .Get        ( get => get.Return ( GenerateResourceGetter ( resource ) ) )
-                          .AddSummary ( summary + FormatResourceComment ( resource.Comment ) );
         }
 
         protected CodeExpression GenerateResourceGetter ( IResource resource )
@@ -281,69 +344,6 @@ namespace Linguist.Generator
                                       .Invoke ( Code.Constant ( resource.Name ), culture )
                                       .Cast   ( Code.Type ( resource.Type ).Local ( ) );
             }
-        }
-
-        protected CodeMemberMethod GenerateFormatMethod ( ResourceMapping mapping )
-        {
-            var resource =  mapping.Resource;
-            if ( resource == null )
-                throw new ArgumentNullException ( nameof ( resource ) );
-
-            var numberOfArguments =  mapping.NumberOfArguments;
-            if ( numberOfArguments <= 0 )
-                throw new ArgumentOutOfRangeException ( nameof ( numberOfArguments ), numberOfArguments, "Number of argument must be greater than zero" );
-
-            var localizer = (CodeExpression) null;
-            if ( settings.LocalizerType != null )
-                localizer = Code.Static ( ).Property ( LocalizerPropertyName );
-
-            var objectType   = Code.Type < object > ( );
-            var summary      = Format ( FormatMethodSummary, GeneratePreview ( (string) resource.Value ) );
-            var formatMethod = Declare.Method < string > ( mapping.FormatMethod, settings.AccessModifiers )
-                                      .AddSummary        ( summary + FormatResourceComment ( resource.Comment ) )
-                                      .AddReturnComment  ( FormatReturnComment );
-
-            var format           = Code.Type < string > ( ).Static ( ).Method ( nameof ( string.Format ) );
-            var formatExpression = (CodeExpression) Code.Instance ( settings.AccessModifiers ).Property ( mapping.Property );
-
-            if ( localizer != null )
-            {
-                format           = localizer.Method ( nameof ( ILocalizer.Format ) );
-                formatExpression = Code.Constant ( resource.Name );
-            }
-
-            if ( numberOfArguments > 3 )
-                formatMethod.Attributed ( Declare.Attribute < SuppressMessageAttribute > ( "Microsoft.Design", "CA1025:ReplaceRepetitiveArgumentsWithParamsArray" ) );
-
-            var initialArguments = localizer != null ? 3 : 2;
-
-            var parameters = new CodeExpression [ initialArguments + numberOfArguments ];
-
-            parameters [ 0 ] = Code.Instance ( settings.AccessModifiers ).Field ( CultureInfoFieldName );
-
-            if ( localizer != null )
-            {
-                parameters [ 1 ] = parameters [ 0 ];
-                parameters [ 2 ] = formatExpression;
-            }
-            else
-                parameters [ 1 ] = formatExpression;
-
-            for ( var index = 0; index < numberOfArguments; index++ )
-            {
-                var parameterName = Format ( CultureInfo.InvariantCulture, FormatMethodParameterName, index );
-
-                formatMethod.Parameters.Add ( objectType.Parameter ( parameterName ) );
-
-                parameters [ initialArguments + index ] = Code.Variable ( parameterName );
-
-                if ( numberOfArguments > 1 )
-                    formatMethod.AddParameterComment ( parameterName, FormatMultiParameterComment, Ordinals [ Math.Min ( index, Ordinals.Length - 1 ) ] );
-                else
-                    formatMethod.AddParameterComment ( parameterName, FormatParameterComment, index );
-            }
-
-            return formatMethod.Define ( method => method.Return ( format.Invoke ( parameters ) ) );
         }
 
         protected string GeneratePreview ( string resourceValue )

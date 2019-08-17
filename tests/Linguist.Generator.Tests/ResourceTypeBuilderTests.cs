@@ -81,7 +81,7 @@ namespace Linguist.Generator.Tests
                                              customToolType );
 
             builder.Settings.ConfigureResourceManager ( resourceNamespace + '.' + builder.Settings.ClassName );
-            builder.Settings.GenerateWPFSupport = true;
+            builder.Settings.Extension = ResourceTypeExtension.WPF;
 
             #if NET461
             var compiler    = new CSharpCodeProvider ( new XunitCompilerSettings ( Language.CSharp ) );
@@ -124,7 +124,7 @@ namespace Linguist.Generator.Tests
                                              customToolType );
 
             builder.Settings.ConfigureResourceManager ( resourceNamespace + '.' + builder.Settings.ClassName );
-            builder.Settings.GenerateXamarinFormsSupport = true;
+            builder.Settings.Extension = ResourceTypeExtension.XamarinForms;
 
             #if NET461
             var compiler    = new CSharpCodeProvider ( new XunitCompilerSettings ( Language.CSharp ) );
@@ -239,7 +239,7 @@ namespace Linguist.Generator.Tests
                                              customToolType );
 
             builder.Settings.ConfigureResourceManager ( resourceNamespace + '.' + builder.Settings.ClassName );
-            builder.Settings.GenerateWPFSupport = true;
+            builder.Settings.Extension = ResourceTypeExtension.WPF;
 
             #if NET461
             var compiler    = new VBCodeProvider ( new XunitCompilerSettings ( Language.VisualBasic ) );
@@ -283,7 +283,7 @@ namespace Linguist.Generator.Tests
                                              customToolType );
 
             builder.Settings.ConfigureResourceManager ( resourceNamespace + '.' + Path.GetFileNameWithoutExtension ( file ) );
-            builder.Settings.GenerateXamarinFormsSupport = true;
+            builder.Settings.Extension = ResourceTypeExtension.XamarinForms;
 
             #if NET461
             var compiler    = new VBCodeProvider ( new XunitCompilerSettings ( Language.VisualBasic ) );

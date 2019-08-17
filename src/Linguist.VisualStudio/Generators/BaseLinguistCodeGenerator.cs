@@ -48,12 +48,13 @@ namespace Linguist.VisualStudio
             var manifestPath = GetDefaultNamespace ( );
             var relativePath = Path.Combine ( Project.Name, Path.Combine ( manifestPath.Substring ( Project.Name.Length ).Split ( '.' ) ) );
 
-            settings.ClassName                   = baseName;
-            settings.Namespace                   = FileNamespace ?? manifestPath;
-            settings.AccessModifiers             = AccessModifier;
-            settings.CustomToolType              = GetType ( );
-            settings.GenerateWPFSupport          = hasLinguistWPF;
-            settings.GenerateXamarinFormsSupport = hasLinguistXamarinForms;
+            settings.ClassName       = baseName;
+            settings.Namespace       = FileNamespace ?? manifestPath;
+            settings.AccessModifiers = AccessModifier;
+            settings.CustomToolType  = GetType ( );
+            settings.Extension       = hasLinguistWPF          ? ResourceTypeExtension.WPF          :
+                                       hasLinguistXamarinForms ? ResourceTypeExtension.XamarinForms :
+                                                                 ResourceTypeExtension.None;
 
             if      ( fileBased   ) settings.ConfigureFileBasedResourceManager ( baseName, Path.Combine ( relativePath, Path.GetFileName ( inputFileName ) ) );
             else if ( hasLinguist ) settings.ConfigureResourceManager          ( manifestPath + '.' + baseName );

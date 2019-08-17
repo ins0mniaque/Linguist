@@ -9,36 +9,46 @@ using Linguist.CodeDom.Fluent;
 
 namespace Linguist.Generator
 {
+    using static String;
     using static Comments;
     using static MemberNames;
-    using static String;
 
     public static class TypedLocalizeExtensionBuilder
     {
-        public static CodeTypeDeclaration WPF ( string className, MemberAttributes memberAttributes, IList < ResourceMapping > map )
+        public static CodeTypeDeclaration Build ( ResourceTypeExtension extension, string className, MemberAttributes memberAttributes, IList < ResourceMapping > map )
         {
-            return GenerateTypedLocalizeExtension ( className,
-                                                    memberAttributes,
-                                                    map,
-                                                    "Linguist.WPF.TypedLocalizeExtension",
-                                                    true,
-                                                    "System.Windows.Data.BindingBase",
-                                                    Declare.Attribute < TypeConverterAttribute > ( Code.TypeOf ( Code.NestedType ( "Linguist.WPF.BindingSyntax", "TypeConverter" ) ) ) );
+            switch ( extension )
+            {
+                case ResourceTypeExtension.WPF          : return WPF          ( className, memberAttributes, map );
+                case ResourceTypeExtension.XamarinForms : return XamarinForms ( className, memberAttributes, map );
+                default                                 : return null;
+            }
         }
 
-        public static CodeTypeDeclaration XamarinForms ( string className, MemberAttributes memberAttributes, IList < ResourceMapping > map )
+        private static CodeTypeDeclaration WPF ( string className, MemberAttributes memberAttributes, IList < ResourceMapping > map )
         {
-            return GenerateTypedLocalizeExtension ( className,
-                                                    memberAttributes,
-                                                    map,
-                                                    "Linguist.Xamarin.Forms.TypedLocalizeExtension",
-                                                    false,
-                                                    "Xamarin.Forms.BindingBase",
-                                                    Declare.Attribute ( Code.Type ( "Xamarin.Forms.TypeConverterAttribute" ),
-                                                                        Code.TypeOf ( Code.NestedType ( "Linguist.Xamarin.Forms.BindingSyntax", "TypeConverter" ) ) ) );
+            return Build ( className,
+                           memberAttributes,
+                           map,
+                           "Linguist.WPF.TypedLocalizeExtension",
+                           true,
+                           "System.Windows.Data.BindingBase",
+                           Declare.Attribute < TypeConverterAttribute > ( Code.TypeOf ( Code.NestedType ( "Linguist.WPF.BindingSyntax", "TypeConverter" ) ) ) );
         }
 
-        private static CodeTypeDeclaration GenerateTypedLocalizeExtension ( string className, MemberAttributes memberAttributes, IList < ResourceMapping > map, string extensionType, bool generateConstructors, string bindingType, CodeAttributeDeclaration bindingTypeConverter )
+        private static CodeTypeDeclaration XamarinForms ( string className, MemberAttributes memberAttributes, IList < ResourceMapping > map )
+        {
+            return Build ( className,
+                           memberAttributes,
+                           map,
+                           "Linguist.Xamarin.Forms.TypedLocalizeExtension",
+                           false,
+                           "Xamarin.Forms.BindingBase",
+                           Declare.Attribute ( Code.Type ( "Xamarin.Forms.TypeConverterAttribute" ),
+                                               Code.TypeOf ( Code.NestedType ( "Linguist.Xamarin.Forms.BindingSyntax", "TypeConverter" ) ) ) );
+        }
+
+        private static CodeTypeDeclaration Build ( string className, MemberAttributes memberAttributes, IList < ResourceMapping > map, string extensionType, bool generateConstructors, string bindingType, CodeAttributeDeclaration bindingTypeConverter )
         {
             var type        = Declare.Class      ( className + "Extension" )
                                      .Modifiers  ( memberAttributes );
@@ -74,26 +84,26 @@ namespace Linguist.Generator
 
             var keyPathType = Code.Type ( bindingType );
 
-            var _key     = Code.This ( ).Field ( "_key" );
+            var _key     = Code.This ( ).Field ( "_key"     );
             var _keyPath = Code.This ( ).Field ( "_keyPath" );
-            var _type    = Code.This ( ).Field ( "_type" );
+            var _type    = Code.This ( ).Field ( "_type"    );
 
             Declare.Field    ( keyEnumType, _key.FieldName ).AddTo ( type );
-            Declare.Property ( keyEnumType, "Key"  ).Public ( ).Override ( )
+            Declare.Property ( keyEnumType, "Key" ).Public ( ).Override ( )
                    .Get   ( get          => get.Return ( _key ) )
                    .Set   ( (set, value) => set.Add    ( Code.Assign ( _key, value ) ) )
                    .AddTo ( type );
 
 
             Declare.Field    ( keyPathType, _keyPath.FieldName ).AddTo ( type );
-            Declare.Property ( keyPathType, "KeyPath"  ).Public ( ).Override ( )
+            Declare.Property ( keyPathType, "KeyPath" ).Public ( ).Override ( )
                    .Get        ( get          => get.Return ( _keyPath ) )
                    .Set        ( (set, value) => set.Add    ( Code.Assign ( _keyPath, value ) ) )
                    .Attributed ( bindingTypeConverter )
                    .AddTo      ( type );
 
             Declare.Field    < Type > ( _type.FieldName ).AddTo ( type );
-            Declare.Property < Type > ( "Type"  ).Public ( ).Override ( )
+            Declare.Property < Type > ( "Type" ).Public ( ).Override ( )
                    .Get   ( get          => get.Return ( _type ) )
                    .Set   ( (set, value) => set.Add    ( Code.Assign ( _type, value ) ) )
                    .AddTo ( type );
