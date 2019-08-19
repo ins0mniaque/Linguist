@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\src\Linguist.MSBuild\build\Linguist.props"   />
+  <Import Project="..\..\src\Linguist.MSBuild\build\Linguist.targets" />
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.0;net46</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Localization Include="Resources.resx" />
+  </ItemGroup>
+
+</Project>

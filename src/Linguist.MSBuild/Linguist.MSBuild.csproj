@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <VersionPrefix>0.9.1</VersionPrefix>
+    <VersionSuffix>preview</VersionSuffix>
+    <Authors>Jean-Philippe Leconte</Authors>
+    <Description>Build task for Linguist</Description>
+    <Copyright>Copyright © Jean-Philippe Leconte 2019</Copyright>
+    <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <PackageTags>Linguist;Localization;Pluralization;MSBuild</PackageTags>
+    <PackageIconUrl>https://raw.githubusercontent.com/ins0mniaque/Linguist/master/content/images/icon.64x64.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/ins0mniaque/Linguist</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/ins0mniaque/Linguist</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\LICENSE" Visible="false" Pack="true" PackagePath="LICENSE" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework"      Version="15.1.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.1.0-*" PrivateAssets="All" />
+
+    <ProjectReference Include="..\Linguist.Generator\Linguist.Generator.csproj"   PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="build\*"               PackagePath="build\" />
+    <Content Include="buildMultiTargeting\*" PackagePath="buildMultiTargeting\" />
+  </ItemGroup>
+
+  <Target Name="CopyToBuildOutputTargetFolderForDebugging" AfterTargets="Build" Condition="'$(TargetFramework)' != ''">
+    <ItemGroup>
+      <Tools Include="$(BaseOutputPath)$(Configuration)\$(TargetFramework)\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(Tools)" DestinationFolder="$(ProjectDir)$(BuildOutputTargetFolder)\$(TargetFramework)" />
+  </Target>
+
+</Project>

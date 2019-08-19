@@ -1,0 +1,50 @@
+<Project TreatAsLocalProperty="LocalizationInputs;LocalizationOutputs;LocalizationCompile;LocalizationEmbeddedResources">
+  <ItemGroup>
+    <AvailableItemName Include="Localization" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <LinguistMSBuildAssembly Condition="'$(LinguistMSBuildAssembly)' == '' AND '$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\netstandard2.0\Linguist.MSBuild.dll</LinguistMSBuildAssembly>
+    <LinguistMSBuildAssembly Condition="'$(LinguistMSBuildAssembly)' == ''">$(MSBuildThisFileDirectory)..\tools\net46\Linguist.MSBuild.dll</LinguistMSBuildAssembly>
+  </PropertyGroup>
+
+  <UsingTask TaskName="Linguist.MSBuild.Localization" AssemblyFile="$(LinguistMSBuildAssembly)" />
+
+  <Target Name="UpdateLocalization" DependsOnTargets="Localization" />
+
+  <PropertyGroup>
+    <CoreCompileDependsOn>
+      Localization;
+      $(CoreCompileDependsOn);
+    </CoreCompileDependsOn>
+  </PropertyGroup>
+
+  <Target Name="FindLocalizationFiles" DependsOnTargets="PrepareResourceNames">
+    <ItemGroup>
+      <LocalizationInputs  Include="@(Localization)" />
+      <LocalizationOutputs Include="@(LocalizationInputs->'$(IntermediateOutputPath)%(FileName).resources');
+                                    @(LocalizationInputs->'%(TargetPath)%(FileName).$(DefaultLanguageSourceExtension)')" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="Localization"
+          BeforeTargets="BeforeCompile"
+          DependsOnTargets="FindLocalizationFiles; PrepareResourceNames; AfterResolveReferences"
+          Inputs="@(LocalizationInputs)"
+          Outputs="@(LocalizationOutputs)">
+    <PropertyGroup>
+      <ReferencedAssemblies>@(ReferencePath)</ReferencedAssemblies>
+    </PropertyGroup>
+    <Localization Localizations="@(LocalizationInputs)"
+                  Language="$(Language)"
+                  References="$(ReferencedAssemblies)">
+      <Output TaskParameter="Compile"           ItemName="LocalizationCompile" />
+      <Output TaskParameter="EmbeddedResources" ItemName="LocalizationEmbeddedResources" />
+    </Localization>
+    <ItemGroup>
+      <FileWrites       Include="@(LocalizationCompile);@(LocalizationEmbeddedResources)" />
+      <Compile          Include="@(LocalizationCompile)" />
+      <EmbeddedResource Include="@(LocalizationEmbeddedResources)" />
+    </ItemGroup>
+  </Target>
+</Project>
