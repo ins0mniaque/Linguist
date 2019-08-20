@@ -131,23 +131,8 @@ namespace Linguist.MSBuild
         {
             using ( var stream = File.Open ( path, FileMode.Create, FileAccess.Write ) )
             using ( var writer = new System.Resources.ResourceWriter ( stream ) )
-                foreach ( var res in resourceSet )
-                    AddResource ( writer, res );
-        }
-
-        private static void AddResource ( System.Resources.ResourceWriter writer, IResource resource )
-        {
-            if ( resource is ILoadableResource loadable && loadable.Data is byte [ ] loadedData )
-            {
-                writer.AddResourceData ( resource.Name, resource.Type, loadedData );
-                return;
-            }
-
-            var value = resource.Value;
-
-            if      ( value is string   text ) writer.AddResource ( resource.Name, text  );
-            else if ( value is byte [ ] data ) writer.AddResource ( resource.Name, data  );
-            else                               writer.AddResource ( resource.Name, value );
+                foreach ( var resource in resourceSet )
+                    writer.AddResource ( resource );
         }
 
         private CodeDomProvider CreateCodeDomProvider ( string language )
