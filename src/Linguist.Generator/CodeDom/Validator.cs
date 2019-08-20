@@ -53,18 +53,32 @@ namespace Linguist.CodeDom
                     name = name.Replace ( invalidToken, InvalidIdentifierTokenReplacement );
             }
 
-            if ( provider.IsValidIdentifier ( name ) )
+            if ( provider.IsValidIdentifier ( name, isNameSpace ) )
                 return name;
 
             name = provider.CreateValidIdentifier ( name );
-            if ( provider.IsValidIdentifier ( name ) )
+            if ( provider.IsValidIdentifier ( name, isNameSpace ) )
                 return name;
 
             name = "_" + name;
-            if ( provider.IsValidIdentifier ( name ) )
+            if ( provider.IsValidIdentifier ( name, isNameSpace ) )
                 return name;
 
             return null;
+        }
+
+        private static bool IsValidIdentifier ( this CodeDomProvider provider, string name, bool isNameSpace )
+        {
+            if ( isNameSpace )
+            {
+                foreach ( var part in name.Split ( '.' ) )
+                    if ( ! CodeGenerator.IsValidLanguageIndependentIdentifier ( part ) )
+                        return false;
+
+                return true;
+            }
+
+            return provider.IsValidIdentifier ( name );
         }
     }
 }
