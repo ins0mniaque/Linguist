@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Localization Include="Resources.resx" />
+    <Localization Include="**/*.resx" />
   </ItemGroup>
 
 </Project>

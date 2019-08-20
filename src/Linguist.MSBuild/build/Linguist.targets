@@ -10,16 +10,7 @@
 
   <UsingTask TaskName="Linguist.MSBuild.Localization" AssemblyFile="$(LinguistMSBuildAssembly)" />
 
-  <Target Name="UpdateLocalization" DependsOnTargets="Localization" />
-
-  <PropertyGroup>
-    <CoreCompileDependsOn>
-      Localization;
-      $(CoreCompileDependsOn);
-    </CoreCompileDependsOn>
-  </PropertyGroup>
-
-  <Target Name="FindLocalizationFiles" DependsOnTargets="PrepareResourceNames">
+  <Target Name="FindLocalizationFiles">
     <ItemGroup>
       <LocalizationInputs  Include="@(Localization)" />
       <LocalizationOutputs Include="@(LocalizationInputs->'$(IntermediateOutputPath)%(FileName).resources');
@@ -28,8 +19,8 @@
   </Target>
 
   <Target Name="Localization"
-          BeforeTargets="BeforeCompile"
-          DependsOnTargets="FindLocalizationFiles; PrepareResourceNames; AfterResolveReferences"
+          AfterTargets="ResolveReferences"
+          DependsOnTargets="FindLocalizationFiles"
           Inputs="@(LocalizationInputs)"
           Outputs="@(LocalizationOutputs)">
     <PropertyGroup>
@@ -37,13 +28,16 @@
     </PropertyGroup>
     <Localization Localizations="@(LocalizationInputs)"
                   Language="$(Language)"
-                  References="$(ReferencedAssemblies)">
+                  RootNamespace="$(RootNamespace)"
+                  IntermediateOutputPath="$(IntermediateOutputPath)"
+                  ReferencedAssemblies="$(ReferencedAssemblies)">
       <Output TaskParameter="Compile"           ItemName="LocalizationCompile" />
       <Output TaskParameter="EmbeddedResources" ItemName="LocalizationEmbeddedResources" />
     </Localization>
     <ItemGroup>
       <FileWrites       Include="@(LocalizationCompile);@(LocalizationEmbeddedResources)" />
-      <Compile          Include="@(LocalizationCompile)" />
+      <Compile          Update="@(LocalizationCompile)" />
+      <EmbeddedResource Remove="@(Localization)" />
       <EmbeddedResource Include="@(LocalizationEmbeddedResources)" />
     </ItemGroup>
   </Target>

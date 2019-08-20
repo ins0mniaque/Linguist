@@ -33,6 +33,10 @@
     <Content Include="buildMultiTargeting\*" PackagePath="buildMultiTargeting\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="tools\**" />
+  </ItemGroup>
+
   <Target Name="CopyToBuildOutputTargetFolderForDebugging" AfterTargets="Build" Condition="'$(TargetFramework)' != ''">
     <ItemGroup>
       <Tools Include="$(BaseOutputPath)$(Configuration)\$(TargetFramework)\*.*" />
