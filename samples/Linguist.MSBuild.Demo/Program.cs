@@ -7,6 +7,8 @@ namespace Linguist.MSBuild.Demo
         static void Main ( string [ ] args )
         {
             Console.WriteLine ( Resources.HelloWorld );
+
+            Console.WriteLine ( $"Image size: { Resources.Image.Size }" );
         }
     }
 }

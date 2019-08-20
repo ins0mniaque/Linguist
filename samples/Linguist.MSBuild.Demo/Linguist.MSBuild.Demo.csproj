@@ -1,12 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\src\Linguist.MSBuild\build\Linguist.props"   />
+  <Import Project="..\..\src\Linguist.MSBuild\build\Linguist.props" />
   <Import Project="..\..\src\Linguist.MSBuild\build\Linguist.targets" />
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.0;net46</TargetFrameworks>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
+    <PackageReference Include="System.Drawing.Common" Version="4.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Linguist\Linguist.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <Localization Include="**/*.resx" />

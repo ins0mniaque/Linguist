@@ -29,6 +29,15 @@ namespace Linguist.MSBuild.Demo {
         private static global::System.Globalization.CultureInfo _culture;
         
         /// <summary>
+        /// Returns the cached Localizer instance used by this class.
+        /// </summary>
+        internal static global::Linguist.Resources.ResourceManagerLocalizer Localizer {
+            get {
+                return _localizer.Value;
+            }
+        }
+        
+        /// <summary>
         /// Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
@@ -61,7 +70,16 @@ namespace Linguist.MSBuild.Demo {
         /// </summary>
         internal static string HelloWorld {
             get {
-                return ResourceManager.GetString("HelloWorld", _culture);
+                return Localizer.GetString(_culture, "HelloWorld");
+            }
+        }
+        
+        /// <summary>
+        /// Looks up a resource 'Image'.
+        /// </summary>
+        internal static System.Drawing.Bitmap Image {
+            get {
+                return ((System.Drawing.Bitmap)(Localizer.GetObject(_culture, "Image")));
             }
         }
         
@@ -77,10 +95,19 @@ namespace Linguist.MSBuild.Demo {
         
         public static class _resourceManager {
             
-            internal static global::System.Resources.ResourceManager Value = new global::System.Resources.ResourceManager("Linguist.MSBuild.Demo.Resources", typeof(Resources).Assembly);
+            internal static global::System.Resources.ResourceManager Value = new global::System.Resources.ResourceManager("Linguist.MSBuild.Demo.Resources", typeof(Resources).Assembly, typeof(global::Linguist.Resources.Binary.BinaryResourceSet));
             
             // Explicit static constructor to tell compiler not to mark type as beforefieldinit
             static _resourceManager() {
+            }
+        }
+        
+        public static class _localizer {
+            
+            internal static global::Linguist.Resources.ResourceManagerLocalizer Value = new global::Linguist.Resources.ResourceManagerLocalizer(ResourceManager);
+            
+            // Explicit static constructor to tell compiler not to mark type as beforefieldinit
+            static _localizer() {
             }
         }
     }
