@@ -65,30 +65,28 @@ namespace Linguist.Resources.ResX
             if ( type == null && mimetype == null )
                 return new Resource ( ) { Value = value };
 
+            var typeName = (TypeName) null;
+
             if ( type != null )
             {
-                var comma    = type.IndexOf   ( "," );
-                var alias    = type.Substring ( comma + 2 );
-                var typeName = type.Substring ( 0, comma );
+                typeName = new TypeName ( type );
 
-                if ( typeName == "System.Resources.ResXNullRef" )
+                if ( typeName.Type == "System.Resources.ResXNullRef" )
                     return new Resource ( );
 
-                if ( typeName == "System.Resources.ResXFileRef" )
+                if ( typeName.Type == "System.Resources.ResXFileRef" )
                 {
                     ResXFileRef.Parse ( value, out _, out var refType, out _ );
 
-                    return new LoadableResource ( ResXFileRef.Load ) { Type = refType,
+                    return new LoadableResource ( ResXFileRef.Load ) { Type = new TypeName ( refType ),
                                                                        Data = value };
                 }
 
-                if ( typeName == typeof ( byte [ ] ).FullName )
+                if ( typeName == TypeNames.ByteArray )
                     return new Resource ( ) { Value = FromBase64 ( value ) };
 
-                if ( ! aliases.TryGetValue ( alias, out var assemblyName ) )
-                    assemblyName = alias;
-
-                type = typeName + ", " + assemblyName;
+                if ( aliases.TryGetValue ( typeName.Assembly, out var assemblyName ) )
+                    typeName = typeName.WithAssembly ( assemblyName );
             }
 
             switch ( mimetype )
@@ -100,7 +98,7 @@ namespace Linguist.Resources.ResX
                     throw new NotSupportedException ( "SoapFormatter is not supported" );
 
                 case "application/x-microsoft.net.object.bytearray.base64" :
-                    return new LoadableResource ( ConvertFrom < byte [ ] > ) { Type = type ?? throw new Exception ( "Missing type for serialized resource" ),
+                    return new LoadableResource ( ConvertFrom < byte [ ] > ) { Type = typeName ?? throw new Exception ( "Missing type for serialized resource" ),
                                                                                Data = FromBase64 ( value ) };
 
                 case null : break;
@@ -108,7 +106,7 @@ namespace Linguist.Resources.ResX
             }
 
             if ( type != null )
-                return new LoadableResource ( ConvertFromString ) { Type = type ?? throw new Exception ( "Missing type for serialized resource" ),
+                return new LoadableResource ( ConvertFromString ) { Type = typeName ?? throw new Exception ( "Missing type for serialized resource" ),
                                                                     Data = value };
 
             return new Resource ( ) { Value = value };

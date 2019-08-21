@@ -176,8 +176,8 @@ namespace Linguist.Generator
         protected virtual CodeMemberProperty GenerateProperty ( ResourceMapping mapping )
         {
             var resource     = mapping.Resource;
-            var resourceType = resource.Type != null ? Code.Type ( resource.Type ).Local ( ) : Code.Type < object > ( );
-            var summary      = resource.Type == typeof ( string ).FullName ?
+            var resourceType = resource.Type != null ? Code.Type ( resource.Type.Type ).Local ( ) : Code.Type < object > ( );
+            var summary      = resource.Type == TypeNames.String ?
                                Format ( StringPropertySummary,    GeneratePreview ( (string) resource.Value ) ) :
                                Format ( NonStringPropertySummary, resource.Name );
 
@@ -318,31 +318,31 @@ namespace Linguist.Generator
             {
                 var localizer = Code.Static ( ).Property ( LocalizerPropertyName );
 
-                if ( resource.Type == typeof ( string ).FullName )
+                if ( resource.Type == TypeNames.String )
                     return localizer.Method ( "GetString" )
                                     .Invoke ( culture, Code.Constant ( resource.Name ) );
 
                 return localizer.Method ( "GetObject" )
                                 .Invoke ( culture, Code.Constant ( resource.Name ) )
-                                .Cast   ( Code.Type ( resource.Type ).Local ( ) );
+                                .Cast   ( Code.Type ( resource.Type.Type ).Local ( ) );
             }
             else
             {
                 var resourceManager = Code.Static ( ).Property ( ResourceManagerPropertyName );
 
-                if ( resource.Type == typeof ( string ).FullName )
+                if ( resource.Type == TypeNames.String )
                     return resourceManager.Method ( "GetString" )
                                           .Invoke ( Code.Constant ( resource.Name ), culture );
 
-                if ( resource.Type == typeof ( Stream                ).FullName ||
-                     resource.Type == typeof ( MemoryStream          ).FullName ||
-                     resource.Type == typeof ( UnmanagedMemoryStream ).FullName )
+                if ( resource.Type == TypeNames.Stream                ||
+                     resource.Type == TypeNames.MemoryStream          ||
+                     resource.Type == TypeNames.UnmanagedMemoryStream )
                     return resourceManager.Method ( "GetStream" )
                                           .Invoke ( Code.Constant ( resource.Name ), culture );
 
                 return resourceManager.Method ( "GetObject" )
                                       .Invoke ( Code.Constant ( resource.Name ), culture )
-                                      .Cast   ( Code.Type ( resource.Type ).Local ( ) );
+                                      .Cast   ( Code.Type ( resource.Type.Type ).Local ( ) );
             }
         }
 

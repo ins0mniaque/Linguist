@@ -19,6 +19,11 @@ namespace Linguist
             #endif
         }
 
+        public static Type ResolveType ( TypeName typeName )
+        {
+            return ResolveType ( typeName.ToString ( ) );
+        }
+
         public static string GetResolvedAssemblyQualifiedName ( Type type )
         {
             if ( names.TryGet ( type, out var name ) )

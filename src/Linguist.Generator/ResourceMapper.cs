@@ -46,7 +46,7 @@ namespace Linguist.Generator
                     continue;
                 }
 
-                if ( typeof ( void ).FullName == resource.Type )
+                if ( resource.Type == TypeNames.Void )
                 {
                     AddError ( resource, Format ( InvalidPropertyType, resource.Type, name ) );
                     continue;
@@ -114,7 +114,7 @@ namespace Linguist.Generator
 
         private int GetNumberOfArguments ( IResource resource )
         {
-            if ( resource.Type != typeof ( string ).FullName )
+            if ( resource.Type != TypeNames.String )
                 return 0;
 
             try

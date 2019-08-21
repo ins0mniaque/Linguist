@@ -2,12 +2,12 @@
 {
     public class Resource : IResource
     {
-        public string Name    { get; set; }
-        public string Type    { get; set; }
-        public string Comment { get; set; }
-        public string Source  { get; set; }
-        public int?   Line    { get; set; }
-        public int?   Column  { get; set; }
+        public string   Name    { get; set; }
+        public TypeName Type    { get; set; }
+        public string   Comment { get; set; }
+        public string   Source  { get; set; }
+        public int?     Line    { get; set; }
+        public int?     Column  { get; set; }
 
         private object value;
 
@@ -16,8 +16,8 @@
             get { return value; }
             set
             {
-                if ( Type == null )
-                    Type = value?.GetType ( ).FullName;
+                if ( Type == null && value != null )
+                    Type = value.GetType ( );
 
                 this.value = value;
             }
